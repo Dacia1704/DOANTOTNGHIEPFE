@@ -1,0 +1,24 @@
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <app-sidebar [menu]="menu" />
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+
+    <!-- Topbar -->
+    <app-topbar
+      (logoutClick)="logout()"
+      (goToProfile)="goToProfile()"
+    />
+
+    <!-- Page content -->
+    <main class="admin-content">
+      <router-outlet />
+    </main>
+
+  </div>
+
+</div>

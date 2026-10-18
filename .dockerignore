@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+
+# Build output (will be built inside Docker)
+dist
+
+# IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker files (avoid recursive copy)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Test files
+*.spec.ts
+*.test.ts
+karma.conf.js
+vitest.config.ts
+
+# Environment files (secrets should be passed via env)
+*.env
+.env*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp
+temp
+.cache

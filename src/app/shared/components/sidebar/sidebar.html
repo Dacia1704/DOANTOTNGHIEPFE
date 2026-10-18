@@ -1,0 +1,48 @@
+<aside class="sidebar">
+  <div class="sidebar-top">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <span class="material-symbols-outlined">local_library</span>
+      </div>
+      <div class="brand-info">
+        <span class="brand-name">Thư viện</span>
+        <span class="brand-sub">Hệ thống quản lý</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      @for (item of menu; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="nav-active"
+          class="nav-link"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+  </div>
+
+  @if (isAdmin) {
+    <div class="sidebar-export">
+    </div>
+  }
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="footer-info">
+      <span class="material-symbols-outlined footer-shield">shield</span>
+      <div class="footer-text">
+        <span class="footer-version">Phiên bản 1.0</span>
+        <span class="footer-sub">Thư viện trí tuệ</span>
+      </div>
+    </div>
+    <span class="material-symbols-outlined footer-info-icon">info</span>
+  </div>
+</aside>
