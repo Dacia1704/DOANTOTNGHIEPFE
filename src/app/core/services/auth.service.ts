@@ -1,78 +1,152 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable, inject } from "@angular/core";
-import { Router } from "@angular/router";
-import { map, Observable, tap, switchMap } from "rxjs";
-import { environment } from "@environments/environment";
-import { ApiResponse } from "@model/api-response";
-import { LoginResponse } from "@model/auth/response/login-response";
-import { LoginRequest } from "@model/auth/request/login-request";
-import { RefreshTokenResponse } from "@model/auth/response/refresh-token-response";
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, map, tap } from 'rxjs';
+import { environment } from '@environments/environment';
+import { ApiResponse } from '@model/api-response';
+import { LoginResponse } from '@model/auth/response/login-response';
+import { RegisterResponse } from '@model/auth/response/register-response';
+import { LoginRequest } from '@model/auth/request/login-request';
+import { RegisterRequest } from '@model/auth/request/register-request';
+import { RefreshTokenResponse } from '@model/auth/response/refresh-token-response';
+import { AuthMapper } from '@model/auth/auth.mapper';
+import { AuthSession, RoleCode } from '@model/auth/auth.model';
 
-const KEY = 'library_auth'
+const KEY = 'trotot_auth';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  private api = `${environment.apiUrl}/auth`;
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly api = `${environment.apiUrl}/auth`;
 
-  private get session(): LoginResponse | null {
-    const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : null;
+  /**
+   * Session hiện tại ở dạng signal — component nào cũng có thể đọc reactive.
+   * Khi login/register thành công hoặc logout sẽ cập nhật signal → header đổi ngay.
+   */
+  private readonly _session = signal<AuthSession | null>(this.restoreFromStorage());
+
+  /** Readonly signal để template binding. */
+  readonly session = this._session.asReadonly();
+
+  /** Cho interceptor truy cập nhanh token hiện tại (không reactive). */
+  get accessToken(): string | null {
+    return this._session()?.accessToken ?? null;
   }
-  get accessToken() { return this.session?.accessToken ?? null; }
-  get refreshToken() { return this.session?.refreshToken ?? null; }
-  get user() { return this.session; }
 
-  isLoggedIn() { return !!this.accessToken; }
-  hasPermission(code: string) { return !!this.session?.authorities?.includes(code); }
-
-  /** ADMIN | LIBRARIAN | MEMBER ... (bỏ tiền tố ROLE_) */
-  role(): string | null {
-    const authorities = this.session?.authorities ?? [];
-    const r = authorities.find((a: string) => a.startsWith('ROLE_'));
-    return r ? r.replace('ROLE_', '') : null;
+  get refreshToken(): string | null {
+    return this._session()?.refreshToken ?? null;
   }
-  hasAnyRole(roles: string[]) { const r = this.role(); return !!r && roles.includes(r); }
 
+  /** Computed signal — topbar có thể dùng thay cho `user`. */
+  readonly isLoggedIn = computed(() => this._session() !== null);
+
+  hasPermission(code: string): boolean {
+    return !!this._session()?.authorities?.includes(code);
+  }
+
+  /**
+   * Vai trò nghiệp vụ chính (TENANT / LANDLORD / ADMIN).
+   * Nếu user có nhiều role, ưu tiên ADMIN > LANDLORD > TENANT.
+   */
+  primaryRole(): RoleCode | null {
+    const roles = this._session()?.roles ?? [];
+    if (roles.includes(RoleCode.ADMIN)) return RoleCode.ADMIN;
+    if (roles.includes(RoleCode.LANDLORD)) return RoleCode.LANDLORD;
+    if (roles.includes(RoleCode.TENANT)) return RoleCode.TENANT;
+    return null;
+  }
+
+  hasAnyRole(roles: RoleCode[]): boolean {
+    const r = this.primaryRole();
+    return !!r && roles.includes(r);
+  }
+
+  /** Trả về URL landing tương ứng với vai trò sau đăng nhập. */
   homeUrl(): string {
-    switch (this.role()) {
-      case 'ADMIN': console.log('/admin'); return '/admin';
-      case 'TENANT': console.log('/tenant'); return '/tenant';
-      case 'LANDLORD': console.log('/landlord'); return '/landlord';
-      default: console.log('guest'); return '/home';
+    const r = this.primaryRole();
+    switch (r) {
+      case RoleCode.ADMIN: return '/admin';
+      case RoleCode.LANDLORD: return '/landlord';
+      case RoleCode.TENANT: return '/';
+      default: return '/';
     }
   }
 
-  login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.api}/login`, request).pipe(
-      map(res => res.data),
-      tap(data => {
-        localStorage.setItem(KEY, JSON.stringify(data));
-      }),
-    )
+  /** API: đăng nhập → trả AuthSession (Model) cho component. */
+  login(request: LoginRequest): Observable<AuthSession> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(`${this.api}/login`, request)
+      .pipe(
+        map(res => AuthMapper.fromLoginResponse(res.data)),
+        tap(session => this.persistSession(session)),
+      );
   }
 
+  /** API: đăng ký tài khoản mới (TENANT hoặc LANDLORD). */
+  register(request: RegisterRequest): Observable<AuthSession> {
+    return this.http
+      .post<ApiResponse<RegisterResponse>>(`${this.api}/register`, request)
+      .pipe(
+        map(res => AuthMapper.fromRegisterResponse(res.data)),
+        tap(session => this.persistSession(session)),
+      );
+  }
+
+  /** Refresh access token dùng trong interceptor. */
   refresh(): Observable<void> {
-    return this.http.post<ApiResponse<RefreshTokenResponse>>(
-      `${this.api}/refresh`, { refreshToken: this.refreshToken }
-    ).pipe(
-      tap(res => localStorage.setItem(KEY, JSON.stringify({ ...this.session, ...res.data }))),
-      map(() => void 0)
-    );
-  }
- 
-  logout() {
     const refreshToken = this.refreshToken;
-    this.http.post(`${this.api}/logout`, { refreshToken }).subscribe({ complete: () => this.clearSession(), error: () => this.clearSession() });
+    return this.http
+      .post<ApiResponse<RefreshTokenResponse>>(`${this.api}/refresh`, { refreshToken })
+      .pipe(
+        map(res => res.data),
+        tap(data => {
+          const current = this._session();
+          if (!current) return;
+          const next: AuthSession = {
+            ...current,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          };
+          this.persistSession(next);
+        }),
+        map(() => void 0),
+      );
   }
- 
-  clearSession() {
+
+  logout(): void {
+    const refreshToken = this.refreshToken;
+    this.http
+      .post(`${this.api}/logout`, { refreshToken })
+      .subscribe({
+        complete: () => this.clearSession(),
+        error: () => this.clearSession(),
+      });
+  }
+
+  clearSession(): void {
+    this._session.set(null);
     localStorage.removeItem(KEY);
     this.router.navigateByUrl('/login');
   }
-  
 
+  // ===== private helpers =====
+
+  private persistSession(session: AuthSession): void {
+    this._session.set(session);
+    try {
+      localStorage.setItem(KEY, JSON.stringify(session));
+    } catch {
+      // localStorage không khả dụng (SSR / quota) — bỏ qua.
+    }
+  }
+
+  private restoreFromStorage(): AuthSession | null {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(KEY) : null;
+      return raw ? (JSON.parse(raw) as AuthSession) : null;
+    } catch {
+      return null;
+    }
+  }
 }

@@ -1,0 +1,90 @@
+<article class="room-card" (click)="onClick()">
+  <div class="room-card__media">
+    <img
+      class="room-card__image"
+      [src]="imageUtils.toImageSrc(room.image)"
+      [alt]="room.imageAlt"
+      loading="lazy"
+    />
+
+    <!-- Priority / Verified badges (top-left) -->
+    <div class="room-card__badges">
+      @if (room.isPriority) {
+        <span class="badge-pill badge-pill--priority">
+          @if (room.badgeIcon) {
+            <span class="material-symbols-outlined">{{ room.badgeIcon }}</span>
+          }
+          {{ room.badgeLabel || room.matchBadge || 'TIN ƯU TIÊN' }}
+        </span>
+      }
+      @if (room.isVerified) {
+        <span class="badge-pill badge-pill--verified">
+          <span class="material-symbols-outlined">verified</span>
+          Xác thực
+        </span>
+      }
+    </div>
+
+    <!-- Match percent (top-left of AI cards) -->
+    @if (!room.isPriority && room.matchBadge) {
+      <div class="room-card__badges">
+        <span class="badge-pill badge-pill--primary">
+          @if (room.badgeIcon) {
+            <span class="material-symbols-outlined">{{ room.badgeIcon }}</span>
+          } @else {
+            <span class="material-symbols-outlined">bolt</span>
+          }
+          {{ room.matchBadge }}
+        </span>
+      </div>
+    }
+
+    <!-- Wishlist (top-right) -->
+    <button type="button" class="room-card__wishlist" (click)="onWishlist($event)">
+      <span class="material-symbols-outlined">favorite</span>
+    </button>
+  </div>
+
+  <div class="room-card__body">
+    <div>
+      <div class="room-card__meta">
+        <span class="room-card__category">
+          <span class="material-symbols-outlined">{{ room.categoryIcon }}</span>
+          {{ room.categoryLabel }}
+        </span>
+        <span class="room-card__rating">
+          <span class="material-symbols-outlined">star</span>
+          {{ room.rating }} ({{ room.reviewCount }})
+        </span>
+      </div>
+      <h3 class="room-card__title">{{ room.title }}</h3>
+      <p class="room-card__address">
+        <span class="material-symbols-outlined">near_me</span>
+        {{ room.address }} • {{ room.distance }}
+      </p>
+
+      @if (room.tags?.length) {
+        <div class="room-card__tags">
+          @for (tag of room.tags; track tag) {
+            <span class="room-card__tag">{{ tag }}</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="room-card__footer">
+      <div class="room-card__price-row">
+        <div>
+          <span class="room-card__price">{{ formatPrice(room.price) }} đ</span>
+          <span class="room-card__price-unit">{{ room.priceUnit }}</span>
+        </div>
+        <span class="room-card__extra"
+              [class.is-area]="room.isArea">{{ room.extraLabel }}</span>
+      </div>
+      <div class="room-card__host">
+        <div class="room-card__avatar">{{ room.hostInitials }}</div>
+        <span class="room-card__host-name">{{ room.hostName }}</span>
+      </div>
+    </div>
+  </div>
+</article>

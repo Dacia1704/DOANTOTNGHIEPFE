@@ -1,0 +1,35 @@
+<section class="ai-rec">
+  <div class="ai-rec__head">
+    <div class="ai-rec__title-block">
+      <div class="ai-rec__badge-icon">
+        <span class="material-symbols-outlined">auto_awesome</span>
+      </div>
+      <div>
+        <div class="ai-rec__title-row">
+          <h2 class="ai-rec__title">Gợi ý phòng thông minh dành cho bạn</h2>
+          <span class="ai-rec__badge">AI Curated</span>
+        </div>
+        <p class="ai-rec__sub">Được tối ưu theo ngân sách và các địa điểm bạn vừa xem</p>
+      </div>
+    </div>
+
+    <div class="ai-rec__nav">
+      <button type="button" class="ai-rec__nav-btn" aria-label="Trước">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button type="button" class="ai-rec__nav-btn" aria-label="Sau">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ai-rec__grid">
+    @for (room of rooms; track room.id) {
+      <app-room-card
+        [room]="room"
+        (wishlistToggle)="onWishlist($event)"
+        (cardClick)="onCardClick($event)"
+      />
+    }
+  </div>
+</section>

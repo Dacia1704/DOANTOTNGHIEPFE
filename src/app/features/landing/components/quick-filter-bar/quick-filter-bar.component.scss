@@ -1,0 +1,94 @@
+:host { display: block; width: 100%; }
+
+.quick-filter { width: 100%; padding-bottom: 32px; }
+
+.quick-filter__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.quick-filter__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+
+  &:hover { background: var(--surface-container-low); }
+
+  .material-symbols-outlined {
+    font-size: 16px;
+
+    &.is-primary  { color: var(--primary); }
+    &.is-secondary { color: var(--secondary); }
+  }
+
+  &.is-active {
+    background: var(--primary);
+    color: var(--on-primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &.is-advanced {
+    background: var(--surface-container-high);
+    margin-left: auto;
+  }
+}
+
+.quick-filter__panel {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-filter__panel-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  margin-right: 8px;
+}
+
+.quick-filter__panel-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.quick-filter__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-container); }
+}
+
+.quick-filter__checkbox {
+  accent-color: var(--primary);
+}

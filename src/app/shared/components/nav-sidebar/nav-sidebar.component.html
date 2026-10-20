@@ -1,0 +1,14 @@
+<aside class="nav-sidebar">
+  <nav class="nav-sidebar__list">
+    @for (item of menu; track item.route) {
+      <a
+        class="nav-sidebar__item"
+        [routerLink]="item.route"
+        routerLinkActive="is-active"
+      >
+        <span class="material-symbols-outlined">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</aside>

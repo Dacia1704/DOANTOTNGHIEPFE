@@ -1,0 +1,42 @@
+<section class="quick-filter">
+  <div class="quick-filter__row">
+    @for (filter of filters; track filter.id) {
+      <button
+        type="button"
+        class="quick-filter__pill"
+        [class.is-active]="!filter.isAdvanced && isActive(filter.id)"
+        [class.is-advanced]="filter.isAdvanced"
+        (click)="selectFilter(filter.id)"
+      >
+        @if (filter.icon) {
+          <span
+            class="material-symbols-outlined"
+            [class.is-primary]="filter.iconColor === 'primary'"
+            [class.is-secondary]="filter.iconColor === 'secondary'"
+          >
+            {{ filter.icon }}
+          </span>
+        }
+        <span>{{ filter.label }}</span>
+      </button>
+    }
+  </div>
+
+  @if (showAdvanced()) {
+    <div class="quick-filter__panel">
+      <span class="quick-filter__panel-title">Tiện ích ưu tiên:</span>
+      <div class="quick-filter__panel-options">
+        @for (opt of advanced; track opt.id) {
+          <label class="quick-filter__option">
+            <input
+              type="checkbox"
+              [checked]="opt.checked"
+              class="quick-filter__checkbox"
+            />
+            <span>{{ opt.label }}</span>
+          </label>
+        }
+      </div>
+    </div>
+  }
+</section>

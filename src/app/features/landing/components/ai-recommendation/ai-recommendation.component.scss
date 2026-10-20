@@ -1,0 +1,121 @@
+:host { display: block; width: 100%; }
+
+.ai-rec {
+  width: 100%;
+  margin-bottom: 48px;
+  padding: 24px 32px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    135deg,
+    var(--surface-container-low) 0%,
+    var(--surface-container-lowest) 50%,
+    var(--surface-container) 100%
+  );
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  @media (min-width: 768px) { padding: 32px; }
+}
+
+.ai-rec__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ai-rec__title-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-rec__badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+
+  .material-symbols-outlined { font-size: 22px; }
+}
+
+.ai-rec__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-rec__title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.ai-rec__badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--primary-fixed);
+  color: var(--on-primary-fixed);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ai-rec__sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.ai-rec__nav {
+  display: flex;
+  gap: 8px;
+  align-self: flex-end;
+
+  @media (min-width: 640px) { align-self: auto; }
+}
+
+.ai-rec__nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-container); }
+
+  .material-symbols-outlined { font-size: 18px; }
+}
+
+.ai-rec__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); }
+}

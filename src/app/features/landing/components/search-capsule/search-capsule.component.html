@@ -1,0 +1,69 @@
+<form class="capsule" (submit)="onSubmit($event)">
+  <!-- Col 1: Location -->
+  <div class="capsule__col">
+    <div class="capsule__icon">
+      <span class="material-symbols-outlined">location_on</span>
+    </div>
+    <div class="capsule__field">
+      <span class="capsule__label">Khu vực / Trường ĐH</span>
+      <input
+        class="capsule__input"
+        type="text"
+        placeholder="Bình Thạnh, Cầu Giấy, ĐH Bách Khoa..."
+        [ngModel]="location()"
+        (ngModelChange)="location.set($event)"
+        name="location"
+      />
+    </div>
+  </div>
+
+  <div class="capsule__divider"></div>
+
+  <!-- Col 2: Price -->
+  <div class="capsule__col">
+    <div class="capsule__icon">
+      <span class="material-symbols-outlined">payments</span>
+    </div>
+    <div class="capsule__field">
+      <span class="capsule__label">Khoảng giá</span>
+      <select
+        class="capsule__select"
+        [ngModel]="priceRange()"
+        (ngModelChange)="priceRange.set($event)"
+        name="price"
+      >
+        @for (opt of priceOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="capsule__divider"></div>
+
+  <!-- Col 3: Room type -->
+  <div class="capsule__col">
+    <div class="capsule__icon">
+      <span class="material-symbols-outlined">roofing</span>
+    </div>
+    <div class="capsule__field">
+      <span class="capsule__label">Loại hình phòng</span>
+      <select
+        class="capsule__select"
+        [ngModel]="roomType()"
+        (ngModelChange)="roomType.set($event)"
+        name="roomType"
+      >
+        @for (opt of roomTypeOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Search button -->
+  <button type="submit" class="capsule__cta">
+    <span class="material-symbols-outlined">search</span>
+    <span class="capsule__cta-label">Tìm kiếm</span>
+  </button>
+</form>

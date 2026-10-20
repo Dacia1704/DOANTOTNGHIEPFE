@@ -1,0 +1,34 @@
+<div class="landing">
+  <!-- Category bar ngay dưới header -->
+  <app-category-bar />
+
+  <div class="landing__inner">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero__glow"></div>
+      <div class="hero__copy">
+        <div class="hero__chip">
+          <span class="material-symbols-outlined">verified</span>
+          <span>Cam kết 100% phòng thật • Không phí môi giới ẩn</span>
+        </div>
+        <h1 class="hero__title">
+          Tìm phòng trọ, căn hộ <span class="hero__title-accent">ưng ý &amp; an tâm</span> nhất
+        </h1>
+        <p class="hero__sub">
+          Hơn 45,000+ phòng trọ sinh viên, studio mini và homestay ở ghép đã qua kiểm định thực tế
+          tại Hà Nội &amp; TP.HCM.
+        </p>
+      </div>
+
+      <div class="hero__search">
+        <app-search-capsule />
+      </div>
+    </section>
+
+    <app-quick-filter-bar />
+    <app-ai-recommendation />
+    <app-room-grid />
+    <app-map-finder />
+    <app-landlord-cta />
+  </div>
+</div>

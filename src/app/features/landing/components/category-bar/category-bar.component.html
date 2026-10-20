@@ -1,0 +1,14 @@
+<div class="category-bar">
+  <div class="category-bar__scroll">
+    @for (pill of pills; track pill.label) {
+      <a
+        class="category-bar__pill"
+        [class.is-active]="pill.active"
+        href="#"
+      >
+        <span class="material-symbols-outlined">{{ pill.icon }}</span>
+        <span>{{ pill.label }}</span>
+      </a>
+    }
+  </div>
+</div>

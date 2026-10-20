@@ -1,0 +1,370 @@
+<div class="register-page">
+  <div class="register-page__inner">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a routerLink="/">
+        <span class="material-symbols-outlined">home</span>
+        <span>Trang chủ</span>
+      </a>
+      <span class="breadcrumb__sep">/</span>
+      <span class="breadcrumb__current">Đăng ký tài khoản</span>
+    </nav>
+
+    <div class="register-grid">
+      <!-- Left: form -->
+      <div class="register-card">
+        <header class="register-card__head">
+          <div class="register-card__chip">
+            <span class="register-card__chip-dot"></span>
+            <span>Tạo tài khoản miễn phí</span>
+          </div>
+          <h1 class="register-card__title">
+            Bắt đầu cùng <span class="register-card__title-primary">TroTot</span><span class="register-card__title-secondary">.vn</span>
+          </h1>
+          <p class="register-card__sub">
+            Tham gia cộng đồng thuê &amp; cho thuê phòng trọ văn minh, an toàn và minh bạch nhất.
+          </p>
+        </header>
+
+        @if (errorMessage(); as msg) {
+          <div class="register-card__error" role="alert">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ msg }}</span>
+          </div>
+        }
+
+        <!-- Role selection -->
+        <section class="role-selector">
+          <label class="role-selector__label">Bạn tham gia TroTot với vai trò nào?</label>
+          <div class="role-selector__options">
+            <button
+              type="button"
+              class="role-card"
+              [class.is-active]="form.controls.roleCode.value === 'TENANT'"
+              (click)="selectRole('TENANT')"
+            >
+              <div class="role-card__icon-wrap">
+                <span class="material-symbols-outlined">travel_explore</span>
+              </div>
+              <div class="role-card__meta">
+                <span class="role-card__badge role-card__badge--tenant">Người thuê</span>
+                @if (form.controls.roleCode.value === 'TENANT') {
+                  <span class="material-symbols-outlined role-card__check">check_circle</span>
+                }
+              </div>
+              <h3 class="role-card__title">Tôi muốn tìm phòng</h3>
+              <p class="role-card__desc">
+                Tìm kiếm hàng ngàn phòng trọ xác thực, giữ cọc an toàn 100% qua Escrow, ghép phòng văn minh.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              class="role-card"
+              [class.is-active]="form.controls.roleCode.value === 'LANDLORD'"
+              (click)="selectRole('LANDLORD')"
+            >
+              <div class="role-card__icon-wrap role-card__icon-wrap--muted">
+                <span class="material-symbols-outlined">domain_add</span>
+              </div>
+              <div class="role-card__meta">
+                <span class="role-card__badge role-card__badge--muted">Chủ trọ / Quản lý</span>
+                @if (form.controls.roleCode.value === 'LANDLORD') {
+                  <span class="material-symbols-outlined role-card__check">check_circle</span>
+                }
+              </div>
+              <h3 class="role-card__title">Tôi muốn đăng tin</h3>
+              <p class="role-card__desc">
+                Tiếp cận 50,000+ sinh viên &amp; người đi làm, đăng tin miễn phí, hỗ trợ quản lý hợp đồng trực tuyến.
+              </p>
+            </button>
+          </div>
+        </section>
+
+        <form class="register-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <!-- Full name -->
+          <div class="field">
+            <label class="field__label" for="reg-name">
+              Họ và tên đầy đủ <span class="required">*</span>
+            </label>
+            <div class="field__input-row"
+                 [class.is-invalid]="form.controls.fullName.touched && form.controls.fullName.invalid">
+              <span class="field__icon material-symbols-outlined">person</span>
+              <input
+                id="reg-name"
+                type="text"
+                class="field__input"
+                placeholder="Ví dụ: Nguyễn Văn An"
+                formControlName="fullName"
+                maxlength="100"
+              />
+            </div>
+          </div>
+
+          <!-- Email + Phone row -->
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="reg-email">
+                Email <span class="required">*</span>
+              </label>
+              <div class="field__input-row"
+                   [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid">
+                <span class="field__icon material-symbols-outlined">mail</span>
+                <input
+                  id="reg-email"
+                  type="email"
+                  class="field__input"
+                  placeholder="nguyenvanan@example.com"
+                  formControlName="email"
+                  maxlength="100"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="reg-phone">
+                Số điện thoại <span class="required">*</span>
+              </label>
+              <div class="field__phone">
+                <span class="field__phone-prefix">
+                  <svg class="field__phone-flag" viewBox="0 0 30 20" aria-hidden="true">
+                    <rect width="30" height="20" fill="#DA251D"/>
+                    <polygon fill="#FFFF00" points="15,4 17.5,12 10.5,7 19.5,7 12.5,12"/>
+                  </svg>
+                  <span>+84</span>
+                </span>
+                <input
+                  id="reg-phone"
+                  type="tel"
+                  class="field__input field__input--no-bg"
+                  placeholder="912 345 678"
+                  formControlName="phone"
+                  maxlength="10"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- CCCD (optional) -->
+          <div class="field">
+            <label class="field__label" for="reg-citizen">
+              Số CCCD/CMND <span class="field__optional">(tuỳ chọn)</span>
+            </label>
+            <div class="field__input-row">
+              <span class="field__icon material-symbols-outlined">badge</span>
+              <input
+                id="reg-citizen"
+                type="text"
+                class="field__input"
+                placeholder="Nhập số CCCD/CMND (nếu có)"
+                formControlName="citizenId"
+                maxlength="20"
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="field__label" for="reg-password">
+              Mật khẩu <span class="required">*</span>
+            </label>
+            <div class="field__input-row"
+                 [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid">
+              <span class="field__icon material-symbols-outlined">lock</span>
+              <input
+                id="reg-password"
+                [type]="showPassword() ? 'text' : 'password'"
+                class="field__input"
+                placeholder="Tối thiểu 8 ký tự, bao gồm số và chữ"
+                formControlName="password"
+              />
+              <button
+                type="button"
+                class="field__suffix"
+                (click)="togglePassword('password')"
+                aria-label="Ẩn hiện mật khẩu"
+              >
+                <span class="material-symbols-outlined">
+                  {{ showPassword() ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+
+            <div class="field__strength">
+              <div class="field__strength-bar">
+                <span class="bar" [class.is-on]="passwordScore() >= 1"
+                      [class.is-weak]="passwordScore() === 1"
+                      [class.is-medium]="passwordScore() === 2"
+                      [class.is-strong]="passwordScore() >= 3"></span>
+                <span class="bar" [class.is-on]="passwordScore() >= 2"
+                      [class.is-medium]="passwordScore() === 2"
+                      [class.is-strong]="passwordScore() >= 3"></span>
+                <span class="bar" [class.is-on]="passwordScore() >= 3"
+                      [class.is-strong]="passwordScore() >= 3"></span>
+              </div>
+              <span class="field__strength-label"
+                    [class.is-weak]="passwordScore() === 1"
+                    [class.is-medium]="passwordScore() === 2"
+                    [class.is-strong]="passwordScore() >= 3">
+                Độ bảo mật: {{ passwordStrengthLabel() }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Confirm password -->
+          <div class="field">
+            <label class="field__label" for="reg-confirm">
+              Xác nhận lại mật khẩu <span class="required">*</span>
+            </label>
+            <div class="field__input-row"
+                 [class.is-invalid]="(form.controls.confirmPassword.touched || form.controls.password.touched) &&
+                                     form.hasError('passwordMismatch')">
+              <span class="field__icon material-symbols-outlined">verified_user</span>
+              <input
+                id="reg-confirm"
+                [type]="showConfirm() ? 'text' : 'password'"
+                class="field__input"
+                placeholder="Nhập lại chính xác mật khẩu của bạn"
+                formControlName="confirmPassword"
+              />
+              <button
+                type="button"
+                class="field__suffix"
+                (click)="togglePassword('confirm')"
+                aria-label="Ẩn hiện mật khẩu"
+              >
+                <span class="material-symbols-outlined">
+                  {{ showConfirm() ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+            @if (form.hasError('passwordMismatch') && (form.controls.confirmPassword.touched || form.controls.password.touched)) {
+              <span class="field__error">Mật khẩu xác nhận không khớp.</span>
+            }
+          </div>
+
+          <!-- Terms -->
+          <label class="terms">
+            <input type="checkbox" class="terms__input" formControlName="acceptTerms" />
+            <span class="terms__label">
+              Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a>, <a href="#">Chính sách bảo mật</a>
+              và nhận thông báo tìm phòng từ TroTot.vn.
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="submitting()"
+          >
+            <span>{{ submitting() ? 'Đang tạo tài khoản...' : 'Tạo tài khoản' }}</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+
+          <div class="login-card__switch">
+            <span>Bạn đã có tài khoản TroTot?</span>
+            <a routerLink="/login" class="login-card__switch-link">
+              <span>Đăng nhập ngay</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: brand panel -->
+      <aside class="brand-panel">
+        <div class="brand-panel__card">
+          <div class="brand-panel__chip">
+            <span class="material-symbols-outlined">security</span>
+            <span>Cam kết độc quyền TroTot</span>
+          </div>
+          <h2 class="brand-panel__title">Trải nghiệm thuê nhà chuẩn chỉnh, không âu lo</h2>
+          <p class="brand-panel__lead">
+            Hơn 120.000 tân sinh viên và người đi làm đã tìm được tổ ấm ưng ý với 100% phòng được
+            đội ngũ TroTot khảo sát thực tế.
+          </p>
+
+          <ul class="brand-panel__list">
+            <li>
+              <span class="brand-panel__check">
+                <span class="material-symbols-outlined">check</span>
+              </span>
+              <div>
+                <h3>Bảo vệ tiền cọc 100% qua TroTot Escrow</h3>
+                <p>Tiền cọc chỉ chuyển cho chủ trọ sau khi bạn nhận phòng thực tế đúng như mô tả.</p>
+              </div>
+            </li>
+            <li>
+              <span class="brand-panel__check">
+                <span class="material-symbols-outlined">check</span>
+              </span>
+              <div>
+                <h3>Hình ảnh &amp; video 360° thực tế 1:1</h3>
+                <p>Nói không với tin ảo, giá ảo, phụ phí phát sinh mập mờ.</p>
+              </div>
+            </li>
+            <li>
+              <span class="brand-panel__check">
+                <span class="material-symbols-outlined">check</span>
+              </span>
+              <div>
+                <h3>Hợp đồng điện tử có tính pháp lý</h3>
+                <p>Ký số trực tiếp trên điện thoại, lưu trữ biên lai đóng tiền phòng tự động.</p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="brand-panel__rating">
+            <div class="brand-panel__rating-score">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+              <span>4.9/5</span>
+            </div>
+            <span>từ 24,000+ đánh giá</span>
+          </div>
+        </div>
+
+        <!-- Trust micro-cards -->
+        <div class="trust-stack">
+          <div class="trust-card">
+            <span class="trust-card__icon">
+              <span class="material-symbols-outlined">badge</span>
+            </span>
+            <div>
+              <h4>Xác thực CCCD an toàn</h4>
+              <p>Mã hóa chuẩn ngân hàng SSL 256-bit</p>
+            </div>
+          </div>
+          <div class="trust-card">
+            <span class="trust-card__icon">
+              <span class="material-symbols-outlined">lock_reset</span>
+            </span>
+            <div>
+              <h4>Bảo mật thông tin 100%</h4>
+              <p>Không tiết lộ số điện thoại khi chưa đồng ý</p>
+            </div>
+          </div>
+          <div class="trust-card">
+            <span class="trust-card__icon">
+              <span class="material-symbols-outlined">support_agent</span>
+            </span>
+            <div>
+              <h4>Trợ lý tìm trọ 24/7</h4>
+              <p>Hotline hỗ trợ sinh viên: 1900 8922</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <span class="material-symbols-outlined">tips_and_updates</span>
+          <div>
+            <h5>Bạn là sinh viên năm nhất?</h5>
+            <p>
+              Đăng ký tài khoản bằng email trường (<span class="mono">.edu.vn</span>) để nhận voucher
+              giảm 200.000đ phí chuyển trọ TroTot Express ngay hôm nay!
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

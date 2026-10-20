@@ -1,0 +1,222 @@
+:host {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.site-header__inner {
+  height: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+// ─── Brand ──────────────────────────────────────────────────────────
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.site-header__logo {
+  height: 54px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+// ─── Nav pills (desktop only) ───────────────────────────────────────
+.site-header__nav {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface-container-low);
+  border-radius: var(--radius-full);
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
+}
+
+.site-header__nav-link {
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    color: var(--on-surface);
+  }
+
+  &.is-active {
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+  }
+}
+
+// ─── Right cluster ──────────────────────────────────────────────────
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.site-header__cta {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 104, 95, 0.2);
+  transition: background var(--transition-fast);
+
+  .material-symbols-outlined { font-size: 18px; }
+
+  &:hover { background: var(--primary-hover); }
+
+  @media (min-width: 640px) { display: inline-flex; }
+}
+
+.site-header__currency {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  .material-symbols-outlined { font-size: 18px; }
+
+  &:hover { background: var(--surface-container); color: var(--on-surface); }
+
+  @media (min-width: 1024px) { display: inline-flex; }
+}
+
+.site-header__icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  .material-symbols-outlined { font-size: 22px; }
+
+  &:hover { background: var(--surface-container); color: var(--on-surface); }
+}
+
+.site-header__dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--secondary-container);
+}
+
+// ─── Guest buttons ──────────────────────────────────────────────────
+.site-header__login-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-container); color: var(--on-surface); }
+}
+
+.site-header__register-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--primary-hover); }
+}
+
+// ─── Logged-in avatar ───────────────────────────────────────────────
+.site-header__avatar-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 6px 6px 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--on-surface-variant);
+  }
+
+  &:hover { background: var(--surface-container); }
+}
+
+.site-header__user-menu {
+  min-width: 220px;
+
+  .mi {
+    margin-right: 12px;
+    color: var(--on-surface-variant);
+    vertical-align: middle;
+  }
+}
+
+.site-header__logout {
+  color: var(--error) !important;
+
+  .mi { color: var(--error) !important; }
+}

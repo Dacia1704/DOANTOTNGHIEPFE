@@ -1,24 +1,14 @@
 <div class="admin-layout">
-
-  <!-- Sidebar -->
-  <aside class="admin-sidebar">
-    <app-sidebar [menu]="menu" />
+  <aside class="admin-layout__sidebar">
+    <app-nav-sidebar [menu]="menu" />
   </aside>
-
-  <!-- Main -->
-  <div class="admin-main">
-
-    <!-- Topbar -->
-    <app-topbar
-      (logoutClick)="logout()"
-      (goToProfile)="goToProfile()"
-    />
-
-    <!-- Page content -->
-    <main class="admin-content">
+  <main class="admin-layout__main">
+    <header class="admin-layout__topbar">
+      <button type="button" (click)="goToProfile()">Hồ sơ</button>
+      <button type="button" (click)="logout()">Đăng xuất</button>
+    </header>
+    <section class="admin-layout__content">
       <router-outlet />
-    </main>
-
-  </div>
-
+    </section>
+  </main>
 </div>

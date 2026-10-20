@@ -1,38 +1,43 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from './core/guards/role.guard';
+import { RoleCode } from './core/models/auth/auth.model';
 
 export const routes: Routes = [
+  // Tenant layout — bọc mọi trang public (landing, đăng nhập, đăng ký, ...)
   {
     path: '',
-    redirectTo: 'login',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./layouts/tenant-layout/tenant-layout.component').then(m => m.TenantLayoutComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/landing/pages/landing-page/landing-page.component').then(m => m.LandingPageComponent),
+      },
+      {
+        path: 'login',
+        loadComponent: () =>
+          import('./features/auth/login/login.component').then(m => m.LoginComponent),
+      },
+      {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+      },
+    ],
   },
-  // {
-  //   path: 'login',
-  //   loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
-  // },
-  // {
-  //   path: 'reader',
-  //   canActivate: [roleGuard(['MEMBER', 'READER'])],
-  //   loadComponent: () => import('./layouts/reader-layout/reader-layout').then(m => m.ReaderLayout),
-  //   children: [
-  //     { path: '', loadChildren: () => import('./features/reader/reader.routes').then(m => m.READER_ROUTES) },
-  //   ],
-  // },
-  // {
-  //   path: 'librarian',
-  //   canActivate: [roleGuard(['LIBRARIAN'])],
-  //   loadComponent: () => import('./layouts/librarian-layout/librarian-layout').then(m => m.LibrarianLayout),
-  //   children: [
-  //     { path: '', loadChildren: () => import('./features/librarian/librarian.routes').then(m => m.LIBRARIAN_ROUTES) },
-  //   ],
-  // },
-  // {
-  //   path: 'admin',
-  //   canActivate: [roleGuard(['ADMIN'])],
-  //   loadComponent: () => import('./layouts/admin-layout/admin-layout').then(m => m.AdminLayout),
-  //   children: [
-  //     { path: '', loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
-  //   ],
-  // },
+
+  // Admin — layout riêng, không dùng tenant layout
+  {
+    path: 'admin',
+    canActivate: [roleGuard([RoleCode.ADMIN])],
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout').then(m => m.AdminLayout),
+    children: [
+      { path: '', loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES) },
+    ],
+  },
+
+  // 404 — fallback về landing
+  { path: '**', redirectTo: '' },
 ];

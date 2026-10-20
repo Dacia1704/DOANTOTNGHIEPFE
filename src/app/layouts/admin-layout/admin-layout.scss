@@ -9,26 +9,38 @@
   background: var(--background);
 }
 
-.admin-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: 256px;
-  z-index: 100;
-  background: var(--surface-container-lowest);
-  border-right: 1px solid var(--border);
+.admin-layout__sidebar {
+  width: 260px;
+  flex-shrink: 0;
 }
 
-.admin-main {
+.admin-layout__main {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
-  margin-left: 256px;
-  min-height: 100vh;
 }
 
-.admin-content {
+.admin-layout__topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-container-lowest);
+
+  button {
+    border: 1px solid var(--border);
+    background: transparent;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 13px;
+  }
+}
+
+.admin-layout__content {
   flex: 1;
-  padding: 24px;
-  background: var(--background);
+  padding: var(--space-lg);
 }

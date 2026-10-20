@@ -1,0 +1,51 @@
+<footer class="site-footer">
+  <div class="site-footer__grid">
+    <!-- Brand column -->
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">
+        TroTot<span class="site-footer__logo-accent">.vn</span>
+      </span>
+      <p class="site-footer__brand-text">
+        Hệ sinh thái tìm kiếm và kết nối phòng trọ, căn hộ dịch vụ và bạn cùng phòng uy tín số 1
+        Việt Nam. Đảm bảo thông tin xác thực 100%, bảo vệ quyền lợi sinh viên và người đi làm.
+      </p>
+      <div class="site-footer__verified">
+        <span class="site-footer__verified-icon">
+          <span class="material-symbols-outlined">verified</span>
+        </span>
+        <span class="site-footer__verified-text">Chứng nhận phòng thực tế &amp; chủ trọ uy tín</span>
+      </div>
+    </div>
+
+    <!-- Policy & Support columns -->
+    @for (col of columns; track col.title) {
+      <div class="site-footer__col">
+        <h4>{{ col.title }}</h4>
+        <ul>
+          @for (link of col.links; track link.label) {
+            <li><a [routerLink]="link.route">{{ link.label }}</a></li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Areas column -->
+    <div class="site-footer__col">
+      <h4>Khu vực sôi động</h4>
+      <div class="site-footer__areas">
+        @for (area of quickAreas; track area.label) {
+          <span class="site-footer__area">{{ area.label }}</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <p>© {{ currentYear }} TroTot.vn. Bảo lưu toàn bộ quyền.</p>
+    <div class="site-footer__bottom-links">
+      <a [routerLink]="'#'">Điều khoản sử dụng</a>
+      <a [routerLink]="'#'">Chính sách bảo mật</a>
+      <a [routerLink]="'#'">Sơ đồ trang web</a>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  background: var(--background);
+}
+
+.tenant-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tenant-layout__main {
+  flex: 1;
+  // Header cao 80px, footer chừa 80px cho bottom-nav mobile.
+  padding-top: 80px;
+  padding-bottom: 80px;
+
+  @media (min-width: 768px) {
+    padding-bottom: 0;
+  }
+}

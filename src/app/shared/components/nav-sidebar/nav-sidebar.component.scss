@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.nav-sidebar {
+  height: 100%;
+  background: var(--surface-container-lowest);
+  border-right: 1px solid var(--border);
+  padding: var(--space-md);
+}
+
+.nav-sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--surface-container-low);
+    color: var(--on-surface);
+  }
+
+  &.is-active {
+    background: var(--primary-subtle);
+    color: var(--primary);
+  }
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+}

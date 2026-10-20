@@ -1,0 +1,78 @@
+<header class="site-header">
+  <div class="site-header__inner">
+    <!-- Logo -->
+    <a class="site-header__brand" routerLink="/">
+      <img
+        alt="Trọ Tốt"
+        class="site-header__logo"
+        src="logo.png"
+      />
+    </a>
+
+    <!-- Main nav (desktop) -->
+    <nav class="site-header__nav">
+      @for (link of navLinks; track link.route) {
+        <a
+          class="site-header__nav-link"
+          [routerLink]="link.route"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: !!link.exact }"
+        >
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+
+    <!-- Right actions -->
+    <div class="site-header__actions">
+      <button type="button" class="site-header__cta" (click)="postListing()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Đăng tin mới</span>
+      </button>
+
+      <button type="button" class="site-header__currency" title="Đơn vị tiền tệ">
+        <span class="material-symbols-outlined">language</span>
+        <span>VNĐ</span>
+      </button>
+
+      <button type="button" class="site-header__icon-btn" title="Thông báo">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="site-header__dot"></span>
+      </button>
+
+      @if (isLoggedIn()) {
+        <button type="button" class="site-header__avatar-trigger" [matMenuTriggerFor]="userMenu">
+          <img [src]="userAvatar" [alt]="displayName" />
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+
+        <mat-menu #userMenu="matMenu" class="site-header__user-menu">
+          <a mat-menu-item routerLink="/trang-ca-nhan">
+            <span class="material-symbols-outlined mi">person</span>
+            Trang cá nhân
+          </a>
+          <a mat-menu-item routerLink="/phong-da-luu">
+            <span class="material-symbols-outlined mi">favorite</span>
+            Tin đã lưu
+          </a>
+          <a mat-menu-item routerLink="/phong-cua-toi">
+            <span class="material-symbols-outlined mi">real_estate_agent</span>
+            Phòng của tôi
+          </a>
+          <a mat-menu-item routerLink="/cai-dat">
+            <span class="material-symbols-outlined mi">settings</span>
+            Cài đặt
+          </a>
+          <mat-divider />
+          <button mat-menu-item class="site-header__logout" (click)="logout()">
+            <span class="material-symbols-outlined mi">logout</span>
+            Đăng xuất
+          </button>
+        </mat-menu>
+      } @else {
+        <a class="site-header__login-btn" routerLink="/login">Đăng nhập</a>
+        <a class="site-header__register-btn" routerLink="/register">Đăng ký</a>
+      }
+    </div>
+  </div>
+</header>

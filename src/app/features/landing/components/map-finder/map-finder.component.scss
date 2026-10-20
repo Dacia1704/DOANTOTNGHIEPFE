@@ -1,0 +1,204 @@
+:host { display: block; width: 100%; }
+
+.map-finder {
+  width: 100%;
+  margin-bottom: 56px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+
+  @media (min-width: 768px) { padding: 32px; }
+}
+
+.map-finder__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+
+  @media (min-width: 1024px) { grid-template-columns: 5fr 7fr; }
+}
+
+.map-finder__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--primary-fixed);
+  color: var(--on-primary-fixed);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  width: fit-content;
+
+  .material-symbols-outlined { font-size: 14px; }
+}
+
+.map-finder__title {
+  margin: 12px 0 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--on-surface);
+}
+
+.map-finder__text {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+}
+
+.map-finder__campus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.map-finder__campus-pill {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-container); }
+}
+
+.map-finder__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--primary-hover); }
+
+  .material-symbols-outlined { font-size: 18px; }
+}
+
+.map-finder__map {
+  position: relative;
+  width: 100%;
+  height: 288px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  @media (min-width: 640px) { height: 384px; }
+}
+
+.map-finder__map-bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+.map-finder__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.map-finder__pin {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--shadow-floating);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+
+  &:hover { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.map-finder__pin--price {
+  transform: translate(-50%, -50%);
+  top: 25%;
+  left: 33%;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+}
+
+.map-finder__pin--price2 {
+  top: auto;
+  bottom: 33%;
+  left: 50%;
+
+  .dot { background: var(--secondary); }
+}
+
+.map-finder__pin--school {
+  background: var(--primary);
+  color: var(--on-primary);
+  top: 50%;
+  left: 67%;
+  transform: translate(-50%, -50%);
+
+  .material-symbols-outlined { font-size: 14px; }
+}
+
+.map-finder__bar {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.map-finder__bar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--on-surface);
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--primary);
+  }
+
+  strong { color: var(--primary); }
+}
+
+.map-finder__bar-count {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 700;
+}

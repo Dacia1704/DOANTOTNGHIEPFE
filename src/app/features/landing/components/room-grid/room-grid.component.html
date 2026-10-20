@@ -1,0 +1,44 @@
+<section class="room-grid">
+  <header class="room-grid__head">
+    <div>
+      <div class="room-grid__verified-hint">
+        <span class="material-symbols-outlined">verified</span>
+        <span>Phòng trọ mới xác thực kiểm tra tuần này</span>
+      </div>
+      <h2 class="room-grid__title">Danh sách phòng trọ cho thuê tốt nhất</h2>
+    </div>
+    <div class="room-grid__sort">
+      <span class="room-grid__sort-label">Sắp xếp:</span>
+      <select
+        class="room-grid__sort-select"
+        [ngModel]="sortBy()"
+        (ngModelChange)="sortBy.set($event)"
+        name="sort"
+      >
+        @for (opt of sortOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </header>
+
+  <div class="room-grid__grid">
+    @for (room of rooms; track room.id) {
+      <app-room-card
+        [room]="room"
+        (wishlistToggle)="onWishlist($event)"
+        (cardClick)="onCardClick($event)"
+      />
+    }
+  </div>
+
+  <div class="room-grid__load-more">
+    <button type="button" class="room-grid__more-btn">
+      <span class="material-symbols-outlined">expand_more</span>
+      <span>Xem thêm 120+ phòng trọ giá tốt khác</span>
+    </button>
+    <span class="room-grid__counter">
+      Đang hiển thị {{ visible }} trên {{ total }} phòng đang có sẵn
+    </span>
+  </div>
+</section>

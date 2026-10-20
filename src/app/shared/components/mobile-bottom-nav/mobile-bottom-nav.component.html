@@ -1,0 +1,15 @@
+<nav class="mobile-bottom-nav">
+  @for (item of items; track item.route) {
+    <a
+      class="mobile-bottom-nav__item"
+      [routerLink]="item.route"
+      routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+    >
+      <span class="material-symbols-outlined mobile-bottom-nav__icon">
+        {{ item.icon }}
+      </span>
+      <span class="mobile-bottom-nav__label">{{ item.label }}</span>
+    </a>
+  }
+</nav>

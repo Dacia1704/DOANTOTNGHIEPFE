@@ -1,0 +1,124 @@
+:host { display: block; width: 100%; }
+
+.capsule {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 8px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-full);
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.12),
+              0 1px 3px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    padding: 12px;
+  }
+}
+
+.capsule__col {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-container-low); }
+}
+
+.capsule__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-container);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+
+  .capsule__col:hover & { background: var(--primary-fixed); }
+
+  .material-symbols-outlined { font-size: 20px; }
+}
+
+.capsule__field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  min-width: 0;
+  flex: 1;
+}
+
+.capsule__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.capsule__input,
+.capsule__select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--on-surface);
+  text-overflow: ellipsis;
+
+  &::placeholder { color: var(--outline); }
+}
+
+.capsule__select {
+  cursor: pointer;
+  appearance: none;
+}
+
+.capsule__divider {
+  display: none;
+  width: 1px;
+  height: 32px;
+  background: var(--surface-container-highest);
+
+  @media (min-width: 768px) { display: block; }
+}
+
+.capsule__cta {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 104, 95, 0.3);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+
+  &:hover { background: var(--primary-hover); transform: scale(1.02); }
+  &:active { transform: scale(0.98); }
+
+  .material-symbols-outlined { font-size: 20px; }
+
+  @media (min-width: 768px) { width: auto; }
+}
+
+.capsule__cta-label {
+  @media (max-width: 767px) { display: none; }
+}

@@ -1,0 +1,49 @@
+<section class="map-finder">
+  <div class="map-finder__grid">
+    <div class="map-finder__copy">
+      <div class="map-finder__chip">
+        <span class="material-symbols-outlined">map</span>
+        <span>Bản đồ thông minh</span>
+      </div>
+      <h3 class="map-finder__title">Tìm phòng theo bán kính quanh trường học</h3>
+      <p class="map-finder__text">
+        Chỉ cần chọn trường Đại học hoặc cơ quan của bạn, TroTot sẽ lọc ra các phòng trọ trong
+        bán kính 1km - 3km kèm thời gian di chuyển bằng xe buýt hoặc đi bộ.
+      </p>
+
+      <div class="map-finder__campus">
+        @for (c of campuses; track c.label) {
+          <span class="map-finder__campus-pill">{{ c.label }}</span>
+        }
+      </div>
+
+      <button type="button" class="map-finder__cta">
+        <span class="material-symbols-outlined">explore</span>
+        <span>Mở bản đồ tìm phòng</span>
+      </button>
+    </div>
+
+    <div class="map-finder__map">
+      <div
+        class="map-finder__map-bg"
+        [style.background-image]="'url(' + mapImage + ')'"
+      ></div>
+      <div class="map-finder__gradient"></div>
+
+      <span class="map-finder__pin map-finder__pin--price">3.8 Tr</span>
+      <span class="map-finder__pin map-finder__pin--school">
+        <span class="material-symbols-outlined">school</span>
+        <span>ĐH Bách Khoa</span>
+      </span>
+      <span class="map-finder__pin map-finder__pin--price map-finder__pin--price2">4.2 Tr</span>
+
+      <div class="map-finder__bar">
+        <div class="map-finder__bar-left">
+          <span class="material-symbols-outlined">my_location</span>
+          <span>Bán kính quét: <strong>2.0 km quanh trường</strong></span>
+        </div>
+        <span class="map-finder__bar-count">28 phòng trống</span>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,90 @@
+:host { display: block; width: 100%; }
+
+.landlord-cta {
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(to right, var(--primary) 0%, var(--primary-container) 100%);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+
+  @media (min-width: 768px) { padding: 48px; }
+}
+
+.landlord-cta__content {
+  position: relative;
+  z-index: 1;
+  max-width: 672px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.landlord-cta__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--on-primary);
+  font-size: 12px;
+  font-weight: 500;
+  width: fit-content;
+  backdrop-filter: blur(8px);
+
+  .material-symbols-outlined { font-size: 16px; }
+}
+
+.landlord-cta__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.landlord-cta__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--on-primary-container);
+}
+
+.landlord-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.landlord-cta__primary {
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--surface-container-lowest);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--surface-bright); }
+}
+
+.landlord-cta__ghost {
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover { background: rgba(255, 255, 255, 0.1); }
+}
