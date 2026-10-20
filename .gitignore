@@ -41,7 +41,7 @@ testem.log
 __screenshots__/
 
 # Environment files with sensitive data
-src/environments/environment.ts
+# src/environments/environment.ts
 
 # System files
 .DS_Store
