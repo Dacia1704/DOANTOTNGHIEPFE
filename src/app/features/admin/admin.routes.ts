@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+  { path: 'users', loadComponent: () => import('./user-management/user-management.component').then(m => m.UserManagementComponent) },
+  { path: 'profile', loadComponent: () => import('../profile/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent) },
+  { path: '', pathMatch: 'full', redirectTo: 'profile' },
 ];

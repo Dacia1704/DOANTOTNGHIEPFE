@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>{{ data.action === 'edit' ? 'Chỉnh sửa người dùng' : 'Xóa người dùng' }}</h2>
+<mat-dialog-content>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (data.action === 'delete') {
+    <p>Bạn có chắc muốn xóa tài khoản <strong>{{ data.user.fullName }}</strong> ({{ data.user.email }})?</p>
+    <p>Thao tác này sẽ gửi yêu cầu xóa tài khoản đến hệ thống.</p>
+  } @else {
+    <form id="edit-user-form" [formGroup]="form" (ngSubmit)="submit()">
+      <fieldset [disabled]="busy()">
+        <label for="edit-user-name">Họ và tên
+          <input class="input" id="edit-user-name" formControlName="fullName" maxlength="100" autocomplete="name" />
+          @if (form.controls.fullName.touched && form.controls.fullName.invalid) { <small class="field-error">Nhập họ tên hợp lệ, tối đa 100 ký tự.</small> }
+        </label>
+        <label for="edit-user-email">Email
+          <input class="input" id="edit-user-email" type="email" formControlName="email" maxlength="255" autocomplete="email" />
+          @if (form.controls.email.touched && form.controls.email.invalid) { <small class="field-error">Nhập email hợp lệ, tối đa 255 ký tự.</small> }
+        </label>
+        <label for="edit-user-phone">Số điện thoại
+          <input class="input" id="edit-user-phone" type="tel" formControlName="phone" autocomplete="tel" />
+          @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Nhập số điện thoại Việt Nam hợp lệ: 0, 84 hoặc +84 và 9 chữ số.</small> }
+        </label>
+        <label for="edit-user-citizen">Số CCCD / CMND
+          <input class="input" id="edit-user-citizen" formControlName="citizenId" maxlength="20" />
+          @if (form.controls.citizenId.touched && form.controls.citizenId.invalid) { <small class="field-error">Tối đa 20 ký tự.</small> }
+        </label>
+        <label for="edit-user-status">Trạng thái
+          <select class="input" id="edit-user-status" formControlName="status">
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="INACTIVE">Chưa hoạt động</option>
+            <option value="BLOCKED">Đã bị khóa</option>
+          </select>
+        </label>
+      </fieldset>
+    </form>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button class="btn-secondary" type="button" [mat-dialog-close]="false" [disabled]="busy()">Hủy</button>
+  @if (data.action === 'edit') {
+    <button class="btn-primary" type="submit" form="edit-user-form" [disabled]="busy()">{{ busy() ? 'Đang lưu…' : 'Lưu thay đổi' }}</button>
+  } @else {
+    <button class="btn-danger" type="button" [disabled]="busy()" (click)="submit()">{{ busy() ? 'Đang xóa…' : 'Xác nhận xóa' }}</button>
+  }
+</mat-dialog-actions>

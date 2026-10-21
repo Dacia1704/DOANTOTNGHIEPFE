@@ -130,6 +130,14 @@ export class AuthService {
     this.router.navigateByUrl('/login');
   }
 
+  /** Đồng bộ hồ sơ, giữ nguyên token và quyền của phiên hiện tại. */
+  updateProfile(profile: Pick<AuthSession, 'id' | 'email' | 'phone' | 'fullName' | 'avatarUrl' | 'status' | 'roles'>): void {
+    const current = this._session();
+    if (current && current.id === profile.id) {
+      this.persistSession({ ...current, ...profile });
+    }
+  }
+
   // ===== private helpers =====
 
   private persistSession(session: AuthSession): void {

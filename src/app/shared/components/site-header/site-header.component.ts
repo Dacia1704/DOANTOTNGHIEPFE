@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -27,13 +27,17 @@ interface NavLink {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SiteHeaderComponent {
+  @Input() adminMode = false;
+
+  get isAdmin(): boolean { return this.auth.primaryRole() === RoleCode.ADMIN; }
+
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly imageUtils = ImageUtils;
 
   readonly navLinks: readonly NavLink[] = [
-    { label: 'Thuê phòng', route: '/' },
+    { label: 'Thuê phòng', route: '/', exact: true },
     { label: 'Ghép phòng', route: '/o-ghep' },
     { label: 'Cho thuê / Đăng tin', route: '/dang-tin' },
     { label: 'Cẩm nang thuê trọ', route: '/cam-nang' },
@@ -60,6 +64,10 @@ export class SiteHeaderComponent {
       case RoleCode.TENANT: return 'Người thuê';
       default: return 'Thành viên';
     }
+  }
+
+  get profileUrl(): string {
+    return this.auth.primaryRole() === RoleCode.ADMIN ? '/admin/profile' : '/trang-ca-nhan';
   }
 
   logout(): void {

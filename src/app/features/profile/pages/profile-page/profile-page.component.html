@@ -1,0 +1,117 @@
+<div class="profile-page">
+  <header class="page-heading">
+    <span class="eyebrow">Tài khoản của bạn</span>
+    <h1>Thông tin cá nhân</h1>
+    <p>Quản lý hồ sơ và bảo mật tài khoản của bạn tại Trọ Tốt.</p>
+  </header>
+
+  @if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
+  @if (success()) { <div class="message success" role="status">{{ success() }}</div> }
+  @if (loading()) {
+    <div class="panel loading" role="status">Đang tải thông tin cá nhân…</div>
+  } @else if (user(); as profile) {
+    <div class="profile-grid">
+      <aside>
+        <section class="panel identity">
+          <div class="avatar">
+            @if (profile.avatarUrl) {
+              <img [src]="imageUtils.toImageSrc(profile.avatarUrl)" alt="Ảnh đại diện" (error)="avatarImage.hidden = true" #avatarImage />
+            }
+            <span aria-hidden="true">{{ profile.fullName.charAt(0).toUpperCase() }}</span>
+          </div>
+          <h2>{{ profile.fullName }}</h2>
+          <p class="email">{{ profile.email }}</p>
+          <div class="roles">
+            @for (role of profile.roles; track role) { <span class="role">{{ roleLabels[role] }}</span> }
+          </div>
+          <p class="status">{{ statusLabels[profile.status] }}</p>
+          @if (profile.createdAt) { <small>Tham gia từ {{ profile.createdAt | date:'MM/yyyy' }}</small> }
+        </section>
+        <nav class="panel account-nav" aria-label="Cài đặt tài khoản">
+          <button type="button" [class.selected]="section() === 'profile'" [attr.aria-pressed]="section() === 'profile'" (click)="section.set('profile')">
+            <span class="material-symbols-outlined" aria-hidden="true">person</span> Hồ sơ cá nhân
+          </button>
+          <button type="button" [class.selected]="section() === 'security'" [attr.aria-pressed]="section() === 'security'" (click)="section.set('security')">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span> Mật khẩu và bảo mật
+          </button>
+        </nav>
+      </aside>
+      <main>
+        @if (section() === 'profile') {
+          <section class="panel">
+            <h2>Ảnh đại diện</h2>
+            <p>Một bức ảnh giúp mọi người dễ dàng nhận ra bạn.</p>
+            <div class="avatar-actions">
+              <label class="btn-secondary" [class.disabled]="busy()">
+                <span class="material-symbols-outlined" aria-hidden="true">upload</span> Thay ảnh đại diện
+                <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="busy()" (change)="upload($event)" />
+              </label>
+              @if (profile.avatarUrl) { <button type="button" class="btn-danger" [disabled]="busy()" (click)="removeAvatar()">Xóa ảnh</button> }
+            </div>
+            <small>Hỗ trợ JPG, PNG và WebP.</small>
+          </section>
+          <section class="panel">
+            <h2>Thông tin cơ bản</h2>
+            <p>Cập nhật thông tin để thuận tiện liên hệ và sử dụng dịch vụ.</p>
+            <form [formGroup]="form" (ngSubmit)="save()">
+              <fieldset [disabled]="busy()">
+                <div class="fields">
+                  <label class="wide" for="fullName">Họ và tên <span class="required">*</span>
+                    <input class="input" id="fullName" formControlName="fullName" autocomplete="name" maxlength="100" [attr.aria-invalid]="form.controls.fullName.touched && form.controls.fullName.invalid" />
+                    @if (form.controls.fullName.touched && form.controls.fullName.invalid) { <small class="field-error">Nhập họ tên hợp lệ, tối đa 100 ký tự.</small> }
+                  </label>
+                  <label for="email">Email
+                    <input class="input" id="email" type="email" [value]="profile.email" readonly />
+                    <small>{{ profile.emailVerifiedAt ? 'Đã xác minh email' : 'Email chưa được xác minh' }}</small>
+                  </label>
+                  <label for="phone">Số điện thoại
+                    <input class="input" id="phone" type="tel" formControlName="phone" autocomplete="tel" [attr.aria-invalid]="form.controls.phone.touched && form.controls.phone.invalid" />
+                    @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="field-error">Nhập số Việt Nam hợp lệ: 0, 84 hoặc +84 và 9 chữ số.</small> }
+                    <small>{{ profile.phoneVerifiedAt ? 'Đã xác minh số điện thoại' : 'Số điện thoại chưa được xác minh' }}</small>
+                  </label>
+                  <label class="wide" for="citizenId">Số CCCD / CMND
+                    <input class="input" id="citizenId" formControlName="citizenId" maxlength="20" />
+                    <small>Tối đa 20 ký tự.</small>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary" [disabled]="busy() || !form.dirty" (click)="reset()">Hủy thay đổi</button>
+                  <button type="submit" class="btn-primary" [disabled]="busy() || !form.dirty">{{ busy() ? 'Đang xử lý…' : 'Lưu thay đổi' }}</button>
+                </div>
+              </fieldset>
+            </form>
+          </section>
+        } @else {
+          <section class="panel">
+            <h2>Đổi mật khẩu</h2>
+            <p>Sử dụng mật khẩu riêng để bảo vệ tài khoản của bạn.</p>
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+              <fieldset [disabled]="busy()">
+                <div class="fields">
+                  <label class="wide" for="currentPassword">Mật khẩu hiện tại
+                    <input class="input" id="currentPassword" [type]="showPasswords() ? 'text' : 'password'" formControlName="currentPassword" autocomplete="current-password" maxlength="100" />
+                  </label>
+                  <label class="wide" for="newPassword">Mật khẩu mới
+                    <input class="input" id="newPassword" [type]="showPasswords() ? 'text' : 'password'" formControlName="newPassword" autocomplete="new-password" minlength="8" maxlength="72" />
+                    <small>Từ 8 đến 72 ký tự.</small>
+                  </label>
+                  <label class="wide" for="confirmPassword">Xác nhận mật khẩu mới
+                    <input class="input" id="confirmPassword" [type]="showPasswords() ? 'text' : 'password'" formControlName="confirmPassword" autocomplete="new-password" maxlength="72" />
+                  </label>
+                </div>
+                @if (passwordForm.touched && passwordForm.invalid) {
+                  <p class="field-error" role="alert">{{ passwordForm.hasError('mismatch') ? 'Mật khẩu xác nhận chưa khớp.' : 'Vui lòng điền đủ mật khẩu hiện tại và mật khẩu mới hợp lệ.' }}</p>
+                }
+                <label class="show-password"><input type="checkbox" [checked]="showPasswords()" (change)="showPasswords.set(!showPasswords())" /> Hiện mật khẩu</label>
+                <div class="form-footer"><button type="submit" class="btn-primary" [disabled]="busy()">{{ busy() ? 'Đang xử lý…' : 'Đổi mật khẩu' }}</button></div>
+              </fieldset>
+            </form>
+          </section>
+        }
+        <div class="privacy-note"><span class="material-symbols-outlined" aria-hidden="true">shield</span><p>Vai trò và trạng thái tài khoản được quản lý bởi hệ thống.</p></div>
+      </main>
+    </div>
+  } @else {
+    <section class="panel loading"><p>Chưa tải được hồ sơ cá nhân.</p><button type="button" class="btn-primary" (click)="load()">Thử lại</button></section>
+  }
+</div>

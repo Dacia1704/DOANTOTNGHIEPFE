@@ -1,0 +1,54 @@
+<section class="users-page" aria-labelledby="users-heading">
+  <h1 id="users-heading">Quản lý người dùng</h1>
+  <p class="description">Tra cứu tài khoản, vai trò và trạng thái hoạt động.</p>
+  @if (success()) { <p class="success" role="status">{{ success() }}</p> }
+  <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
+    <label for="user-search">Tìm kiếm
+      <input class="input" id="user-search" formControlName="q" placeholder="Tìm người dùng…" type="search" />
+    </label>
+    <label for="user-status">Trạng thái
+      <select class="input" id="user-status" formControlName="status">
+        <option value="">Tất cả trạng thái</option>
+        <option value="ACTIVE">Đang hoạt động</option>
+        <option value="INACTIVE">Chưa hoạt động</option>
+        <option value="BLOCKED">Đã bị khóa</option>
+      </select>
+    </label>
+    <button class="btn-primary" type="submit" [disabled]="loading()">Tìm kiếm</button>
+  </form>
+  @if (loading()) {
+    <p role="status">Đang tải danh sách người dùng…</p>
+  } @else if (error()) {
+    <div class="error" role="alert">{{ error() }}</div>
+    <button class="btn-secondary" type="button" (click)="load()">Thử lại</button>
+  } @else if (result(); as data) {
+    <p class="description">{{ data.total }} người dùng</p>
+    <div class="table-wrapper" tabindex="0" role="region" aria-label="Danh sách người dùng">
+      <table>
+        <thead><tr><th scope="col">Họ và tên</th><th scope="col">Email</th><th scope="col">Điện thoại</th><th scope="col">Vai trò</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+        <tbody>
+          @for (user of data.items; track user.id) {
+            <tr>
+              <td>{{ user.fullName }}</td><td>{{ user.email }}</td><td>{{ user.phone || 'Chưa cập nhật' }}</td>
+              <td>@for (role of user.roles; track role) { <span class="role">{{ roles[role] }}</span> }</td>
+              <td>{{ statuses[user.status] }}</td>
+              <td><div class="row-actions">
+                <button type="button" class="btn-secondary" [attr.aria-label]="'Sửa người dùng ' + user.fullName" (click)="openAction(user, 'edit')">Sửa</button>
+                <button type="button" class="btn-danger" [attr.aria-label]="'Xóa người dùng ' + user.fullName" (click)="openAction(user, 'delete')">Xóa</button>
+              </div></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="empty">Không tìm thấy người dùng phù hợp.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (data.totalPages > 0) {
+      <nav class="pagination" aria-label="Phân trang người dùng">
+        <button class="btn-secondary" type="button" [disabled]="data.page === 0" (click)="load(data.page - 1)">Trang trước</button>
+        <span>Trang {{ data.page + 1 }} / {{ data.totalPages }}</span>
+        <button class="btn-secondary" type="button" [disabled]="data.page + 1 >= data.totalPages" (click)="load(data.page + 1)">Trang sau</button>
+      </nav>
+    }
+  }
+</section>

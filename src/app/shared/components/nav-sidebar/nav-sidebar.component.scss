@@ -4,10 +4,21 @@
 }
 
 .nav-sidebar {
+  box-sizing: border-box;
   height: 100%;
   background: var(--surface-container-lowest);
   border-right: 1px solid var(--border);
   padding: var(--space-md);
+}
+
+.is-collapsed {
+  padding: var(--space-sm);
+  .nav-sidebar__label { display: none; }
+  .nav-sidebar__item { justify-content: center; padding: var(--space-md) var(--space-sm); }
+}
+.nav-sidebar__item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .nav-sidebar__list {

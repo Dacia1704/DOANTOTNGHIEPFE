@@ -1,0 +1,47 @@
+:host { display: block; background: var(--background); color: var(--text-primary); }
+.profile-page { max-width: 1120px; margin: 0 auto; padding: var(--space-2xl) var(--space-lg); }
+.page-heading { margin-bottom: var(--space-xl); }
+.eyebrow { color: var(--primary); font-size: 13px; font-weight: 600; }
+h1 { font-size: 28px; line-height: 1.5; margin: var(--space-sm) 0; }
+h2 { font-size: 18px; line-height: 1.5; margin: 0 0 var(--space-sm); }
+p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin: 0 0 var(--space-lg); }
+small { display: block; color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+.profile-grid { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--space-lg); align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-card); margin-bottom: var(--space-lg); }
+.identity { text-align: center; overflow-wrap: anywhere; }
+.avatar { position: relative; display: grid; place-items: center; width: 88px; height: 88px; margin: 0 auto var(--space-md); background: var(--primary-subtle); color: var(--primary); border-radius: var(--radius-full); overflow: hidden; font-size: 32px; font-weight: 600; }
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.email { font-size: 12px; margin-bottom: var(--space-md); }
+.roles { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-sm); }
+.role { border-radius: var(--radius-full); background: var(--primary-subtle); color: var(--primary); padding: var(--space-xs) var(--space-md); font-size: 12px; font-weight: 600; }
+.status { margin: var(--space-md) 0 var(--space-xs); font-size: 12px; }
+.account-nav { padding: var(--space-sm); }
+.account-nav button { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: var(--space-md); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); cursor: pointer; text-align: left; font: inherit; font-size: 13px; }
+.account-nav button.selected { color: var(--primary); background: var(--primary-subtle); font-weight: 600; }
+.avatar-actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+.avatar-actions input { max-width: 180px; font: inherit; font-size: 12px; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg); }
+.fields label { display: flex; flex-direction: column; gap: var(--space-sm); font-size: 13px; font-weight: 500; }
+.wide { grid-column: 1 / -1; }
+fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+.required, .field-error { color: var(--error); }
+.input[readonly] { background: var(--background); color: var(--text-secondary); }
+.form-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); border-top: 1px solid var(--border); margin-top: var(--space-lg); padding-top: var(--space-lg); }
+.message { padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-lg); font-size: 14px; }
+.error { color: var(--error-text); background: var(--error-bg); }
+.success { color: var(--success-text); background: var(--success-bg); }
+.privacy-note { display: flex; align-items: start; gap: var(--space-sm); color: var(--primary); padding: 0 var(--space-sm); }
+.privacy-note p { font-size: 12px; }
+.show-password { display: flex; gap: var(--space-sm); align-items: center; margin-top: var(--space-md); font-size: 13px; }
+.loading { text-align: center; padding: var(--space-2xl); }
+button:focus-visible, label:focus-within { outline: 2px solid var(--primary); outline-offset: 3px; }
+.disabled { opacity: .6; }
+@media (max-width: 767px) {
+  .profile-page { padding: var(--space-lg) var(--space-md); }
+  .profile-grid, .fields { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: var(--space-md); }
+  .account-nav { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .account-nav button { width: auto; flex: 1; }
+  h1 { font-size: 24px; }
+  .form-footer { flex-wrap: wrap; }
+}

@@ -1,14 +1,17 @@
-<aside class="nav-sidebar">
-  <nav class="nav-sidebar__list">
+<div class="nav-sidebar" [class.is-collapsed]="collapsed">
+  <nav class="nav-sidebar__list" aria-label="Điều hướng quản trị">
     @for (item of menu; track item.route) {
       <a
         class="nav-sidebar__item"
         [routerLink]="item.route"
         routerLinkActive="is-active"
+        ariaCurrentWhenActive="page"
+        [attr.aria-label]="item.label"
+        [title]="collapsed ? item.label : ''"
       >
-        <span class="material-symbols-outlined">{{ item.icon }}</span>
-        <span>{{ item.label }}</span>
+        <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+        <span class="nav-sidebar__label">{{ item.label }}</span>
       </a>
     }
   </nav>
-</aside>
+</div>
