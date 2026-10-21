@@ -12,6 +12,12 @@
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
+.site-header { height: 100%; }
+:host button:focus-visible, :host a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .site-header__inner {
   height: 100%;
   max-width: 1280px;
@@ -219,4 +225,8 @@
   color: var(--error) !important;
 
   .mi { color: var(--error) !important; }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .site-header__nav { display: none; }
 }

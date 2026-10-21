@@ -41,16 +41,26 @@
       </button>
 
       @if (isLoggedIn()) {
-        <button type="button" class="site-header__avatar-trigger" [matMenuTriggerFor]="userMenu">
+        <button type="button" class="site-header__avatar-trigger" aria-label="Menu tài khoản" [matMenuTriggerFor]="userMenu">
           <img [src]="userAvatar" [alt]="displayName" />
           <span class="material-symbols-outlined">expand_more</span>
         </button>
 
         <mat-menu #userMenu="matMenu" class="site-header__user-menu">
-          <a mat-menu-item routerLink="/trang-ca-nhan">
+          <a mat-menu-item [routerLink]="profileUrl">
             <span class="material-symbols-outlined mi">person</span>
-            Trang cá nhân
+            Hồ sơ cá nhân
           </a>
+          @if (isAdmin) {
+            <a mat-menu-item routerLink="/admin/users">
+              <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>
+              Quản lý người dùng
+            </a>
+            <a mat-menu-item [routerLink]="adminMode ? '/' : '/admin'">
+              <span class="material-symbols-outlined mi" aria-hidden="true">{{ adminMode ? 'home' : 'admin_panel_settings' }}</span>
+              {{ adminMode ? 'Về website' : 'Trang quản trị' }}
+            </a>
+          } @else {
           <a mat-menu-item routerLink="/phong-da-luu">
             <span class="material-symbols-outlined mi">favorite</span>
             Tin đã lưu
@@ -63,6 +73,7 @@
             <span class="material-symbols-outlined mi">settings</span>
             Cài đặt
           </a>
+          }
           <mat-divider />
           <button mat-menu-item class="site-header__logout" (click)="logout()">
             <span class="material-symbols-outlined mi">logout</span>

@@ -1,0 +1,8 @@
+:host { display: block; color: var(--text-primary); font-family: 'Be Vietnam Pro', sans-serif; }
+fieldset { display: grid; gap: var(--space-md); border: 0; padding: var(--space-sm) 0; margin: 0; min-width: 0; }
+label { display: grid; gap: var(--space-sm); font-size: 14px; color: var(--text-primary); }
+p { line-height: 1.7; overflow-wrap: anywhere; }
+.error { color: var(--error-text); background: var(--error-bg); padding: var(--space-md); border-radius: var(--radius-md); }
+.field-error { color: var(--error); font-size: 12px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

@@ -20,4 +20,5 @@ export interface NavItem {
 })
 export class NavSidebarComponent {
   @Input() menu: NavItem[] = [];
+  @Input() collapsed = false;
 }

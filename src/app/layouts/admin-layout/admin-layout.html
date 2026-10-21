@@ -1,14 +1,29 @@
 <div class="admin-layout">
-  <aside class="admin-layout__sidebar">
-    <app-nav-sidebar [menu]="menu" />
-  </aside>
-  <main class="admin-layout__main">
-    <header class="admin-layout__topbar">
-      <button type="button" (click)="goToProfile()">Hồ sơ</button>
-      <button type="button" (click)="logout()">Đăng xuất</button>
-    </header>
-    <section class="admin-layout__content">
-      <router-outlet />
-    </section>
-  </main>
+  <app-site-header [adminMode]="true" />
+  <mat-sidenav-container class="admin-layout__container" [class.mobile-expanded]="mobile() && !collapsed()" [hasBackdrop]="mobile() && !collapsed()" (backdropClick)="collapsed.set(true)" autosize>
+    <mat-sidenav id="admin-sidebar" class="admin-layout__sidebar" [class.is-collapsed]="collapsed()"
+      [mode]="mobile() && !collapsed() ? 'over' : 'side'" [opened]="true"
+      [disableClose]="true" [autoFocus]="false"
+      [fixedInViewport]="true" [fixedTopGap]="80" role="navigation" aria-label="Menu quản trị">
+      <div [cdkTrapFocus]="mobile() && !collapsed()" [cdkTrapFocusAutoCapture]="false" (keydown.escape)="mobile() && collapsed.set(true)">
+      <div class="admin-layout__sidebar-heading">
+        <button type="button" class="admin-layout__sidebar-toggle" [attr.aria-label]="collapsed() ? 'Mở rộng menu quản trị' : 'Thu gọn menu quản trị'" [attr.title]="collapsed() ? 'Mở rộng menu' : 'Thu gọn menu'" aria-controls="admin-sidebar-menu" [attr.aria-expanded]="!collapsed()" (click)="toggleSidebar()">
+          <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
+        @if (!collapsed()) { <span>Quản trị hệ thống</span> }
+      </div>
+      <app-nav-sidebar id="admin-sidebar-menu" [menu]="menu" [collapsed]="collapsed()" />
+      </div>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <main class="admin-layout__main">
+        <nav class="admin-layout__breadcrumb" aria-label="Đường dẫn">
+          <a routerLink="/admin">Quản trị</a>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+          <span aria-current="page">{{ pageLabel() }}</span>
+        </nav>
+        <section class="admin-layout__content"><router-outlet /></section>
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>

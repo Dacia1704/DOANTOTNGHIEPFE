@@ -15,6 +15,16 @@ export const routes: Routes = [
           import('./features/landing/pages/landing-page/landing-page.component').then(m => m.LandingPageComponent),
       },
       {
+        path: 'trang-ca-nhan',
+        canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])],
+        loadComponent: () => import('./features/profile/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent),
+      },
+      {
+        path: 'cai-dat',
+        redirectTo: 'trang-ca-nhan',
+        pathMatch: 'full',
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./features/auth/login/login.component').then(m => m.LoginComponent),
