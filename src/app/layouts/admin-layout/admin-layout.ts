@@ -26,6 +26,7 @@ export class AdminLayout {
   readonly menu: NavItem[] = [
     { icon: 'person', label: 'Hồ sơ cá nhân', route: '/admin/profile' },
     { icon: 'manage_accounts', label: 'Quản lý người dùng', route: '/admin/users' },
+    { icon: 'location_on', label: 'Quản lý phường/xã', route: '/admin/wards' },
   ];
 
   constructor() {
