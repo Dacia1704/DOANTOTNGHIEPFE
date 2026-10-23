@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce, shareReplay, tap } from 'rxjs';
 import { environment } from '@environments/environment';
 import { ApiResponse, PageResponse } from '@model/api-response';
 import { RoomTypeResponse } from '@model/room-type/response/room-type-response';
@@ -14,6 +14,7 @@ import { RoomTypeMapper } from '@model/room-type/room-type.mapper';
 export class RoomTypeService {
   private readonly http = inject(HttpClient);
   private readonly api = `${environment.apiUrl}/room-types`;
+  private allRoomTypes$?: Observable<RoomType[]>;
 
   getRoomTypes(page = 0, size = 10): Observable<RoomTypeList> {
     const params: Record<string, number> = { page, size };
@@ -29,8 +30,23 @@ export class RoomTypeService {
       );
   }
 
-  getAllRoomTypes(): Observable<RoomType[]> {
-    return this.getRoomTypes(0, 100).pipe(map(res => res.items));
+  getAllRoomTypes(name?: string, parentId?: string): Observable<RoomType[]> {
+    if (!name?.trim() && !parentId && this.allRoomTypes$) return this.allRoomTypes$;
+    const fetchPage = (page: number) => {
+      const params: Record<string, string | number> = { page, size: 100 };
+      if (name?.trim()) params['name'] = name.trim();
+      if (parentId) params['parentId'] = parentId;
+      return this.http.get<ApiResponse<PageResponse<RoomTypeResponse>>>(`${this.api}/filter`, { params });
+    };
+    const request$ = fetchPage(0).pipe(
+      expand(response => response.data.currentPage + 1 < response.data.totalPages
+        ? fetchPage(response.data.currentPage + 1)
+        : EMPTY),
+      reduce((items, response) => [...items, ...RoomTypeMapper.fromResponseList(response.data.data)], [] as RoomType[]),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+    if (!name?.trim() && !parentId) this.allRoomTypes$ = request$;
+    return request$;
   }
 
   getCategoriesWithRooms(): Observable<RoomTypeCategory[]> {
@@ -48,18 +64,18 @@ export class RoomTypeService {
   createRoomType(request: CreateRoomTypeRequest): Observable<RoomType> {
     return this.http
       .post<ApiResponse<RoomTypeResponse>>(this.api, request)
-      .pipe(map(res => RoomTypeMapper.fromResponse(res.data)));
+      .pipe(tap(() => this.allRoomTypes$ = undefined), map(res => RoomTypeMapper.fromResponse(res.data)));
   }
 
   updateRoomType(id: string, request: UpdateRoomTypeRequest): Observable<RoomType> {
     return this.http
       .put<ApiResponse<RoomTypeResponse>>(`${this.api}/${encodeURIComponent(id)}`, request)
-      .pipe(map(res => RoomTypeMapper.fromResponse(res.data)));
+      .pipe(tap(() => this.allRoomTypes$ = undefined), map(res => RoomTypeMapper.fromResponse(res.data)));
   }
 
   deleteRoomType(id: string): Observable<void> {
     return this.http
       .delete<ApiResponse<unknown>>(`${this.api}/${encodeURIComponent(id)}`)
-      .pipe(map(() => void 0));
+      .pipe(tap(() => this.allRoomTypes$ = undefined), map(() => void 0));
   }
 }

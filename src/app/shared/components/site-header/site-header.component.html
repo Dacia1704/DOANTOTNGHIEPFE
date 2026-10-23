@@ -56,6 +56,14 @@
               <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>
               Quản lý người dùng
             </a>
+            <a mat-menu-item routerLink="/admin/room-types">
+              <span class="material-symbols-outlined mi" aria-hidden="true">category</span>
+              Quản lý loại phòng
+            </a>
+            <a mat-menu-item routerLink="/admin/amenities">
+              <span class="material-symbols-outlined mi" aria-hidden="true">local_convenience_store</span>
+              Quản lý tiện ích
+            </a>
             <a mat-menu-item [routerLink]="adminMode ? '/' : '/admin'">
               <span class="material-symbols-outlined mi" aria-hidden="true">{{ adminMode ? 'home' : 'admin_panel_settings' }}</span>
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
@@ -64,14 +72,6 @@
             <a mat-menu-item routerLink="/phong-cua-toi">
               <span class="material-symbols-outlined mi">real_estate_agent</span>
               Quản lý phòng của tôi
-            </a>
-            <a mat-menu-item routerLink="/quan-ly-loai-phong">
-              <span class="material-symbols-outlined mi">category</span>
-              Quản lý loại phòng
-            </a>
-            <a mat-menu-item routerLink="/quan-ly-tien-ich">
-              <span class="material-symbols-outlined mi">local_convenience_store</span>
-              Quản lý tiện ích
             </a>
             <a mat-menu-item routerLink="/dang-tin">
               <span class="material-symbols-outlined mi">add_circle</span>

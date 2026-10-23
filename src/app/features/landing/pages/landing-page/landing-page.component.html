@@ -1,34 +1,29 @@
 <div class="landing">
-  <!-- Category bar ngay dưới header -->
-  <app-category-bar />
+  <app-category-bar [selectedRoomType]="activeQuery().roomTypeName ?? ''" (typeSelected)="selectRoomType($event)" />
 
   <div class="landing__inner">
-    <!-- Hero -->
-    <section class="hero">
+    <section class="hero" aria-labelledby="landing-title">
       <div class="hero__glow"></div>
       <div class="hero__copy">
         <div class="hero__chip">
-          <span class="material-symbols-outlined">verified</span>
-          <span>Cam kết 100% phòng thật • Không phí môi giới ẩn</span>
+          <span class="material-symbols-outlined">home_work</span>
+          <span>T&#xEC;m ph&#xF2;ng ph&#xF9; h&#x1EE3;p v&#x1EDB;i nhu c&#x1EA7;u c&#x1EE7;a b&#x1EA1;n</span>
         </div>
-        <h1 class="hero__title">
-          Tìm phòng trọ, căn hộ <span class="hero__title-accent">ưng ý &amp; an tâm</span> nhất
+        <h1 id="landing-title" class="hero__title">
+          T&#xEC;m ph&#xF2;ng thu&#xEA; <span class="hero__title-accent">d&#x1EC5; d&#xE0;ng</span>
         </h1>
-        <p class="hero__sub">
-          Hơn 45,000+ phòng trọ sinh viên, studio mini và homestay ở ghép đã qua kiểm định thực tế
-          tại Hà Nội &amp; TP.HCM.
-        </p>
+        <p class="hero__sub">L&#x1ECD;c theo khu v&#x1EF1;c, m&#x1EE9;c gi&#xE1;, lo&#x1EA1;i ph&#xF2;ng v&#xE0; ti&#x1EC7;n &#xED;ch.</p>
       </div>
 
       <div class="hero__search">
-        <app-search-capsule />
+        <app-search-capsule [appliedFilters]="activeQuery()" (search)="searchRooms($event)" />
+        @if (searching()) { <p class="hero__sub" aria-live="polite">&#x110;ang t&#x1EA3;i ph&#xF2;ng ph&#xF9; h&#x1EE3;p...</p> }
+        @if (searchError()) { <p class="hero__sub" role="alert">{{ searchError() }}</p> }
       </div>
     </section>
 
-    <app-quick-filter-bar />
-    <app-ai-recommendation />
-    <app-room-grid />
-    <app-map-finder />
+    <app-quick-filter-bar [appliedFilters]="activeQuery()" (filtersChanged)="updateFilters($event)" />
+    <app-room-grid [result]="rooms()" [loading]="searching()" (loadMore)="loadMore()" (roomSelected)="openRoom($event)" />
     <app-landlord-cta />
   </div>
 </div>

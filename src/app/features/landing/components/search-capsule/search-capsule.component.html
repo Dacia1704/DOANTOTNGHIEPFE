@@ -1,69 +1,74 @@
 <form class="capsule" (submit)="onSubmit($event)">
-  <!-- Col 1: Location -->
   <div class="capsule__col">
-    <div class="capsule__icon">
-      <span class="material-symbols-outlined">location_on</span>
-    </div>
+    <div class="capsule__icon"><span class="material-symbols-outlined">location_on</span></div>
     <div class="capsule__field">
-      <span class="capsule__label">Khu vực / Trường ĐH</span>
-      <input
-        class="capsule__input"
-        type="text"
-        placeholder="Bình Thạnh, Cầu Giấy, ĐH Bách Khoa..."
-        [ngModel]="location()"
-        (ngModelChange)="location.set($event)"
-        name="location"
-      />
-    </div>
-  </div>
-
-  <div class="capsule__divider"></div>
-
-  <!-- Col 2: Price -->
-  <div class="capsule__col">
-    <div class="capsule__icon">
-      <span class="material-symbols-outlined">payments</span>
-    </div>
-    <div class="capsule__field">
-      <span class="capsule__label">Khoảng giá</span>
-      <select
-        class="capsule__select"
-        [ngModel]="priceRange()"
-        (ngModelChange)="priceRange.set($event)"
-        name="price"
-      >
-        @for (opt of priceOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
+      <span class="capsule__label">T&#x1EC9;nh / th&#xE0;nh ph&#x1ED1;</span>
+      <select class="capsule__select" [ngModel]="provinceId()" (ngModelChange)="onProvinceChange($event)" name="province">
+        <option value="">T&#x1EA5;t c&#x1EA3; khu v&#x1EF1;c</option>
+        @for (province of provinces(); track province.id) { <option [value]="province.id">{{ province.name }}</option> }
       </select>
     </div>
   </div>
-
-  <div class="capsule__divider"></div>
-
-  <!-- Col 3: Room type -->
-  <div class="capsule__col">
-    <div class="capsule__icon">
-      <span class="material-symbols-outlined">roofing</span>
+  @if (provinceId() && wards().length) {
+    <div class="capsule__col">
+      <div class="capsule__icon"><span class="material-symbols-outlined">map</span></div>
+      <div class="capsule__field">
+        <span class="capsule__label">Ph&#x1B0;&#x1EDD;ng / x&#xE3;</span>
+        <select class="capsule__select" [ngModel]="wardId()" (ngModelChange)="wardId.set($event)" name="ward">
+          <option value="">T&#x1EA5;t c&#x1EA3; ph&#x1B0;&#x1EDD;ng / x&#xE3;</option>
+          @for (ward of wards(); track ward.id) { <option [value]="ward.id">{{ ward.name }}</option> }
+        </select>
+      </div>
     </div>
+  }
+  <div class="capsule__divider"></div>
+  <div class="capsule__col">
+    <div class="capsule__icon"><span class="material-symbols-outlined">payments</span></div>
     <div class="capsule__field">
-      <span class="capsule__label">Loại hình phòng</span>
-      <select
-        class="capsule__select"
-        [ngModel]="roomType()"
-        (ngModelChange)="roomType.set($event)"
-        name="roomType"
-      >
-        @for (opt of roomTypeOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
+      <span class="capsule__label">Kho&#x1EA3;ng gi&#xE1;</span>
+      <select class="capsule__select" [ngModel]="priceRange()" (ngModelChange)="priceRange.set($event)" name="price">
+        <option value="all">T&#x1EA5;t c&#x1EA3; m&#x1EE9;c gi&#xE1;</option>
+        <option value="under3">D&#x1B0;&#x1EDB;i 3 tri&#x1EC7;u / th&#xE1;ng</option>
+        <option value="3to5">3 - 5 tri&#x1EC7;u / th&#xE1;ng</option>
+        <option value="over5">Tr&#xEA;n 5 tri&#x1EC7;u / th&#xE1;ng</option>
       </select>
     </div>
   </div>
-
-  <!-- Search button -->
+  <div class="capsule__divider"></div>
+  <div class="capsule__col">
+    <div class="capsule__icon"><span class="material-symbols-outlined">event_available</span></div>
+    <div class="capsule__field">
+      <span class="capsule__label">Tr&#x1EA1;ng th&#xE1;i ph&#xF2;ng</span>
+      <select class="capsule__select" [ngModel]="rentalStatus()" (ngModelChange)="rentalStatus.set($event)" name="status">
+        <option value="AVAILABLE">C&#xF2;n ph&#xF2;ng</option>
+        <option value="">M&#x1ECD;i tr&#x1EA1;ng th&#xE1;i</option>
+      </select>
+    </div>
+  </div>
+  <div class="capsule__divider"></div>
+  <div class="capsule__col">
+    <div class="capsule__icon"><span class="material-symbols-outlined">roofing</span></div>
+    <div class="capsule__field">
+      <span class="capsule__label">Lo&#x1EA1;i ph&#xF2;ng</span>
+      <select class="capsule__select" [ngModel]="roomTypeName()" (ngModelChange)="roomTypeName.set($event)" name="roomType">
+        <option value="">M&#x1ECD;i lo&#x1EA1;i ph&#xF2;ng</option>
+        @for (type of roomTypes(); track type.id) { <option [value]="type.name">{{ type.name }}</option> }
+      </select>
+    </div>
+  </div>
+  <div class="capsule__amenities">
+    <span class="capsule__label">Ti&#x1EC7;n &#xED;ch c&#x1EA7;n c&#xF3;</span>
+    <div class="capsule__amenity-list">
+      @for (amenity of amenities(); track amenity.id) {
+        <label class="capsule__amenity">
+          <input type="checkbox" [checked]="selectedAmenityNames().includes(amenity.name)" (change)="toggleAmenity(amenity.name, $any($event.target).checked)" />
+          <span>{{ amenity.name }}</span>
+        </label>
+      }
+      @if (!amenities().length) { <span class="capsule__empty">Ch&#x1B0;a c&#xF3; ti&#x1EC7;n &#xED;ch</span> }
+    </div>
+  </div>
   <button type="submit" class="capsule__cta">
-    <span class="material-symbols-outlined">search</span>
-    <span class="capsule__cta-label">Tìm kiếm</span>
+    <span class="material-symbols-outlined">search</span><span class="capsule__cta-label">T&#xEC;m ph&#xF2;ng</span>
   </button>
 </form>

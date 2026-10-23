@@ -8,6 +8,7 @@
   flex-direction: column;
   height: 100%;
   background: var(--surface-container-lowest);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -17,12 +18,13 @@
 
 .room-card:hover {
   box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
 }
 
 .room-card__media {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.35 / 1;
   background: var(--surface-container);
   overflow: hidden;
 }
@@ -144,7 +146,7 @@
 
 .room-card__title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
   color: var(--on-surface);
@@ -207,7 +209,7 @@
 }
 
 .room-card__price {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
@@ -261,3 +263,8 @@
   white-space: nowrap;
   min-width: 0;
 }
+
+.room-card__status { padding: 4px 8px; border-radius: var(--radius-full); background: var(--success-bg); color: var(--success-text); font-size: 11px; white-space: nowrap; }
+.room-card__details { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-xs); margin-top: var(--space-sm); padding: 10px 14px; border: 0; border-radius: var(--radius-full); background: var(--primary-subtle); color: var(--primary); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.room-card__details:hover { background: var(--primary); color: var(--on-primary); }
+.room-card__details .material-symbols-outlined { font-size: 17px; }

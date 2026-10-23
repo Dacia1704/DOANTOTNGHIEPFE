@@ -1,23 +1,16 @@
-<section class="room-grid">
+<section class="room-grid" aria-labelledby="room-grid-title">
   <header class="room-grid__head">
     <div>
       <div class="room-grid__verified-hint">
-        <span class="material-symbols-outlined">verified</span>
-        <span>Phòng trọ mới xác thực kiểm tra tuần này</span>
+        <span class="material-symbols-outlined">home_work</span>
+        <span>{{ result?.total ?? 0 }} ph&#xF2;ng ph&#xF9; h&#x1EE3;p</span>
       </div>
-      <h2 class="room-grid__title">Danh sách phòng trọ cho thuê tốt nhất</h2>
+      <h2 id="room-grid-title" class="room-grid__title">Danh s&#xE1;ch ph&#xF2;ng cho thu&#xEA;</h2>
     </div>
     <div class="room-grid__sort">
-      <span class="room-grid__sort-label">Sắp xếp:</span>
-      <select
-        class="room-grid__sort-select"
-        [ngModel]="sortBy()"
-        (ngModelChange)="sortBy.set($event)"
-        name="sort"
-      >
-        @for (opt of sortOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
+      <label class="room-grid__sort-label" for="room-sort">S&#x1EAF;p x&#x1EBF;p:</label>
+      <select id="room-sort" class="room-grid__sort-select" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)" name="sort">
+        @for (opt of sortOptions; track opt.value) { <option [value]="opt.value">{{ opt.label }}</option> }
       </select>
     </div>
   </header>
@@ -28,17 +21,31 @@
         [room]="room"
         (wishlistToggle)="onWishlist($event)"
         (cardClick)="onCardClick($event)"
+        (apiRoomSelected)="roomSelected.emit($event)"
       />
     }
   </div>
 
-  <div class="room-grid__load-more">
-    <button type="button" class="room-grid__more-btn">
-      <span class="material-symbols-outlined">expand_more</span>
-      <span>Xem thêm 120+ phòng trọ giá tốt khác</span>
-    </button>
-    <span class="room-grid__counter">
-      Đang hiển thị {{ visible }} trên {{ total }} phòng đang có sẵn
-    </span>
-  </div>
+  @if (loading && rooms.length === 0) {
+    <div class="room-grid__state" role="status">&#x110;ang t&#x1EA3;i danh s&#xE1;ch ph&#xF2;ng...</div>
+  }
+  @if (result && rooms.length === 0 && !loading) {
+    <div class="room-grid__empty" role="status">
+      <span class="material-symbols-outlined">search_off</span>
+      <p>Ch&#x1B0;a t&#xEC;m th&#x1EA5;y ph&#xF2;ng ph&#xF9; h&#x1EE3;p.</p>
+      <span>Th&#x1EED; thay &#x111;&#x1ED5;i khu v&#x1EF1;c ho&#x1EB7;c b&#x1ED9; l&#x1ECD;c.</span>
+    </div>
+  }
+
+  @if (result && rooms.length > 0) {
+    <div class="room-grid__load-more">
+      @if (canLoadMore) {
+        <button type="button" class="room-grid__more-btn" [disabled]="loading" (click)="loadMore.emit()">
+          <span class="material-symbols-outlined">expand_more</span>
+          <span>{{ loading ? '&#x110;ang t&#x1EA3;i...' : 'Xem th&#xEA;m ph&#xF2;ng' }}</span>
+        </button>
+      }
+      <span class="room-grid__counter">&#x110;ang hi&#x1EC3;n th&#x1ECB; {{ visible }} / {{ total }} ph&#xF2;ng</span>
+    </div>
+  }
 </section>

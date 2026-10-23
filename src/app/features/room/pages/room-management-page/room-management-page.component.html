@@ -6,13 +6,13 @@
         {{ isLandlord() ? 'Quản lý phòng của tôi' : 'Quản lý hệ thống phòng trọ' }}
       </h1>
       <p class="body-md text-secondary">
-        Đăng tin phòng mới, cập nhật giá thuê, quản lý hình ảnh và theo dõi trạng thái phòng.
+        Thêm phòng mới, cập nhật giá thuê, quản lý hình ảnh và theo dõi trạng thái phòng.
       </p>
     </div>
     <div class="header-right">
       <button type="button" class="btn-primary btn-post" (click)="openCreate()">
         <span class="material-symbols-outlined">add_circle</span>
-        <span>Đăng tin / Thêm phòng</span>
+        <span>{{ isLandlord() ? 'Thêm phòng' : 'Tạo phòng' }}</span>
       </button>
     </div>
   </header>
@@ -137,10 +137,10 @@
           <div class="empty-state card">
             <span class="material-symbols-outlined empty-icon">holiday_village</span>
             <p class="empty-title">Không tìm thấy phòng trọ nào.</p>
-            <p class="body-sm text-secondary">Hãy thử điều chỉnh bộ lọc hoặc bấm "Đăng tin / Thêm phòng" để tạo phòng mới.</p>
+            <p class="body-sm text-secondary">Hãy thử điều chỉnh bộ lọc hoặc thêm phòng mới.</p>
             <button type="button" class="btn-primary" (click)="openCreate()">
               <span class="material-symbols-outlined">add_circle</span>
-              <span>Đăng phòng ngay</span>
+              <span>Thêm phòng</span>
             </button>
           </div>
         }

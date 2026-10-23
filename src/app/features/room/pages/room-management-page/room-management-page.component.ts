@@ -128,7 +128,7 @@ export class RoomManagementPageComponent implements OnInit {
       maxWidth: 'calc(100vw - 32px)',
     }).afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(changed => {
       if (!changed) return;
-      this.success.set('Đăng tin phòng mới thành công!');
+      this.success.set('Thêm phòng mới thành công!');
       this.load(0);
     });
   }

@@ -193,54 +193,191 @@
         <div class="spinner"></div>
         <p class="body-md text-secondary">Đang tải danh mục và phòng...</p>
       </div>
+    } @else if (error()) {
+      <div class="state-container error-state">
+        <span class="material-symbols-outlined state-icon error">error</span>
+        <p class="body-md text-secondary">{{ error() }}</p>
+        <button type="button" class="btn-secondary" (click)="loadCategories()">Thử lại</button>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="empty-state catalog-empty">
+        <span class="material-symbols-outlined">category</span>
+        <p>Chưa có danh mục loại phòng nào.</p>
+      </div>
     } @else {
-      <div class="categories-container">
-        @for (cat of categories(); track cat.id) {
-          <div class="category-card card">
-            <div class="category-header">
-              <div class="category-title-wrap">
-                <span class="material-symbols-outlined cat-icon">folder_open</span>
-                <div>
-                  <h3 class="category-title">{{ cat.name }}</h3>
-                  @if (cat.description) {
-                    <p class="body-sm text-secondary">{{ cat.description }}</p>
-                  }
-                </div>
-              </div>
-              <span class="badge badge-primary">{{ cat.rooms.length }} phòng</span>
+      <div class="catalog">
+        <div class="catalog-kpis">
+          <article class="catalog-kpi">
+            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">category</span></span>
+            <div>
+              <p class="catalog-kpi__label">Loại phòng</p>
+              <p class="catalog-kpi__value">{{ categoryOverview().types }}</p>
             </div>
+          </article>
+          <article class="catalog-kpi">
+            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">meeting_room</span></span>
+            <div>
+              <p class="catalog-kpi__label">Tổng phòng</p>
+              <p class="catalog-kpi__value">{{ categoryOverview().rooms }}</p>
+            </div>
+          </article>
+          <article class="catalog-kpi catalog-kpi--success">
+            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">check_circle</span></span>
+            <div>
+              <p class="catalog-kpi__label">Còn phòng</p>
+              <p class="catalog-kpi__value">{{ categoryOverview().available }}</p>
+            </div>
+          </article>
+          <article class="catalog-kpi catalog-kpi--muted">
+            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">key</span></span>
+            <div>
+              <p class="catalog-kpi__label">Đã thuê</p>
+              <p class="catalog-kpi__value">{{ categoryOverview().rented }}</p>
+            </div>
+          </article>
+          <article class="catalog-kpi catalog-kpi--warning">
+            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">build</span></span>
+            <div>
+              <p class="catalog-kpi__label">Bảo trì</p>
+              <p class="catalog-kpi__value">{{ categoryOverview().maintenance }}</p>
+            </div>
+          </article>
+        </div>
 
-            @if (cat.rooms.length > 0) {
-              <div class="rooms-grid">
-                @for (room of cat.rooms; track room.id) {
-                  <div class="room-mini-card">
-                    <div class="room-mini-top">
-                      <span class="room-mini-price">{{ roomUtils.formatPrice(room.price) }}</span>
-                      <span class="badge" [class]="roomUtils.getStatusBadgeClass($any(room.rentalStatus))">
-                        {{ roomUtils.getStatusLabel($any(room.rentalStatus)) }}
-                      </span>
-                    </div>
-                    <div class="room-mini-meta">
-                      <span><span class="material-symbols-outlined">square_foot</span> {{ room.areaM2 }} m²</span>
-                      <span><span class="material-symbols-outlined">person</span> Tối đa {{ room.maxOccupants }} người</span>
-                    </div>
-                    <div class="room-mini-address">
-                      <span class="material-symbols-outlined">location_on</span>
-                      <span class="address-text">{{ room.addressLine }}, {{ room.wardName }}, {{ room.provinceName }}</span>
-                    </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <p class="body-sm text-placeholder empty-rooms-text">Chưa có phòng nào thuộc loại phòng này.</p>
+        <div class="catalog-toolbar">
+          <div class="search-box">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input
+              type="search"
+              class="input input-search"
+              [value]="categorySearch()"
+              (input)="onCategorySearch($event)"
+              placeholder="Tìm loại phòng theo tên hoặc mô tả..."
+              aria-label="Tìm loại phòng trong danh mục"
+            />
+          </div>
+          <div class="catalog-filters" role="group" aria-label="Lọc trạng thái thuê">
+            @for (filter of statusFilters; track filter.id) {
+              <button
+                type="button"
+                class="catalog-chip"
+                [class.is-active]="statusFilter() === filter.id"
+                (click)="setStatusFilter(filter.id)"
+              >
+                {{ filter.label }}
+              </button>
             }
           </div>
-        } @empty {
-          <div class="empty-state card">
-            <span class="material-symbols-outlined">category</span>
-            <p>Không có danh mục phòng nào.</p>
-          </div>
-        }
+        </div>
+
+        <div class="catalog-nav" role="tablist" aria-label="Chọn loại phòng">
+          <button
+            type="button"
+            class="catalog-nav__item"
+            [class.is-active]="selectedCategoryId() === 'all'"
+            (click)="selectCategory('all')"
+          >
+            <span class="catalog-nav__icon"><span class="material-symbols-outlined">grid_view</span></span>
+            <span class="catalog-nav__name">Tất cả loại phòng</span>
+            <span class="catalog-nav__count">{{ categoryOverview().rooms }} phòng</span>
+          </button>
+          @for (cat of categories(); track cat.id) {
+            <button
+              type="button"
+              class="catalog-nav__item"
+              [class.is-active]="selectedCategoryId() === cat.id"
+              (click)="selectCategory(cat.id)"
+            >
+              <span class="catalog-nav__icon">
+                <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
+              </span>
+              <span class="catalog-nav__name">{{ cat.name }}</span>
+              <span class="catalog-nav__count">{{ cat.rooms.length }} phòng</span>
+            </button>
+          }
+        </div>
+
+        <div class="catalog-boards">
+          @for (cat of visibleCategories(); track cat.id) {
+            <section class="catalog-board" [attr.aria-labelledby]="'cat-' + cat.id">
+              <header class="catalog-board__header">
+                <div class="catalog-board__identity">
+                  <span class="catalog-board__mark">
+                    <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
+                  </span>
+                  <div>
+                    @if (parentName(cat); as parent) {
+                      <p class="catalog-board__parent">Thuộc {{ parent }}</p>
+                    } @else {
+                      <p class="catalog-board__parent">Danh mục gốc</p>
+                    }
+                    <h2 [id]="'cat-' + cat.id" class="catalog-board__title">{{ cat.name }}</h2>
+                    <p class="catalog-board__desc">{{ cat.description || 'Chưa có mô tả cho loại phòng này.' }}</p>
+                  </div>
+                </div>
+                <div class="catalog-board__stats">
+                  <span class="catalog-stat">{{ cat.rooms.length }} phòng</span>
+                  <span class="catalog-stat catalog-stat--success">{{ statusCount(cat, rentalStatuses.AVAILABLE) }} còn</span>
+                  <span class="catalog-stat">{{ statusCount(cat, rentalStatuses.RENTED) }} thuê</span>
+                  <span class="catalog-stat catalog-stat--warning">{{ statusCount(cat, rentalStatuses.MAINTENANCE) }} bảo trì</span>
+                </div>
+              </header>
+
+              @if (filteredRooms(cat).length > 0) {
+                <div class="catalog-rooms">
+                  @for (room of filteredRooms(cat); track room.id) {
+                    <article class="catalog-room" [attr.data-status]="roomStatus(room)">
+                      <div class="catalog-room__hero">
+                        <span class="catalog-room__hero-icon">
+                          <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
+                        </span>
+                        <span class="badge" [class]="roomUtils.getStatusBadgeClass(roomStatus(room))">
+                          {{ roomUtils.getStatusLabel(roomStatus(room)) }}
+                        </span>
+                      </div>
+                      <div class="catalog-room__body">
+                        <p class="catalog-room__price">{{ roomUtils.formatPrice(room.price) }}</p>
+                        <h3 class="catalog-room__street">{{ room.addressLine || 'Chưa có địa chỉ chi tiết' }}</h3>
+                        @if (locationLabel(room)) {
+                          <p class="catalog-room__place">
+                            <span class="material-symbols-outlined">location_on</span>
+                            <span>{{ locationLabel(room) }}</span>
+                          </p>
+                        }
+                        <div class="catalog-room__meta">
+                          <span>
+                            <span class="material-symbols-outlined">square_foot</span>
+                            {{ roomUtils.formatArea(room.areaM2) }}
+                          </span>
+                          <span>
+                            <span class="material-symbols-outlined">group</span>
+                            Tối đa {{ room.maxOccupants }} người
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  }
+                </div>
+              } @else {
+                <div class="catalog-board__empty">
+                  <span class="material-symbols-outlined">home_work</span>
+                  <p>
+                    @if (statusFilter() === 'all') {
+                      Chưa có phòng nào thuộc loại {{ cat.name }}.
+                    } @else {
+                      Không có phòng với trạng thái "{{ statusFilterLabel() }}" trong loại {{ cat.name }}.
+                    }
+                  </p>
+                </div>
+              }
+            </section>
+          } @empty {
+            <div class="empty-state catalog-empty">
+              <span class="material-symbols-outlined">search_off</span>
+              <p>Không tìm thấy loại phòng phù hợp bộ lọc.</p>
+            </div>
+          }
+        </div>
       </div>
     }
   }

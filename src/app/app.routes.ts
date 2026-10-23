@@ -31,22 +31,22 @@ export const routes: Routes = [
       },
       {
         path: 'quan-ly-loai-phong',
-        canActivate: [roleGuard([RoleCode.LANDLORD])],
-        loadComponent: () => import('./features/admin/room-type-management/room-type-management.component').then(m => m.RoomTypeManagementComponent),
+        redirectTo: '/admin/room-types',
+        pathMatch: 'full',
       },
       {
         path: 'loai-phong',
-        redirectTo: 'quan-ly-loai-phong',
+        redirectTo: '/admin/room-types',
         pathMatch: 'full',
       },
       {
         path: 'quan-ly-tien-ich',
-        canActivate: [roleGuard([RoleCode.LANDLORD])],
-        loadComponent: () => import('./features/admin/amenity-management/amenity-management.component').then(m => m.AmenityManagementComponent),
+        redirectTo: '/admin/amenities',
+        pathMatch: 'full',
       },
       {
         path: 'tien-ich',
-        redirectTo: 'quan-ly-tien-ich',
+        redirectTo: '/admin/amenities',
         pathMatch: 'full',
       },
       {

@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CATEGORY_PILLS, CategoryPill } from '../../data/landing.mock';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { RoomTypeService } from '@core/services/room-type.service';
+import { RoomType } from '@model/room-type/room-type.model';
 
-/**
- * Thanh pill ngang các "loại phòng" — copy nguyên style từ landing-page.html.
- * Statik — không có tương tác filtering (chỉ để hiển thị chip).
- */
 @Component({
   selector: 'app-category-bar',
   imports: [],
@@ -12,6 +9,22 @@ import { CATEGORY_PILLS, CategoryPill } from '../../data/landing.mock';
   styleUrl: './category-bar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CategoryBarComponent {
-  readonly pills: CategoryPill[] = CATEGORY_PILLS;
+export class CategoryBarComponent implements OnInit {
+  private readonly roomTypeService = inject(RoomTypeService);
+  @Output() readonly typeSelected = new EventEmitter<string>();
+  readonly roomTypes = signal<RoomType[]>([]);
+  readonly selectedName = signal('');
+  @Input() set selectedRoomType(value: string) { this.selectedName.set(value ?? ''); }
+
+  ngOnInit(): void {
+    this.roomTypeService.getAllRoomTypes().subscribe({
+      next: types => this.roomTypes.set(types),
+      error: () => this.roomTypes.set([]),
+    });
+  }
+
+  select(name: string): void {
+    this.selectedName.set(name);
+    this.typeSelected.emit(name);
+  }
 }

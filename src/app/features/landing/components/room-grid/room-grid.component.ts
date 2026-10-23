@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RoomCardComponent } from '../room-card/room-card.component';
-import { ROOM_LISTINGS, RoomCard, SORT_OPTIONS } from '../../data/landing.mock';
+import { RoomCardComponent, RoomCardData } from '../room-card/room-card.component';
+import { RoomCard } from '../../data/landing.mock';
+import { Room, RoomListResult } from '@model/room/room.model';
 
 /**
  * Danh sách phòng chính + select sort. Sort hiện chỉ là client-side mock:
@@ -17,29 +18,36 @@ import { ROOM_LISTINGS, RoomCard, SORT_OPTIONS } from '../../data/landing.mock';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomGridComponent {
-  readonly sortOptions = SORT_OPTIONS;
+  @Input() result: RoomListResult | null = null;
+  @Input() loading = false;
+  @Output() loadMore = new EventEmitter<void>();
+  @Output() roomSelected = new EventEmitter<Room>();
+  readonly sortOptions = [
+    { value: 'newest', label: 'Mới nhất' },
+    { value: 'price-asc', label: 'Giá thấp đến cao' },
+  ];
   readonly sortBy = signal('newest');
 
-  get rooms(): RoomCard[] {
-    switch (this.sortBy()) {
-      case 'price-asc': return [...ROOM_LISTINGS].sort((a, b) => a.price - b.price);
-      case 'rating':    return [...ROOM_LISTINGS].sort((a, b) => b.rating - a.rating);
-      case 'distance':  return [...ROOM_LISTINGS].sort((a, b) => b.reviewCount - a.reviewCount);
-      case 'newest':
-      default:          return ROOM_LISTINGS;
-    }
+  get rooms(): (RoomCard | Room)[] {
+    const rooms = [...(this.result?.items ?? [])];
+    if (this.sortBy() === 'price-asc') return rooms.sort((a, b) => a.price - b.price);
+    return rooms;
   }
 
-  readonly total = 2450;
+  get total(): number { return this.result?.total ?? 0; }
   get visible(): number {
     return this.rooms.length;
   }
 
-  onWishlist(room: RoomCard): void {
+  onWishlist(room: RoomCardData): void {
     console.log('wishlist', room.id);
   }
 
-  onCardClick(room: RoomCard): void {
-    console.log('open', room.id);
+  onCardClick(room: RoomCardData): void {
+    if ('amenities' in room) this.roomSelected.emit(room);
+  }
+
+  get canLoadMore(): boolean {
+    return !!this.result && this.result.page + 1 < this.result.totalPages;
   }
 }

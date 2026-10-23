@@ -1,14 +1,13 @@
-<div class="category-bar">
+<nav class="category-bar" aria-label="Lọc theo loại phòng">
   <div class="category-bar__scroll">
-    @for (pill of pills; track pill.label) {
-      <a
-        class="category-bar__pill"
-        [class.is-active]="pill.active"
-        href="#"
-      >
-        <span class="material-symbols-outlined">{{ pill.icon }}</span>
-        <span>{{ pill.label }}</span>
-      </a>
+    <button type="button" class="category-bar__pill" [class.is-active]="!selectedName()" (click)="select('')">
+      <span class="material-symbols-outlined">apps</span><span>Tất cả phòng</span>
+    </button>
+    @for (type of roomTypes(); track type.id) {
+      <button type="button" class="category-bar__pill" [class.is-active]="selectedName() === type.name" (click)="select(type.name)">
+        <span class="material-symbols-outlined">apartment</span><span>{{ type.name }}</span>
+      </button>
     }
+    @if (!roomTypes().length) { <span class="category-bar__empty">Chưa tải được loại phòng</span> }
   </div>
-</div>
+</nav>

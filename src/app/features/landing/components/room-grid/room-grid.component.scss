@@ -1,110 +1,79 @@
 :host { display: block; width: 100%; }
 
-.room-grid { width: 100%; padding-bottom: 56px; }
+.room-grid { width: 100%; padding-bottom: var(--space-lg); }
 
 .room-grid__head {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-  }
+  @media (min-width: 680px) { flex-direction: row; align-items: flex-end; }
 }
 
 .room-grid__verified-hint {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 6px;
   color: var(--primary);
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 4px;
-
-  .material-symbols-outlined { font-size: 18px; }
+  .material-symbols-outlined { font-size: 17px; }
 }
 
 .room-grid__title {
   margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
   color: var(--on-surface);
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
 }
 
-.room-grid__sort {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.room-grid__sort-label {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-}
-
+.room-grid__sort { display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; }
+.room-grid__sort-label { color: var(--on-surface-variant); font-size: 12px; }
 .room-grid__sort-select {
-  background: var(--surface-container-lowest);
-  font-size: 12px;
-  font-weight: 500;
+  padding: 9px 34px 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
   color: var(--on-surface);
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  border: none;
-  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: 12px;
   cursor: pointer;
 }
 
 .room-grid__grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-md);
 
-  @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); }
+  @media (min-width: 560px) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg); }
+  @media (min-width: 900px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (min-width: 1200px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-.room-grid__load-more {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding-top: 40px;
-}
-
+.room-grid__load-more { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); padding-top: var(--space-xl); }
 .room-grid__more-btn {
   display: inline-flex;
+  min-height: 46px;
   align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
+  gap: var(--space-sm);
+  padding: 0 22px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  border: none;
-  background: var(--surface-container);
+  background: var(--surface);
   color: var(--on-surface);
-  font-size: 14px;
+  font: inherit;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 
-  &:hover {
-    background: var(--surface-container-high);
-    transform: scale(1.02);
-  }
-
-  &:active { transform: scale(0.98); }
-
-  .material-symbols-outlined {
-    font-size: 18px;
-    color: var(--primary);
-  }
+  &:hover { transform: translateY(-1px); border-color: var(--primary); background: var(--primary-subtle); }
+  .material-symbols-outlined { color: var(--primary); font-size: 18px; }
 }
-
-.room-grid__counter {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-}
+.room-grid__counter { color: var(--on-surface-variant); font-size: 12px; }

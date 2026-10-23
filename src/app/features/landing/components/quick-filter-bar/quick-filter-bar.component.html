@@ -1,41 +1,26 @@
-<section class="quick-filter">
+<section class="quick-filter" aria-label="Bộ lọc nhanh">
   <div class="quick-filter__row">
-    @for (filter of filters; track filter.id) {
-      <button
-        type="button"
-        class="quick-filter__pill"
-        [class.is-active]="!filter.isAdvanced && isActive(filter.id)"
-        [class.is-advanced]="filter.isAdvanced"
-        (click)="selectFilter(filter.id)"
-      >
-        @if (filter.icon) {
-          <span
-            class="material-symbols-outlined"
-            [class.is-primary]="filter.iconColor === 'primary'"
-            [class.is-secondary]="filter.iconColor === 'secondary'"
-          >
-            {{ filter.icon }}
-          </span>
-        }
-        <span>{{ filter.label }}</span>
+    @for (preset of presets; track preset.id) {
+      <button type="button" class="quick-filter__pill" [class.is-active]="activePrice() === preset.id" (click)="setPrice(preset)">
+        <span>{{ preset.label }}</span>
       </button>
     }
+    <button type="button" class="quick-filter__pill quick-filter__pill--advanced" [class.is-active]="showAmenities()" (click)="showAmenities.set(!showAmenities())">
+      <span class="material-symbols-outlined">tune</span><span>Tiện ích</span>
+    </button>
   </div>
 
-  @if (showAdvanced()) {
+  @if (showAmenities()) {
     <div class="quick-filter__panel">
-      <span class="quick-filter__panel-title">Tiện ích ưu tiên:</span>
+      <span class="quick-filter__panel-title">Phòng cần có tiện ích:</span>
       <div class="quick-filter__panel-options">
-        @for (opt of advanced; track opt.id) {
+        @for (amenity of amenities(); track amenity.id) {
           <label class="quick-filter__option">
-            <input
-              type="checkbox"
-              [checked]="opt.checked"
-              class="quick-filter__checkbox"
-            />
-            <span>{{ opt.label }}</span>
+            <input type="checkbox" [checked]="selectedAmenities().includes(amenity.name)" (change)="toggleAmenity(amenity.name, $any($event.target).checked)" />
+            <span>{{ amenity.name }}</span>
           </label>
         }
+        @if (!amenities().length) { <span>Danh sách tiện ích chưa tải được.</span> }
       </div>
     </div>
   }
