@@ -100,11 +100,8 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.submitting.set(false);
-<<<<<<< HEAD
         this.router.navigateByUrl(this.auth.homeUrl());
-=======
         this.router.navigate(['/verify-email'], { state: { email: v.email.trim().toLowerCase() } });
->>>>>>> 1601b9dfb6f37b0f95d9c7f170923e90c3ec0c06
       },
       error: (err) => {
         this.submitting.set(false);
