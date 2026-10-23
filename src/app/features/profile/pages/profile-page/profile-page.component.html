@@ -63,6 +63,9 @@
                   <label for="email">Email
                     <input class="input" id="email" type="email" [value]="profile.email" readonly />
                     <small>{{ profile.emailVerifiedAt ? 'Đã xác minh email' : 'Email chưa được xác minh' }}</small>
+                    @if (!profile.emailVerifiedAt) {
+                      <a routerLink="/verify-email" [state]="{ email: profile.email }">Xác thực email</a>
+                    }
                   </label>
                   <label for="phone">Số điện thoại
                     <input class="input" id="phone" type="tel" formControlName="phone" autocomplete="tel" [attr.aria-invalid]="form.controls.phone.touched && form.controls.phone.invalid" />

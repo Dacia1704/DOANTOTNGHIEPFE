@@ -8,7 +8,7 @@ let refreshSub$: Observable<string> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
-  const isAuthUrl = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+  const isAuthUrl = /\/auth\/(login|register|refresh|forgot-password|reset-password|send-verify-email|verify-email)(?:\?|$)/.test(req.url);
 
   const withToken = (token: string | null) =>
     token && !isAuthUrl ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;

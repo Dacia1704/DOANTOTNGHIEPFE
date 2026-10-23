@@ -1,0 +1,49 @@
+<div class="otp-page">
+  <nav aria-label="Điều hướng"><a routerLink="/">Trang chủ</a><span aria-hidden="true"> / </span>{{ title }}</nav>
+  <section class="otp-card" aria-labelledby="otp-title">
+    <span class="material-symbols-outlined hero-icon" aria-hidden="true">{{ step() === 'success' ? 'check_circle' : passwordMode ? 'lock_reset' : 'mark_email_read' }}</span>
+    <p class="eyebrow">Bảo mật tài khoản TroTot.vn</p>
+    <h1 id="otp-title">{{ step() === 'success' ? (passwordMode ? 'Đã đặt lại mật khẩu' : 'Email đã được xác thực') : title }}</h1>
+    @if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
+    @if (notice()) { <div class="message" role="status">{{ notice() }}</div> }
+    @if (step() === 'email') {
+      <p>{{ passwordMode ? 'Nhập email tài khoản để nhận mã OTP và đặt lại mật khẩu.' : 'Xác nhận địa chỉ email của bạn bằng mã OTP được gửi qua email.' }}</p>
+      <form [formGroup]="emailForm" (ngSubmit)="send()" novalidate>
+        <label for="otp-email">Địa chỉ email</label>
+        <input id="otp-email" type="email" formControlName="email" autocomplete="email" maxlength="255" placeholder="ban@example.com" [readOnly]="busy()" [attr.aria-invalid]="emailForm.controls.email.touched && emailForm.controls.email.invalid" aria-describedby="email-error" />
+        @if (emailForm.controls.email.touched && emailForm.controls.email.invalid) { <small id="email-error" class="field-error">Nhập email hợp lệ, tối đa 255 ký tự.</small> }
+        <button class="primary" type="submit" [disabled]="busy() || remaining() > 0">{{ busy() ? 'Đang gửi…' : remaining() > 0 ? 'Gửi lại sau ' + remaining() + ' giây' : 'Gửi mã OTP' }}</button>
+      </form>
+    } @else if (step() === 'otp') {
+      <p>Nhập mã được gửi đến <strong>{{ email }}</strong>.</p>
+      <button type="button" class="text-button" (click)="changeEmail()" [disabled]="busy()">Đổi email</button>
+      <form [formGroup]="codeForm" (ngSubmit)="submit()" novalidate>
+        <label for="otp-code">Mã OTP</label>
+        <input id="otp-code" class="otp-input" type="text" formControlName="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" [readOnly]="busy()" [attr.aria-invalid]="codeForm.controls.otp.touched && codeForm.controls.otp.invalid" aria-describedby="code-help" />
+        <small id="code-help">{{ expiry() > 0 ? 'Mã có hiệu lực tối đa 5 phút. Còn khoảng ' + expiry() + ' giây.' : 'Mã có thể đã hết hạn. Vui lòng gửi lại mã.' }}</small>
+        @if (codeForm.controls.otp.touched && codeForm.controls.otp.invalid) { <small class="field-error">Nhập đủ 6 chữ số của mã OTP.</small> }
+        @if (passwordMode) {
+          <label for="new-password">Mật khẩu mới</label>
+          <input id="new-password" [type]="showPassword() ? 'text' : 'password'" formControlName="newPassword" autocomplete="new-password" maxlength="100" [readOnly]="busy()" [attr.aria-invalid]="codeForm.controls.newPassword.touched && codeForm.controls.newPassword.invalid" />
+          <small>Dùng 8–100 ký tự, khác mật khẩu hiện tại.</small>
+          @if (codeForm.controls.newPassword.touched && codeForm.controls.newPassword.invalid) { <small class="field-error">Mật khẩu phải có từ 8 đến 100 ký tự.</small> }
+          <label for="confirm-password">Xác nhận mật khẩu mới</label>
+          <input id="confirm-password" [type]="showPassword() ? 'text' : 'password'" formControlName="confirmPassword" autocomplete="new-password" maxlength="100" [readOnly]="busy()" [attr.aria-invalid]="codeForm.controls.confirmPassword.touched && (codeForm.controls.confirmPassword.invalid || codeForm.hasError('mismatch'))" />
+          @if (codeForm.controls.confirmPassword.touched && (codeForm.hasError('mismatch') || codeForm.controls.confirmPassword.invalid)) { <small class="field-error">Nhập lại mật khẩu mới cho khớp.</small> }
+          <button type="button" class="text-button" [attr.aria-pressed]="showPassword()" (click)="showPassword.set(!showPassword())">{{ showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu' }}</button>
+        }
+        <button type="submit" class="primary" [disabled]="busy()">{{ busy() ? 'Đang xử lý…' : passwordMode ? 'Đặt lại mật khẩu' : 'Xác thực email' }}</button>
+      </form>
+      <button class="text-button resend" type="button" (click)="send()" [disabled]="busy() || remaining() > 0">{{ remaining() > 0 ? 'Gửi lại mã sau ' + remaining() + ' giây' : 'Gửi lại mã OTP' }}</button>
+      <small>Mã mới sẽ thay thế mã cũ. Vui lòng kiểm tra cả thư rác.</small>
+    } @else {
+      <p>{{ passwordMode ? 'Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại để tiếp tục.' : 'Cảm ơn bạn đã xác nhận địa chỉ email.' }}</p>
+      @if (!passwordMode && auth.isLoggedIn()) { <a class="primary" [routerLink]="profileUrl">Về hồ sơ cá nhân</a> }
+      @else { <a class="primary" routerLink="/login">Đăng nhập</a> }
+    }
+    @if (step() !== 'success') {
+      <a class="back" routerLink="/login">Quay lại đăng nhập</a>
+      @if (!passwordMode && auth.isLoggedIn()) { <a class="back" [routerLink]="profileUrl">Xác thực sau</a> }
+    }
+  </section>
+</div>

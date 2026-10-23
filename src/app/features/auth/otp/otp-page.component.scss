@@ -1,0 +1,25 @@
+:host { display: block; background: var(--surface); }
+.otp-page { max-width: 1120px; margin: auto; padding: 32px 20px 64px; }
+nav { margin-bottom: 28px; color: var(--on-surface-variant); font-size: 14px; }
+a, .text-button { color: var(--primary); }
+.otp-card { max-width: 480px; margin: auto; padding: 36px; border-radius: 24px; background: var(--surface-container-lowest, #fff); border: 1px solid var(--outline-variant, #ddd); box-shadow: 0 16px 48px #00000008; }
+.hero-icon { display: inline-flex; padding: 16px; border-radius: 18px; background: var(--primary-subtle); color: var(--primary); font-size: 36px; }
+.eyebrow { color: var(--primary); font-size: 13px; font-weight: 600; margin-top: 20px; }
+h1 { font-size: 28px; margin: 8px 0 16px; color: var(--on-surface); }
+p { line-height: 1.6; color: var(--on-surface-variant); overflow-wrap: anywhere; }
+form { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+label { font-weight: 600; margin-top: 8px; }
+input { width: 100%; box-sizing: border-box; border: 1px solid var(--outline-variant, #ccc); border-radius: 12px; padding: 14px; font: inherit; color: var(--on-surface); background: var(--surface); }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+input[aria-invalid='true'] { border-color: var(--error, #ba1a1a); }
+.otp-input { letter-spacing: 8px; font-size: 24px; text-align: center; }
+small { display: block; color: var(--on-surface-variant); line-height: 1.5; }
+.primary { display: block; text-align: center; background: var(--primary); color: var(--on-primary, #fff); padding: 15px; border: 0; border-radius: 12px; font: inherit; font-weight: 600; margin-top: 16px; text-decoration: none; cursor: pointer; }
+.text-button { background: none; border: none; padding: 8px 0; font: inherit; cursor: pointer; text-align: left; }
+.resend { margin-top: 20px; }
+button:disabled { opacity: .55; cursor: default; }
+.back { display: block; text-align: center; margin-top: 24px; }
+.message { padding: 14px; border-radius: 10px; background: var(--primary-subtle, #eef5ff); color: var(--on-surface); margin: 16px 0; line-height: 1.5; }
+.error { background: var(--error-container, #ffdad6); color: var(--on-error-container, #93000a); }
+.field-error { color: var(--error, #ba1a1a); }
+@media (max-width: 600px) { .otp-page { padding: 24px 16px 40px; } .otp-card { padding: 24px 20px; } h1 { font-size: 24px; } }

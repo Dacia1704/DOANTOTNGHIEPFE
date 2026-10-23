@@ -25,7 +25,11 @@ export class AdminLayout {
   readonly pageLabel = signal('Quản trị');
   readonly menu: NavItem[] = [
     { icon: 'manage_accounts', label: 'Quản lý người dùng', route: '/admin/users' },
+<<<<<<< HEAD
     { icon: 'person', label: 'Hồ sơ cá nhân', route: '/admin/profile' },
+=======
+    { icon: 'location_on', label: 'Quản lý phường/xã', route: '/admin/wards' },
+>>>>>>> 1601b9dfb6f37b0f95d9c7f170923e90c3ec0c06
   ];
 
 
