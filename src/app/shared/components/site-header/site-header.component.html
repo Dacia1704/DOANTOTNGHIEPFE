@@ -60,19 +60,36 @@
               <span class="material-symbols-outlined mi" aria-hidden="true">{{ adminMode ? 'home' : 'admin_panel_settings' }}</span>
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
             </a>
+          } @else if (isLandlord) {
+            <a mat-menu-item routerLink="/phong-cua-toi">
+              <span class="material-symbols-outlined mi">real_estate_agent</span>
+              Quản lý phòng của tôi
+            </a>
+            <a mat-menu-item routerLink="/quan-ly-loai-phong">
+              <span class="material-symbols-outlined mi">category</span>
+              Quản lý loại phòng
+            </a>
+            <a mat-menu-item routerLink="/quan-ly-tien-ich">
+              <span class="material-symbols-outlined mi">local_convenience_store</span>
+              Quản lý tiện ích
+            </a>
+            <a mat-menu-item routerLink="/dang-tin">
+              <span class="material-symbols-outlined mi">add_circle</span>
+              Đăng tin phòng mới
+            </a>
+            <a mat-menu-item routerLink="/cai-dat">
+              <span class="material-symbols-outlined mi">settings</span>
+              Cài đặt
+            </a>
           } @else {
-          <a mat-menu-item routerLink="/phong-da-luu">
-            <span class="material-symbols-outlined mi">favorite</span>
-            Tin đã lưu
-          </a>
-          <a mat-menu-item routerLink="/phong-cua-toi">
-            <span class="material-symbols-outlined mi">real_estate_agent</span>
-            Phòng của tôi
-          </a>
-          <a mat-menu-item routerLink="/cai-dat">
-            <span class="material-symbols-outlined mi">settings</span>
-            Cài đặt
-          </a>
+            <a mat-menu-item routerLink="/phong-da-luu">
+              <span class="material-symbols-outlined mi">favorite</span>
+              Tin đã lưu
+            </a>
+            <a mat-menu-item routerLink="/cai-dat">
+              <span class="material-symbols-outlined mi">settings</span>
+              Cài đặt
+            </a>
           }
           <mat-divider />
           <button mat-menu-item class="site-header__logout" (click)="logout()">

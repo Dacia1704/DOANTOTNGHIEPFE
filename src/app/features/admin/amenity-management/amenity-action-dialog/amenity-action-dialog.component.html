@@ -1,0 +1,97 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      @switch (data.action) {
+        @case ('create') { Thêm tiện ích mới }
+        @case ('edit') { Chỉnh sửa tiện ích }
+        @case ('delete') { Xác nhận xóa tiện ích }
+      }
+    </h2>
+    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (data.action === 'delete') {
+    <div class="dialog-body">
+      <p class="delete-warning">
+        Bạn có chắc chắn muốn xóa tiện ích <strong>{{ data.amenity?.name }}</strong> không?
+      </p>
+      <p class="body-sm text-secondary">Thao tác này không thể hoàn tác nếu tiện ích chưa được gắn với phòng nào.</p>
+    </div>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+      <button type="button" class="btn-danger" (click)="submit()" [disabled]="busy()">
+        {{ busy() ? 'Đang xóa...' : 'Xác nhận xóa' }}
+      </button>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="dialog-body">
+      <!-- Tên tiện ích -->
+      <div class="form-group">
+        <label for="amenity-name" class="label-md">Tên tiện ích <span class="required">*</span></label>
+        <input
+          id="amenity-name"
+          type="text"
+          class="input"
+          formControlName="name"
+          placeholder="Ví dụ: Máy lạnh, Wifi cáp quang..."
+        />
+        @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+          <span class="field-error">Tên tiện ích không được để trống</span>
+        }
+      </div>
+
+      <!-- Icon & Live preview -->
+      <div class="form-group">
+        <label for="amenity-icon" class="label-md">Mã Icon (Material Symbol)</label>
+        <div class="icon-input-row">
+          <input
+            id="amenity-icon"
+            type="text"
+            class="input"
+            formControlName="icon"
+            placeholder="Ví dụ: ac_unit, wifi..."
+          />
+          <div class="icon-preview" title="Icon xem trước">
+            <span class="material-symbols-outlined">{{ form.controls.icon.value || 'check_circle' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick icon choices -->
+      <div class="form-group">
+        <span class="label-sm text-secondary">Gợi ý biểu tượng phổ biến:</span>
+        <div class="quick-icons">
+          @for (item of suggestedIcons; track item.icon) {
+            <button
+              type="button"
+              class="quick-icon-btn"
+              [class.is-selected]="form.controls.icon.value === item.icon"
+              (click)="selectIcon(item.icon)"
+              [title]="item.label"
+            >
+              <span class="material-symbols-outlined">{{ item.icon }}</span>
+              <span class="icon-text">{{ item.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+        <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
+          {{ busy() ? 'Đang lưu...' : (data.action === 'create' ? 'Tạo tiện ích' : 'Cập nhật') }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

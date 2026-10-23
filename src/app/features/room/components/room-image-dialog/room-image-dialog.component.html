@@ -1,0 +1,78 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <div class="header-info">
+      <h2 mat-dialog-title>Quản lý hình ảnh phòng</h2>
+      <p class="body-sm text-secondary">{{ data.room.roomTypeName }} • {{ data.room.addressLine }}</p>
+    </div>
+    <button type="button" class="btn-icon" (click)="close()" aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error" role="alert">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert-success" role="status">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>{{ success() }}</span>
+    </div>
+  }
+
+  <!-- Upload box -->
+  <div class="upload-bar card-flat">
+    <input
+      id="img-upload-input"
+      type="file"
+      accept="image/png, image/jpeg"
+      multiple
+      [disabled]="busy()"
+      (change)="onFilesSelected($event)"
+      class="file-hidden"
+    />
+    <label for="img-upload-input" class="btn-primary" [class.disabled]="busy()">
+      <span class="material-symbols-outlined">add_photo_alternate</span>
+      <span>{{ busy() ? 'Đang tải lên...' : 'Tải thêm ảnh mới' }}</span>
+    </label>
+    <span class="body-sm text-secondary">Tối đa 10 ảnh / lần upload. Định dạng JPG, PNG (tối đa 5MB).</span>
+  </div>
+
+  <!-- Images Gallery Grid -->
+  <div class="gallery-grid">
+    @for (image of images(); track image.id; let i = $index) {
+      <div class="gallery-item">
+        <img
+          [src]="imageUtils.toImageSrc(image.url)"
+          alt="Ảnh phòng"
+          class="gallery-img"
+          loading="lazy"
+        />
+        <div class="item-overlay">
+          <span class="badge-index">#{{ i + 1 }}</span>
+          <button
+            type="button"
+            class="btn-delete"
+            [disabled]="busy()"
+            (click)="deleteImage(image)"
+            title="Xóa ảnh này"
+          >
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-gallery">
+        <span class="material-symbols-outlined empty-icon">no_photography</span>
+        <p>Phòng này hiện chưa có hình ảnh nào.</p>
+      </div>
+    }
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" (click)="close()">Đóng</button>
+  </div>
+</div>

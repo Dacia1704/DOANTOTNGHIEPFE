@@ -20,10 +20,50 @@ export const routes: Routes = [
         loadComponent: () => import('./features/profile/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent),
       },
       {
+        path: 'phong-cua-toi',
+        canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+      },
+      {
+        path: 'dang-tin',
+        canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+      },
+      {
+        path: 'quan-ly-loai-phong',
+        canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/admin/room-type-management/room-type-management.component').then(m => m.RoomTypeManagementComponent),
+      },
+      {
+        path: 'loai-phong',
+        redirectTo: 'quan-ly-loai-phong',
+        pathMatch: 'full',
+      },
+      {
+        path: 'quan-ly-tien-ich',
+        canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/admin/amenity-management/amenity-management.component').then(m => m.AmenityManagementComponent),
+      },
+      {
+        path: 'tien-ich',
+        redirectTo: 'quan-ly-tien-ich',
+        pathMatch: 'full',
+      },
+      {
+        path: 'landlord',
+        redirectTo: 'phong-cua-toi',
+        pathMatch: 'full',
+      },
+      {
+        path: 'danh-sach-phong',
+        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+      },
+      {
         path: 'cai-dat',
         redirectTo: 'trang-ca-nhan',
         pathMatch: 'full',
       },
+
       {
         path: 'login',
         loadComponent: () =>

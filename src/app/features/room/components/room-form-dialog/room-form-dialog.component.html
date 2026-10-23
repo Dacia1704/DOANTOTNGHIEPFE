@@ -1,0 +1,309 @@
+<div class="dialog-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-title-box">
+      <h2 mat-dialog-title>
+        {{ data.action === 'create' ? 'Đăng tin phòng mới' : 'Chỉnh sửa thông tin phòng' }}
+      </h2>
+      <p class="body-sm text-secondary">
+        Điền đầy đủ thông tin phòng trọ để người thuê dễ dàng tìm kiếm và liên hệ.
+      </p>
+    </div>
+    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="submit()" class="dialog-body">
+    <!-- SECTION 1: BASIC INFO -->
+    <fieldset class="form-section">
+      <legend class="section-title">
+        <span class="material-symbols-outlined section-icon">info</span>
+        <span>Thông tin chung</span>
+      </legend>
+
+      <div class="form-row form-row-3">
+        <!-- Room Type -->
+        <div class="form-group">
+          <label for="room-type" class="label-md">Loại phòng <span class="required">*</span></label>
+          <select id="room-type" class="input" formControlName="roomTypeId">
+            <option value="">Chọn loại phòng</option>
+            @for (type of roomTypes(); track type.id) {
+              <option [value]="type.id">{{ type.name }}</option>
+            }
+          </select>
+          @if (form.controls.roomTypeId.touched && form.controls.roomTypeId.hasError('required')) {
+            <span class="field-error">Vui lòng chọn loại phòng</span>
+          }
+        </div>
+
+        <!-- Rental Status -->
+        <div class="form-group">
+          <label for="rental-status" class="label-md">Trạng thái phòng <span class="required">*</span></label>
+          <select id="rental-status" class="input" formControlName="rentalStatus">
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ statusLabels[status] }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Max Occupants -->
+        <div class="form-group">
+          <label for="max-occupants" class="label-md">Số người ở tối đa <span class="required">*</span></label>
+          <input
+            id="max-occupants"
+            type="number"
+            class="input"
+            formControlName="maxOccupants"
+            min="1"
+            max="20"
+          />
+          @if (form.controls.maxOccupants.touched && form.controls.maxOccupants.hasError('required')) {
+            <span class="field-error">Số người ở tối thiểu là 1</span>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- SECTION 2: PRICING & SPECIFICATIONS -->
+    <fieldset class="form-section">
+      <legend class="section-title">
+        <span class="material-symbols-outlined section-icon">payments</span>
+        <span>Giá thuê & Chi phí</span>
+      </legend>
+
+      <div class="form-row form-row-3">
+        <!-- Giá thuê tháng -->
+        <div class="form-group">
+          <label for="room-price" class="label-md">Giá thuê / tháng (VNĐ) <span class="required">*</span></label>
+          <input
+            id="room-price"
+            type="number"
+            class="input price-input"
+            formControlName="price"
+            placeholder="Ví dụ: 3500000"
+            min="1000"
+            step="100000"
+          />
+          @if (form.controls.price.touched && form.controls.price.hasError('required')) {
+            <span class="field-error">Giá thuê không được để trống</span>
+          }
+        </div>
+
+        <!-- Tiền đặt cọc -->
+        <div class="form-group">
+          <label for="room-deposit" class="label-md">Tiền cọc mặc định (VNĐ)</label>
+          <input
+            id="room-deposit"
+            type="number"
+            class="input"
+            formControlName="defaultDeposit"
+            placeholder="Ví dụ: 3500000"
+            min="0"
+            step="100000"
+          />
+        </div>
+
+        <!-- Diện tích m2 -->
+        <div class="form-group">
+          <label for="room-area" class="label-md">Diện tích (m²) <span class="required">*</span></label>
+          <input
+            id="room-area"
+            type="number"
+            class="input"
+            formControlName="areaM2"
+            placeholder="Ví dụ: 25"
+            min="1"
+            step="0.5"
+          />
+          @if (form.controls.areaM2.touched && form.controls.areaM2.hasError('required')) {
+            <span class="field-error">Diện tích không được để trống</span>
+          }
+        </div>
+      </div>
+
+      <!-- Tiện ích tính phí: Điện, Nước, Dịch vụ -->
+      <div class="form-row form-row-3">
+        <div class="form-group">
+          <label for="room-electricity" class="label-md">Giá điện (VNĐ/kWh)</label>
+          <input
+            id="room-electricity"
+            type="number"
+            class="input"
+            formControlName="electricityPrice"
+            placeholder="3500"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="room-water" class="label-md">Giá nước (VNĐ/khối hoặc người)</label>
+          <input
+            id="room-water"
+            type="number"
+            class="input"
+            formControlName="waterPrice"
+            placeholder="100000"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="room-service-fee" class="label-md">Phí dịch vụ / vệ sinh (VNĐ)</label>
+          <input
+            id="room-service-fee"
+            type="number"
+            class="input"
+            formControlName="serviceFee"
+            placeholder="50000"
+            min="0"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- SECTION 3: LOCATION -->
+    <fieldset class="form-section">
+      <legend class="section-title">
+        <span class="material-symbols-outlined section-icon">location_on</span>
+        <span>Địa chỉ phòng</span>
+      </legend>
+
+      <div class="form-row form-row-2">
+        <!-- Tỉnh / Thành phố -->
+        <div class="form-group">
+          <label for="room-province" class="label-md">Tỉnh / Thành phố <span class="required">*</span></label>
+          <select id="room-province" class="input" formControlName="provinceId">
+            <option value="">Chọn tỉnh / thành phố</option>
+            @for (prov of provinces(); track prov.id) {
+              <option [value]="prov.id">{{ prov.name }}</option>
+            }
+          </select>
+          @if (form.controls.provinceId.touched && form.controls.provinceId.hasError('required')) {
+            <span class="field-error">Vui lòng chọn tỉnh / thành phố</span>
+          }
+        </div>
+
+        <!-- Phường / Xã -->
+        <div class="form-group">
+          <label for="room-ward" class="label-md">Phường / Xã <span class="required">*</span></label>
+          <select
+            id="room-ward"
+            class="input"
+            formControlName="wardId"
+            [disabled]="wards().length === 0"
+          >
+            <option value="">{{ wards().length > 0 ? 'Chọn phường / xã' : 'Vui lòng chọn tỉnh trước' }}</option>
+            @for (ward of wards(); track ward.id) {
+              <option [value]="ward.id">{{ ward.name }}</option>
+            }
+          </select>
+          @if (form.controls.wardId.touched && form.controls.wardId.hasError('required')) {
+            <span class="field-error">Vui lòng chọn phường / xã</span>
+          }
+        </div>
+      </div>
+
+      <!-- Địa chỉ chi tiết -->
+      <div class="form-group">
+        <label for="room-address-line" class="label-md">Địa chỉ cụ thể (Số nhà, ngõ/ngách, tên đường) <span class="required">*</span></label>
+        <input
+          id="room-address-line"
+          type="text"
+          class="input"
+          formControlName="addressLine"
+          placeholder="Ví dụ: Số 12 ngõ 45 đường Nguyễn Huệ..."
+        />
+        @if (form.controls.addressLine.touched && form.controls.addressLine.hasError('required')) {
+          <span class="field-error">Địa chỉ cụ thể không được để trống</span>
+        }
+      </div>
+    </fieldset>
+
+    <!-- SECTION 4: AMENITIES -->
+    <fieldset class="form-section">
+      <legend class="section-title">
+        <span class="material-symbols-outlined section-icon">checklist</span>
+        <span>Tiện ích phòng có sẵn</span>
+      </legend>
+
+      <div class="amenities-checklist">
+        @for (amenity of amenities(); track amenity.id) {
+          <button
+            type="button"
+            class="amenity-toggle-pill"
+            [class.selected]="isAmenitySelected(amenity.id)"
+            (click)="toggleAmenity(amenity.id)"
+          >
+            <span class="material-symbols-outlined pill-icon">{{ amenity.icon }}</span>
+            <span>{{ amenity.name }}</span>
+            @if (isAmenitySelected(amenity.id)) {
+              <span class="material-symbols-outlined check-mark">check</span>
+            }
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <!-- SECTION 5: IMAGES (Create Mode) -->
+    @if (data.action === 'create') {
+      <fieldset class="form-section">
+        <legend class="section-title">
+          <span class="material-symbols-outlined section-icon">photo_library</span>
+          <span>Hình ảnh phòng (Tối đa 10 ảnh)</span>
+        </legend>
+
+        <div class="upload-dropzone">
+          <input
+            id="file-input"
+            type="file"
+            accept="image/png, image/jpeg"
+            multiple
+            (change)="onFilesSelected($event)"
+            class="file-input-hidden"
+          />
+          <label for="file-input" class="dropzone-label">
+            <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+            <span class="dropzone-text">Nhấn để chọn ảnh hoặc kéo thả vào đây</span>
+            <span class="dropzone-hint">Định dạng JPG, PNG (tối đa 5MB/ảnh)</span>
+          </label>
+        </div>
+
+        @if (previewUrls().length > 0) {
+          <div class="previews-grid">
+            @for (url of previewUrls(); track url; let i = $index) {
+              <div class="preview-item">
+                <img [src]="url" alt="Ảnh xem trước" class="preview-img" />
+                <button
+                  type="button"
+                  class="btn-remove-img"
+                  (click)="removeFile(i)"
+                  title="Xóa ảnh"
+                >
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </fieldset>
+    }
+
+    <!-- Dialog Actions -->
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+      <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
+        <span class="material-symbols-outlined">{{ data.action === 'create' ? 'publish' : 'save' }}</span>
+        <span>{{ busy() ? 'Đang lưu...' : (data.action === 'create' ? 'Đăng phòng ngay' : 'Lưu thay đổi') }}</span>
+      </button>
+    </div>
+  </form>
+</div>

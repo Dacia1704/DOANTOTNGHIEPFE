@@ -100,7 +100,7 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.router.navigateByUrl('/');
+        this.router.navigateByUrl(this.auth.homeUrl());
       },
       error: (err) => {
         this.submitting.set(false);

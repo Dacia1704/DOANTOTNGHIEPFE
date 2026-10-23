@@ -1,0 +1,92 @@
+<form [formGroup]="form" (ngSubmit)="submitFilter()" class="room-filter-container card-flat">
+  <div class="filter-grid">
+    <!-- Loại phòng -->
+    <div class="filter-item">
+      <label for="filter-room-type" class="filter-label">Loại phòng</label>
+      <select id="filter-room-type" class="input filter-select" formControlName="roomTypeId">
+        <option value="">Tất cả loại phòng</option>
+        @for (type of roomTypes(); track type.id) {
+          <option [value]="type.id">{{ type.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Tỉnh / Thành phố -->
+    <div class="filter-item">
+      <label for="filter-province" class="filter-label">Tỉnh / Thành phố</label>
+      <select id="filter-province" class="input filter-select" formControlName="provinceId">
+        <option value="">Toàn quốc</option>
+        @for (prov of provinces(); track prov.id) {
+          <option [value]="prov.id">{{ prov.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Phường / Xã -->
+    <div class="filter-item">
+      <label for="filter-ward" class="filter-label">Phường / Xã</label>
+      <select
+        id="filter-ward"
+        class="input filter-select"
+        formControlName="wardId"
+        [disabled]="wards().length === 0"
+      >
+        <option value="">{{ wards().length > 0 ? 'Tất cả phường / xã' : 'Chọn tỉnh trước' }}</option>
+        @for (ward of wards(); track ward.id) {
+          <option [value]="ward.id">{{ ward.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Trạng thái -->
+    <div class="filter-item">
+      <label for="filter-status" class="filter-label">Trạng thái phòng</label>
+      <select id="filter-status" class="input filter-select" formControlName="rentalStatus">
+        <option value="">Tất cả trạng thái</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabels[status] }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Giá từ -->
+    <div class="filter-item">
+      <label for="filter-min-price" class="filter-label">Giá từ (VNĐ)</label>
+      <input
+        id="filter-min-price"
+        type="number"
+        class="input"
+        formControlName="minPrice"
+        placeholder="Từ ví dụ: 2000000"
+        min="0"
+        step="100000"
+      />
+    </div>
+
+    <!-- Giá đến -->
+    <div class="filter-item">
+      <label for="filter-max-price" class="filter-label">Giá đến (VNĐ)</label>
+      <input
+        id="filter-max-price"
+        type="number"
+        class="input"
+        formControlName="maxPrice"
+        placeholder="Đến ví dụ: 8000000"
+        min="0"
+        step="100000"
+      />
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="filter-actions">
+    <button type="button" class="btn-ghost btn-sm" (click)="resetFilter()">
+      <span class="material-symbols-outlined">restart_alt</span>
+      <span>Xóa bộ lọc</span>
+    </button>
+    <button type="submit" class="btn-primary btn-sm">
+      <span class="material-symbols-outlined">filter_list</span>
+      <span>Áp dụng lọc</span>
+    </button>
+  </div>
+</form>

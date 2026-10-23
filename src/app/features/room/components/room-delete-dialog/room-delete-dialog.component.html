@@ -1,0 +1,39 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Xác nhận xóa phòng trọ</h2>
+    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <div class="dialog-body">
+    <div class="warning-box">
+      <span class="material-symbols-outlined warning-icon">warning</span>
+      <div>
+        <p class="warning-title">Hành động này không thể hoàn tác!</p>
+        <p class="body-sm text-secondary">
+          Bạn có chắc chắn muốn xóa phòng <strong>{{ data.room.roomTypeName }}</strong> tại địa chỉ:
+          <em>{{ data.room.fullAddress }}</em>?
+        </p>
+        <p class="body-xs text-secondary">
+          Toàn bộ hình ảnh và dữ liệu liên quan của phòng này sẽ bị xóa vĩnh viễn khỏi hệ thống.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+    <button type="button" class="btn-danger" (click)="confirmDelete()" [disabled]="busy()">
+      <span class="material-symbols-outlined">delete</span>
+      <span>{{ busy() ? 'Đang xóa...' : 'Xác nhận xóa phòng' }}</span>
+    </button>
+  </div>
+</div>

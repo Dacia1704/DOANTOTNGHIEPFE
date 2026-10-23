@@ -1,0 +1,196 @@
+.room-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+}
+
+.card-media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: var(--surface-container-low);
+  overflow: hidden;
+  cursor: pointer;
+
+  .room-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-base);
+  }
+
+  &:hover .room-thumb {
+    transform: scale(1.05);
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .badge-image-count {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    gap: 4px;
+
+    .icon-small {
+      font-size: 14px;
+    }
+  }
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  flex: 1;
+}
+
+.type-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+
+  .room-type-badge {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .price-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+}
+
+.specs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  .spec-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--primary);
+    }
+  }
+
+  .spec-divider {
+    color: var(--border-hover);
+  }
+}
+
+.location-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  .loc-icon {
+    font-size: 18px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .address-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 18px;
+  }
+}
+
+.fees-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+
+  .fee-chip {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: var(--surface-container-low);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+  }
+}
+
+.amenities-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+
+  .amenity-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: var(--primary-subtle);
+    border-radius: var(--radius-full);
+    color: var(--primary);
+
+    .amenity-icon {
+      font-size: 14px;
+    }
+  }
+
+  .amenity-chip-more {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 2px 6px;
+  }
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-xs);
+  margin-top: auto;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+
+  .action-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    gap: 4px;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+}

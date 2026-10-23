@@ -1,0 +1,273 @@
+<section class="rooms-page" aria-labelledby="rooms-heading">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1 id="rooms-heading" class="headline-lg">
+        {{ isLandlord() ? 'Quản lý phòng của tôi' : 'Quản lý hệ thống phòng trọ' }}
+      </h1>
+      <p class="body-md text-secondary">
+        Đăng tin phòng mới, cập nhật giá thuê, quản lý hình ảnh và theo dõi trạng thái phòng.
+      </p>
+    </div>
+    <div class="header-right">
+      <button type="button" class="btn-primary btn-post" (click)="openCreate()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Đăng tin / Thêm phòng</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Success Notification -->
+  @if (success()) {
+    <div class="alert-success" role="status">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>{{ success() }}</span>
+    </div>
+  }
+
+  <!-- Quick KPI / Stats Cards -->
+  <div class="stats-overview">
+    <div class="kpi-card">
+      <div class="kpi-icon-box primary">
+        <span class="material-symbols-outlined">meeting_room</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Tổng số phòng</span>
+        <strong class="kpi-value">{{ stats().total }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box success">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Còn phòng (Trống)</span>
+        <strong class="kpi-value">{{ stats().available }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box secondary">
+        <span class="material-symbols-outlined">key</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Đã cho thuê</span>
+        <strong class="kpi-value">{{ stats().rented }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box warning">
+        <span class="material-symbols-outlined">build</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Đang bảo trì</span>
+        <strong class="kpi-value">{{ stats().maintenance }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <app-room-filter (filterChange)="onFilterChange($event)"></app-room-filter>
+
+  <!-- Content Section Header & View Toggles -->
+  <div class="list-controls">
+    <div class="controls-left">
+      @if (result(); as data) {
+        <span class="body-md text-secondary">
+          Hiển thị <strong>{{ data.items.length }}</strong> / {{ data.total }} phòng
+        </span>
+      }
+    </div>
+
+    <div class="controls-right">
+      <div class="view-mode-group">
+        <button
+          type="button"
+          class="btn-icon mode-btn"
+          [class.active]="viewMode() === 'grid'"
+          (click)="setViewMode('grid')"
+          title="Xem dạng lưới thẻ"
+          aria-label="Xem dạng lưới thẻ"
+        >
+          <span class="material-symbols-outlined">grid_view</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-icon mode-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="setViewMode('table')"
+          title="Xem dạng bảng"
+          aria-label="Xem dạng bảng"
+        >
+          <span class="material-symbols-outlined">table_rows</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p class="body-md text-secondary">Đang tải danh sách phòng...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-container error-state">
+      <span class="material-symbols-outlined state-icon error">error</span>
+      <p class="body-md text-secondary">{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (result(); as data) {
+    <!-- Grid View -->
+    @if (viewMode() === 'grid') {
+      <div class="rooms-grid">
+        @for (room of data.items; track room.id) {
+          <app-room-card
+            [room]="room"
+            [canManage]="true"
+            (edit)="openEdit($event)"
+            (delete)="openDelete($event)"
+            (manageImages)="openManageImages($event)"
+            (viewDetail)="openDetail($event)"
+          ></app-room-card>
+        } @empty {
+          <div class="empty-state card">
+            <span class="material-symbols-outlined empty-icon">holiday_village</span>
+            <p class="empty-title">Không tìm thấy phòng trọ nào.</p>
+            <p class="body-sm text-secondary">Hãy thử điều chỉnh bộ lọc hoặc bấm "Đăng tin / Thêm phòng" để tạo phòng mới.</p>
+            <button type="button" class="btn-primary" (click)="openCreate()">
+              <span class="material-symbols-outlined">add_circle</span>
+              <span>Đăng phòng ngay</span>
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Table View -->
+      <div class="table-container card-flat">
+        <table class="table" aria-label="Bảng danh sách phòng trọ">
+          <thead>
+            <tr>
+              <th scope="col">Hình ảnh</th>
+              <th scope="col">Loại phòng</th>
+              <th scope="col">Địa chỉ</th>
+              <th scope="col">Giá thuê</th>
+              <th scope="col">Diện tích</th>
+              <th scope="col">Trạng thái</th>
+              <th scope="col" class="th-actions">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (room of data.items; track room.id) {
+              <tr>
+                <td>
+                  <img
+                    [src]="imageUtils.toImageSrc(room.thumbnail, 'room-fallback.jpg')"
+                    alt="Phòng"
+                    class="table-thumb"
+                    (error)="$any($event.target).src = 'room-fallback.jpg'"
+                  />
+                </td>
+                <td>
+                  <span class="badge badge-primary">{{ room.roomTypeName }}</span>
+                </td>
+                <td>
+                  <div class="table-address-cell">
+                    <span class="address-line">{{ room.addressLine }}</span>
+                    <span class="address-sub text-secondary">{{ room.wardName }}, {{ room.provinceName }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="table-price">{{ roomUtils.formatPrice(room.price) }}</span>
+                </td>
+                <td>
+                  <span>{{ room.areaM2 }} m²</span>
+                </td>
+                <td>
+                  <span class="badge" [class]="roomUtils.getStatusBadgeClass(room.rentalStatus)">
+                    {{ roomUtils.getStatusLabel(room.rentalStatus) }}
+                  </span>
+                </td>
+                <td class="td-actions">
+                  <div class="table-actions">
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      (click)="openDetail(room)"
+                      title="Xem chi tiết"
+                    >
+                      <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      (click)="openManageImages(room)"
+                      title="Quản lý ảnh"
+                    >
+                      <span class="material-symbols-outlined">photo_library</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      (click)="openEdit(room)"
+                      title="Chỉnh sửa"
+                    >
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-icon danger"
+                      (click)="openDelete(room)"
+                      title="Xóa phòng"
+                    >
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="empty-cell">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined">folder_off</span>
+                    <p>Không tìm thấy phòng trọ nào phù hợp.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Pagination -->
+    @if (data.totalPages > 1) {
+      <nav class="pagination-bar" aria-label="Phân trang phòng">
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="data.page === 0"
+          (click)="load(data.page - 1)"
+        >
+          <span class="material-symbols-outlined">chevron_left</span>
+          <span>Trang trước</span>
+        </button>
+
+        <span class="page-indicator">Trang {{ data.page + 1 }} / {{ data.totalPages }}</span>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="data.page + 1 >= data.totalPages"
+          (click)="load(data.page + 1)"
+        >
+          <span>Trang sau</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </nav>
+    }
+  }
+</section>

@@ -1,0 +1,115 @@
+<article class="room-card card" [attr.aria-label]="room.roomTypeName + ' tại ' + room.fullAddress">
+  <!-- Image Banner -->
+  <div class="card-media" (click)="onView()">
+    <img
+      class="room-thumb"
+      [src]="thumbnailSrc"
+      [alt]="room.roomTypeName"
+      loading="lazy"
+      (error)="$any($event.target).src = 'room-fallback.jpg'"
+    />
+    <!-- Status Badge -->
+    <span class="badge status-badge" [class]="roomUtils.getStatusBadgeClass(room.rentalStatus)">
+      {{ roomUtils.getStatusLabel(room.rentalStatus) }}
+    </span>
+
+    <!-- Image Count Badge -->
+    <span class="badge badge-image-count">
+      <span class="material-symbols-outlined icon-small">photo_camera</span>
+      <span>{{ room.images.length }}</span>
+    </span>
+  </div>
+
+  <!-- Content -->
+  <div class="card-content">
+    <!-- Type and Price Header -->
+    <div class="type-price-row">
+      <span class="badge badge-primary room-type-badge">{{ room.roomTypeName }}</span>
+      <div class="price-wrap">
+        <span class="price-value">{{ roomUtils.formatPrice(room.price) }}</span>
+      </div>
+    </div>
+
+    <!-- Specifications Row (Area, Max Occupants) -->
+    <div class="specs-row">
+      <span class="spec-item" title="Diện tích">
+        <span class="material-symbols-outlined">square_foot</span>
+        <span>{{ room.areaM2 }} m²</span>
+      </span>
+      <span class="spec-divider">•</span>
+      <span class="spec-item" title="Số người ở tối đa">
+        <span class="material-symbols-outlined">person</span>
+        <span>Tối đa {{ room.maxOccupants }} người</span>
+      </span>
+    </div>
+
+    <!-- Location -->
+    <div class="location-row" [title]="room.fullAddress">
+      <span class="material-symbols-outlined loc-icon">location_on</span>
+      <span class="address-text">{{ room.fullAddress }}</span>
+    </div>
+
+    <!-- Fees Summary -->
+    <div class="fees-row">
+      @if (room.electricityPrice > 0) {
+        <span class="fee-chip" title="Giá điện">⚡ {{ room.electricityPrice.toLocaleString('vi-VN') }}đ/kWh</span>
+      }
+      @if (room.waterPrice > 0) {
+        <span class="fee-chip" title="Giá nước">💧 {{ room.waterPrice.toLocaleString('vi-VN') }}đ/khối</span>
+      }
+      @if (room.defaultDeposit > 0) {
+        <span class="fee-chip" title="Tiền cọc">🛡️ Cọc: {{ room.defaultDeposit.toLocaleString('vi-VN') }}đ</span>
+      }
+    </div>
+
+    <!-- Amenities Snippet -->
+    @if (room.amenities.length > 0) {
+      <div class="amenities-row">
+        @for (amenity of room.amenities.slice(0, 3); track amenity.id) {
+          <span class="amenity-chip" [title]="amenity.name">
+            <span class="material-symbols-outlined amenity-icon">{{ amenity.icon }}</span>
+            <span>{{ amenity.name }}</span>
+          </span>
+        }
+        @if (room.amenities.length > 3) {
+          <span class="amenity-chip-more">+{{ room.amenities.length - 3 }}</span>
+        }
+      </div>
+    }
+
+    <!-- Landlord / Admin Action Buttons -->
+    @if (canManage) {
+      <div class="card-actions">
+        <button
+          type="button"
+          class="btn-secondary action-btn"
+          (click)="onManageImages()"
+          title="Quản lý ảnh phòng"
+        >
+          <span class="material-symbols-outlined">add_photo_alternate</span>
+          <span>Ảnh ({{ room.images.length }})</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary action-btn"
+          (click)="onEdit()"
+          title="Chỉnh sửa thông tin phòng"
+        >
+          <span class="material-symbols-outlined">edit</span>
+          <span>Sửa</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-danger action-btn"
+          (click)="onDelete()"
+          title="Xóa phòng"
+        >
+          <span class="material-symbols-outlined">delete</span>
+          <span>Xóa</span>
+        </button>
+      </div>
+    }
+  </div>
+</article>

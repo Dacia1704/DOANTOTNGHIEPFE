@@ -30,6 +30,8 @@ export class SiteHeaderComponent {
   @Input() adminMode = false;
 
   get isAdmin(): boolean { return this.auth.primaryRole() === RoleCode.ADMIN; }
+  get isLandlord(): boolean { return this.auth.primaryRole() === RoleCode.LANDLORD; }
+  get isTenant(): boolean { return this.auth.primaryRole() === RoleCode.TENANT; }
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);

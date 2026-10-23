@@ -1,0 +1,164 @@
+<section class="amenities-page" aria-labelledby="amenities-heading">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1 id="amenities-heading" class="headline-lg">Quản lý tiện ích phòng</h1>
+      <p class="body-md text-secondary">
+        Danh sách các tiện ích phòng trọ (điều hòa, wifi, bếp, ban công...) phục vụ đăng tin và lọc tìm kiếm.
+      </p>
+    </div>
+    <div class="header-right">
+      <button type="button" class="btn-primary" (click)="openCreate()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Thêm tiện ích</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Success Notification -->
+  @if (success()) {
+    <div class="alert-success" role="status">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>{{ success() }}</span>
+    </div>
+  }
+
+  <!-- Toolbar: Search & Summary -->
+  <div class="toolbar card-flat">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input
+        type="search"
+        class="input input-search"
+        [formControl]="searchControl"
+        placeholder="Tìm kiếm tiện ích theo tên..."
+        aria-label="Tìm kiếm tiện ích"
+      />
+    </div>
+
+    @if (result(); as data) {
+      <div class="summary-badge">
+        <span class="badge badge-info">{{ data.total }} tiện ích</span>
+      </div>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p class="body-md text-secondary">Đang tải danh sách tiện ích...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-container error-state">
+      <span class="material-symbols-outlined state-icon error">error</span>
+      <p class="body-md text-secondary">{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (result(); as data) {
+    <!-- Data Table -->
+    <div class="table-container card-flat">
+      <table class="table" aria-label="Danh sách tiện ích">
+        <thead>
+          <tr>
+            <th scope="col" class="th-icon">Biểu tượng</th>
+            <th scope="col">Tên tiện ích</th>
+            <th scope="col">Mã Icon</th>
+            <th scope="col">Ngày tạo</th>
+            <th scope="col" class="th-actions">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filteredItems(); track item.id) {
+            <tr>
+              <!-- Icon -->
+              <td class="td-icon">
+                <div class="amenity-icon-box">
+                  <span class="material-symbols-outlined">{{ item.icon }}</span>
+                </div>
+              </td>
+
+              <!-- Name -->
+              <td>
+                <span class="amenity-name">{{ item.name }}</span>
+              </td>
+
+              <!-- Code -->
+              <td>
+                <code class="icon-code">{{ item.icon }}</code>
+              </td>
+
+              <!-- Created At -->
+              <td>
+                <span class="body-sm text-secondary">
+                  {{ item.createdAt ? textUtils.formatDate(item.createdAt, 'dd/MM/yyyy HH:mm') : '—' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="td-actions">
+                <div class="row-actions">
+                  <button
+                    type="button"
+                    class="btn-secondary btn-sm"
+                    (click)="openEdit(item)"
+                    [attr.aria-label]="'Chỉnh sửa tiện ích ' + item.name"
+                  >
+                    <span class="material-symbols-outlined">edit</span>
+                    <span>Sửa</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-danger btn-sm"
+                    (click)="openDelete(item)"
+                    [attr.aria-label]="'Xóa tiện ích ' + item.name"
+                  >
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>Xóa</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-cell">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined">inventory_2</span>
+                  <p>Không tìm thấy tiện ích nào phù hợp.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (data.totalPages > 1) {
+      <nav class="pagination-bar" aria-label="Phân trang tiện ích">
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="data.page === 0"
+          (click)="load(data.page - 1)"
+        >
+          <span class="material-symbols-outlined">chevron_left</span>
+          <span>Trang trước</span>
+        </button>
+
+        <span class="page-indicator">Trang {{ data.page + 1 }} / {{ data.totalPages }}</span>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="data.page + 1 >= data.totalPages"
+          (click)="load(data.page + 1)"
+        >
+          <span>Trang sau</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </nav>
+    }
+  }
+</section>

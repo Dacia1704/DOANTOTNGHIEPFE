@@ -1,0 +1,87 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      @switch (data.action) {
+        @case ('create') { Thêm loại phòng mới }
+        @case ('edit') { Chỉnh sửa loại phòng }
+        @case ('delete') { Xác nhận xóa loại phòng }
+      }
+    </h2>
+    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (data.action === 'delete') {
+    <div class="dialog-body">
+      <p class="delete-warning">
+        Bạn có chắc chắn muốn xóa loại phòng <strong>{{ data.roomType?.name }}</strong> không?
+      </p>
+      <p class="body-sm text-secondary">
+        Lưu ý: Không thể xóa loại phòng nếu đã có phòng trọ đang thuộc danh mục này.
+      </p>
+    </div>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+      <button type="button" class="btn-danger" (click)="submit()" [disabled]="busy()">
+        {{ busy() ? 'Đang xóa...' : 'Xác nhận xóa' }}
+      </button>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="dialog-body">
+      <!-- Tên loại phòng -->
+      <div class="form-group">
+        <label for="type-name" class="label-md">Tên loại phòng <span class="required">*</span></label>
+        <input
+          id="type-name"
+          type="text"
+          class="input"
+          formControlName="name"
+          placeholder="Ví dụ: Phòng Studio, Chung cư mini, Nhà nguyên căn..."
+        />
+        @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+          <span class="field-error">Tên loại phòng không được để trống</span>
+        }
+      </div>
+
+      <!-- Loại phòng cha (parentId) -->
+      <div class="form-group">
+        <label for="type-parent" class="label-md">Loại phòng cha (tùy chọn)</label>
+        <select id="type-parent" class="input" formControlName="parentId">
+          <option value="">Không có (Loại phòng gốc)</option>
+          @for (parent of parentOptions; track parent.id) {
+            <option [value]="parent.id">{{ parent.name }}</option>
+          }
+        </select>
+        <span class="body-xs text-secondary">Chọn phân cấp nếu loại phòng này là nhóm con của loại phòng khác.</span>
+      </div>
+
+      <!-- Mô tả -->
+      <div class="form-group">
+        <label for="type-desc" class="label-md">Mô tả loại phòng</label>
+        <textarea
+          id="type-desc"
+          class="input textarea"
+          rows="3"
+          formControlName="description"
+          placeholder="Mô tả đặc điểm, đối tượng phù hợp, tiện ích tiêu chuẩn..."
+        ></textarea>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+        <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
+          {{ busy() ? 'Đang lưu...' : (data.action === 'create' ? 'Tạo loại phòng' : 'Cập nhật') }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

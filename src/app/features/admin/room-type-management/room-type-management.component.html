@@ -1,0 +1,247 @@
+<section class="room-types-page" aria-labelledby="room-types-heading">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1 id="room-types-heading" class="headline-lg">Quản lý loại phòng</h1>
+      <p class="body-md text-secondary">
+        Định nghĩa và phân cấp các thể loại phòng (Studio, Chung cư mini, Nhà nguyên căn, Ký túc xá...).
+      </p>
+    </div>
+    <div class="header-right">
+      <button type="button" class="btn-primary" (click)="openCreate()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Thêm loại phòng</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Success Notification -->
+  @if (success()) {
+    <div class="alert-success" role="status">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>{{ success() }}</span>
+    </div>
+  }
+
+  <!-- View Mode Switcher -->
+  <div class="view-tabs">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'list'"
+      (click)="setTab('list')"
+    >
+      <span class="material-symbols-outlined">table_view</span>
+      <span>Danh sách loại phòng</span>
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'categories'"
+      (click)="setTab('categories')"
+    >
+      <span class="material-symbols-outlined">category</span>
+      <span>Xem theo danh mục & phòng</span>
+    </button>
+  </div>
+
+  @if (activeTab() === 'list') {
+    <!-- Toolbar: Search & Summary -->
+    <div class="toolbar card-flat">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input
+          type="search"
+          class="input input-search"
+          [formControl]="searchControl"
+          placeholder="Tìm theo tên hoặc mô tả loại phòng..."
+          aria-label="Tìm kiếm loại phòng"
+        />
+      </div>
+
+      @if (result(); as data) {
+        <div class="summary-badge">
+          <span class="badge badge-info">{{ data.total }} loại phòng</span>
+        </div>
+      }
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p class="body-md text-secondary">Đang tải danh sách loại phòng...</p>
+      </div>
+    } @else if (error()) {
+      <div class="state-container error-state">
+        <span class="material-symbols-outlined state-icon error">error</span>
+        <p class="body-md text-secondary">{{ error() }}</p>
+        <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+      </div>
+    } @else if (result(); as data) {
+      <!-- Data Table -->
+      <div class="table-container card-flat">
+        <table class="table" aria-label="Danh sách loại phòng">
+          <thead>
+            <tr>
+              <th scope="col">Tên loại phòng</th>
+              <th scope="col">Loại phòng cha</th>
+              <th scope="col">Mô tả</th>
+              <th scope="col">Ngày tạo</th>
+              <th scope="col" class="th-actions">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr>
+                <td>
+                  <div class="type-name-cell">
+                    <span class="material-symbols-outlined type-icon">meeting_room</span>
+                    <strong class="type-name">{{ item.name }}</strong>
+                  </div>
+                </td>
+
+                <td>
+                  @if (item.parentName) {
+                    <span class="badge badge-secondary">{{ item.parentName }}</span>
+                  } @else {
+                    <span class="body-sm text-secondary">Gốc (Không có)</span>
+                  }
+                </td>
+
+                <td>
+                  <span class="body-sm text-secondary desc-text">
+                    {{ item.description || 'Chưa có mô tả' }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="body-sm text-secondary">
+                    {{ item.createdAt ? textUtils.formatDate(item.createdAt, 'dd/MM/yyyy') : '—' }}
+                  </span>
+                </td>
+
+                <td class="td-actions">
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="btn-secondary btn-sm"
+                      (click)="openEdit(item)"
+                      [attr.aria-label]="'Chỉnh sửa loại phòng ' + item.name"
+                    >
+                      <span class="material-symbols-outlined">edit</span>
+                      <span>Sửa</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn-danger btn-sm"
+                      (click)="openDelete(item)"
+                      [attr.aria-label]="'Xóa loại phòng ' + item.name"
+                    >
+                      <span class="material-symbols-outlined">delete</span>
+                      <span>Xóa</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-cell">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined">folder_off</span>
+                    <p>Không tìm thấy loại phòng nào phù hợp.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (data.totalPages > 1) {
+        <nav class="pagination-bar" aria-label="Phân trang loại phòng">
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="data.page === 0"
+            (click)="load(data.page - 1)"
+          >
+            <span class="material-symbols-outlined">chevron_left</span>
+            <span>Trang trước</span>
+          </button>
+
+          <span class="page-indicator">Trang {{ data.page + 1 }} / {{ data.totalPages }}</span>
+
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="data.page + 1 >= data.totalPages"
+            (click)="load(data.page + 1)"
+          >
+            <span>Trang sau</span>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </nav>
+      }
+    }
+  } @else {
+    <!-- Categories & Rooms View -->
+    @if (loading()) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p class="body-md text-secondary">Đang tải danh mục và phòng...</p>
+      </div>
+    } @else {
+      <div class="categories-container">
+        @for (cat of categories(); track cat.id) {
+          <div class="category-card card">
+            <div class="category-header">
+              <div class="category-title-wrap">
+                <span class="material-symbols-outlined cat-icon">folder_open</span>
+                <div>
+                  <h3 class="category-title">{{ cat.name }}</h3>
+                  @if (cat.description) {
+                    <p class="body-sm text-secondary">{{ cat.description }}</p>
+                  }
+                </div>
+              </div>
+              <span class="badge badge-primary">{{ cat.rooms.length }} phòng</span>
+            </div>
+
+            @if (cat.rooms.length > 0) {
+              <div class="rooms-grid">
+                @for (room of cat.rooms; track room.id) {
+                  <div class="room-mini-card">
+                    <div class="room-mini-top">
+                      <span class="room-mini-price">{{ roomUtils.formatPrice(room.price) }}</span>
+                      <span class="badge" [class]="roomUtils.getStatusBadgeClass($any(room.rentalStatus))">
+                        {{ roomUtils.getStatusLabel($any(room.rentalStatus)) }}
+                      </span>
+                    </div>
+                    <div class="room-mini-meta">
+                      <span><span class="material-symbols-outlined">square_foot</span> {{ room.areaM2 }} m²</span>
+                      <span><span class="material-symbols-outlined">person</span> Tối đa {{ room.maxOccupants }} người</span>
+                    </div>
+                    <div class="room-mini-address">
+                      <span class="material-symbols-outlined">location_on</span>
+                      <span class="address-text">{{ room.addressLine }}, {{ room.wardName }}, {{ room.provinceName }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="body-sm text-placeholder empty-rooms-text">Chưa có phòng nào thuộc loại phòng này.</p>
+            }
+          </div>
+        } @empty {
+          <div class="empty-state card">
+            <span class="material-symbols-outlined">category</span>
+            <p>Không có danh mục phòng nào.</p>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

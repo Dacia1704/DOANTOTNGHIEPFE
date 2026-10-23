@@ -24,9 +24,10 @@ export class AdminLayout {
   readonly collapsed = signal(false);
   readonly pageLabel = signal('Quản trị');
   readonly menu: NavItem[] = [
-    { icon: 'person', label: 'Hồ sơ cá nhân', route: '/admin/profile' },
     { icon: 'manage_accounts', label: 'Quản lý người dùng', route: '/admin/users' },
+    { icon: 'person', label: 'Hồ sơ cá nhân', route: '/admin/profile' },
   ];
+
 
   constructor() {
     this.breakpoints.observe(['(max-width: 767px)', '(max-width: 1279px)'])

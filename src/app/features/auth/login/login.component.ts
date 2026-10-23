@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '@services/auth.service';
 
 /**
  * Trang đăng nhập (email + password).
  *  - Form: email (required, email), password (required, min 6).
  *  - Submit → AuthService.login() → map lỗi từ BE ra banner trên cùng.
- *  - Thành công → router về '/' (landing page).
+ *  - Thành công → router về homeUrl tương ứng với vai trò (hoặc redirect param).
  *  - ReactiveFormsModule + OnPush.
  */
 @Component({
@@ -21,6 +21,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly showPassword = signal(false);
   readonly submitting = signal(false);
@@ -49,7 +50,9 @@ export class LoginComponent {
     this.auth.login({ email, password }).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.router.navigateByUrl('/');
+        const redirect = this.route.snapshot.queryParams['redirect'];
+        const target = redirect ? '/' + String(redirect).replace(/^\//, '') : this.auth.homeUrl();
+        this.router.navigateByUrl(target);
       },
       error: (err) => {
         this.submitting.set(false);

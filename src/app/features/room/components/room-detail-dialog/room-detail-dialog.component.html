@@ -1,0 +1,142 @@
+<div class="dialog-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div>
+      <div class="badge-row">
+        <span class="badge badge-primary">{{ data.room.roomTypeName }}</span>
+        <span class="badge" [class]="roomUtils.getStatusBadgeClass(data.room.rentalStatus)">
+          {{ roomUtils.getStatusLabel(data.room.rentalStatus) }}
+        </span>
+      </div>
+      <h2 mat-dialog-title class="dialog-title">{{ data.room.fullAddress }}</h2>
+    </div>
+    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <div class="dialog-body">
+    <!-- Image Gallery Section -->
+    @if (data.room.images.length > 0) {
+      <div class="gallery-wrapper">
+        <div class="main-image-box">
+          <img
+            [src]="imageUtils.toImageSrc(data.room.images[activeImageIndex()].url)"
+            [alt]="data.room.roomTypeName"
+            class="main-img"
+          />
+        </div>
+
+        @if (data.room.images.length > 1) {
+          <div class="thumb-strip">
+            @for (img of data.room.images; track img.id; let i = $index) {
+              <button
+                type="button"
+                class="thumb-btn"
+                [class.is-active]="activeImageIndex() === i"
+                (click)="setActiveImage(i)"
+              >
+                <img [src]="imageUtils.toImageSrc(img.url)" alt="Thumbnail" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Key Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Giá thuê tháng</span>
+        <span class="stat-value price">{{ roomUtils.formatPrice(data.room.price) }}</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Tiền cọc</span>
+        <span class="stat-value">{{ data.room.defaultDeposit ? data.room.defaultDeposit.toLocaleString('vi-VN') + ' đ' : 'Thương lượng' }}</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Diện tích</span>
+        <span class="stat-value">{{ data.room.areaM2 }} m²</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Số người ở tối đa</span>
+        <span class="stat-value">{{ data.room.maxOccupants }} người</span>
+      </div>
+    </div>
+
+    <!-- Monthly Fees -->
+    <div class="detail-section">
+      <h3 class="section-title">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>Chi phí hàng tháng</span>
+      </h3>
+      <div class="fees-list">
+        <div class="fee-item">
+          <span class="fee-name">Tiền điện:</span>
+          <span class="fee-val">{{ data.room.electricityPrice.toLocaleString('vi-VN') }} đ / kWh</span>
+        </div>
+        <div class="fee-item">
+          <span class="fee-name">Tiền nước:</span>
+          <span class="fee-val">{{ data.room.waterPrice.toLocaleString('vi-VN') }} đ / khối (hoặc người)</span>
+        </div>
+        <div class="fee-item">
+          <span class="fee-name">Phí dịch vụ & quản lý:</span>
+          <span class="fee-val">{{ data.room.serviceFee.toLocaleString('vi-VN') }} đ / tháng</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amenities -->
+    <div class="detail-section">
+      <h3 class="section-title">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>Tiện ích phòng</span>
+      </h3>
+      @if (data.room.amenities.length > 0) {
+        <div class="amenities-grid">
+          @for (amenity of data.room.amenities; track amenity.id) {
+            <div class="amenity-item">
+              <span class="material-symbols-outlined">{{ amenity.icon }}</span>
+              <span>{{ amenity.name }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="body-sm text-placeholder">Chưa cập nhật tiện ích.</p>
+      }
+    </div>
+
+    <!-- Location details -->
+    <div class="detail-section">
+      <h3 class="section-title">
+        <span class="material-symbols-outlined">map</span>
+        <span>Địa chỉ & Vị trí</span>
+      </h3>
+      <p class="body-md text-secondary">
+        <strong>Địa chỉ cụ thể:</strong> {{ data.room.addressLine }}, {{ data.room.wardName }}, {{ data.room.provinceName }}
+      </p>
+      @if (data.room.latitude && data.room.longitude) {
+        <p class="body-sm text-secondary">
+          <strong>Tọa độ:</strong> {{ data.room.latitude }}, {{ data.room.longitude }}
+        </p>
+      }
+    </div>
+
+    <!-- Metadata -->
+    <div class="meta-section">
+      @if (data.room.createdAt) {
+        <span>Đăng ngày: {{ textUtils.formatDate(data.room.createdAt, 'dd/MM/yyyy HH:mm') }}</span>
+      }
+      @if (data.room.updatedAt) {
+        <span>• Cập nhật: {{ textUtils.formatDate(data.room.updatedAt, 'dd/MM/yyyy HH:mm') }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="btn-primary" mat-dialog-close>Đóng</button>
+  </div>
+</div>
