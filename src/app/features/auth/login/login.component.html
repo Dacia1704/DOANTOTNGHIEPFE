@@ -58,7 +58,7 @@
           <div class="field">
             <div class="field__label-row">
               <label class="field__label" for="login-password">Mật khẩu</label>
-              <a class="field__forgot" href="#">Quên mật khẩu?</a>
+              <a class="field__forgot" routerLink="/forgot-password">Quên mật khẩu?</a>
             </div>
             <div class="field__input-row" [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid">
               <span class="field__icon material-symbols-outlined">lock</span>

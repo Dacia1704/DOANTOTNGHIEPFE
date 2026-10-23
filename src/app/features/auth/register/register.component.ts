@@ -100,7 +100,7 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.router.navigateByUrl('/');
+        this.router.navigate(['/verify-email'], { state: { email: v.email.trim().toLowerCase() } });
       },
       error: (err) => {
         this.submitting.set(false);
