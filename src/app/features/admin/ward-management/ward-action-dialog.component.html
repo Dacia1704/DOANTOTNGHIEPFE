@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+<mat-dialog-content>
+  @if (loading()) { <p role="status">Đang tải thông tin phường/xã…</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (data.action === 'edit' && error() && !stale() && !loading() && !busy()) {
+    <button class="btn-secondary" type="button" (click)="load()">Tải lại thông tin</button>
+  }
+  @if (data.action === 'delete') {
+    <p>Bạn có chắc muốn xóa <strong>{{ data.ward?.name }}</strong> (mã {{ data.ward?.code }}) thuộc {{ data.ward?.provinceName }}?</p>
+    <p class="hint">Thao tác này không thể hoàn tác.</p>
+  } @else {
+    <form id="ward-form" [formGroup]="form" (ngSubmit)="submit()">
+      <fieldset [disabled]="busy() || loading() || !detailReady()">
+      <label for="ward-form-province">Tỉnh/Thành phố <span aria-hidden="true">*</span></label>
+      <select class="input" id="ward-form-province" formControlName="provinceId" required>
+        <option value="" disabled>Chọn tỉnh/thành phố</option>
+        @for (province of data.provinces; track province.id) { <option [value]="province.id">{{ province.name }}</option> }
+      </select>
+      @if (form.controls.provinceId.touched && form.controls.provinceId.invalid) { <p class="field-error">Vui lòng chọn tỉnh/thành phố.</p> }
+      <label for="ward-form-code">Mã phường/xã <span aria-hidden="true">*</span></label>
+      <input class="input" id="ward-form-code" formControlName="code" inputmode="numeric" maxlength="5" required aria-describedby="ward-code-hint ward-code-error" [attr.aria-invalid]="form.controls.code.touched && form.controls.code.invalid" />
+      <p class="hint" id="ward-code-hint">Đúng 5 chữ số, bao gồm số 0 ở đầu. Ví dụ: 00004.</p>
+      <p class="field-error" id="ward-code-error">@if (form.controls.code.touched && form.controls.code.invalid) { {{ form.controls.code.hasError('duplicate') ? 'Mã phường/xã đã tồn tại.' : 'Vui lòng nhập mã gồm đúng 5 chữ số.' }} }</p>
+      <label for="ward-form-name">Tên phường/xã <span aria-hidden="true">*</span></label>
+      <input class="input" id="ward-form-name" formControlName="name" maxlength="100" placeholder="Ví dụ: Phường Ba Đình" required aria-describedby="ward-name-error" [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid" />
+      <p class="field-error" id="ward-name-error">@if (form.controls.name.touched && form.controls.name.invalid) { Vui lòng nhập tên hợp lệ, tối đa 100 ký tự. }</p>
+      </fieldset>
+    </form>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button class="btn-secondary" type="button" [disabled]="busy()" (click)="close()">{{ stale() ? 'Đóng và tải lại' : 'Hủy' }}</button>
+  @if (!stale()) {
+    <button [class]="data.action === 'delete' ? 'btn-danger' : 'btn-primary'" type="button" [disabled]="busy() || loading() || !detailReady()" (click)="submit()">{{ busy() ? 'Đang xử lý…' : data.action === 'delete' ? 'Xóa phường/xã' : 'Lưu' }}</button>
+  }
+</mat-dialog-actions>

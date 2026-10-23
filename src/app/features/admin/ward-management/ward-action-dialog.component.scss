@@ -1,0 +1,12 @@
+:host { display: block; color: var(--text-primary); }
+form { display: grid; gap: var(--space-sm); padding-top: var(--space-sm); }
+fieldset { display: grid; gap: var(--space-sm); border: 0; padding: 0; margin: 0; min-width: 0; }
+label { font-size: 14px; font-weight: 500; }
+.input { width: 100%; box-sizing: border-box; }
+.hint { color: var(--text-secondary); font-size: 13px; margin: 0 0 var(--space-sm); }
+.field-error { color: var(--error-text); font-size: 13px; margin: 0 0 var(--space-sm); }
+.field-error:empty { display: none; }
+.error { color: var(--error-text); background: var(--error-bg); padding: var(--space-md); border-radius: var(--radius-md); }
+mat-dialog-actions { gap: var(--space-sm); padding: var(--space-md) var(--space-lg); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }

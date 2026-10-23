@@ -1,0 +1,55 @@
+<section class="wards-page" aria-labelledby="wards-heading">
+  <div class="page-heading">
+    <div><h1 id="wards-heading">Quản lý phường/xã</h1><p class="description">Tra cứu và quản lý phường/xã theo tỉnh, thành phố.</p></div>
+    <button class="btn-primary" type="button" [disabled]="loading() || provincesLoading() || !!provinceError()" (click)="open('create')">Thêm phường/xã</button>
+  </div>
+  @if (success()) { <p class="success" role="status">{{ success() }}</p> }
+  @if (provinceError()) {
+    <div class="error" role="alert">{{ provinceError() }} <button class="btn-secondary" type="button" (click)="loadProvinces()">Thử lại</button></div>
+  }
+  <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
+    <label for="ward-search">Tìm kiếm
+      <input class="input" id="ward-search" type="search" formControlName="q" maxlength="100" placeholder="Nhập tên hoặc mã phường/xã" />
+    </label>
+    <label for="ward-province">Tỉnh/Thành phố
+      <select class="input" id="ward-province" formControlName="provinceId">
+        <option value="">{{ provincesLoading() ? 'Đang tải tỉnh/thành phố…' : 'Tất cả tỉnh/thành phố' }}</option>
+        @for (province of provinces(); track province.id) { <option [value]="province.id">{{ province.name }}</option> }
+      </select>
+    </label>
+    <label class="page-size" for="ward-size">Số dòng mỗi trang
+      <select class="input" id="ward-size" formControlName="size"><option [ngValue]="10">10</option><option [ngValue]="20">20</option><option [ngValue]="50">50</option><option [ngValue]="100">100</option></select>
+    </label>
+    <button class="btn-primary" type="submit" [disabled]="loading()">Tìm kiếm</button>
+    <button class="btn-secondary" type="button" [disabled]="loading()" (click)="reset()">Đặt lại</button>
+  </form>
+  @if (loading()) {
+    <p role="status">Đang tải danh sách phường/xã…</p>
+  } @else if (error()) {
+    <div class="error" role="alert">{{ error() }}</div><button class="btn-secondary" type="button" (click)="load()">Thử lại</button>
+  } @else if (result(); as data) {
+    <p class="description">{{ data.totalElements }} phường/xã · Sắp xếp theo mã tăng dần</p>
+    <div class="table-wrapper" tabindex="0" role="region" aria-label="Danh sách phường/xã">
+      <table>
+        <thead><tr><th scope="col">Mã phường/xã</th><th scope="col">Tên phường/xã</th><th scope="col">Tỉnh/Thành phố</th><th scope="col">Thao tác</th></tr></thead>
+        <tbody>
+          @for (ward of data.data; track ward.id) {
+            <tr><td><span class="code">{{ ward.code }}</span></td><td>{{ ward.name }}</td><td>{{ ward.provinceName }}</td>
+              <td><div class="row-actions">
+                <button class="btn-secondary" type="button" [disabled]="provincesLoading() || !!provinceError()" [attr.aria-label]="'Sửa ' + ward.name" (click)="open('edit', ward)">Sửa</button>
+                <button class="btn-danger" type="button" [attr.aria-label]="'Xóa ' + ward.name" (click)="open('delete', ward)">Xóa</button>
+              </div></td>
+            </tr>
+          } @empty { <tr><td colspan="4" class="empty">Không có phường/xã phù hợp. Hãy thử thay đổi bộ lọc hoặc thêm phường/xã mới.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+    @if (data.totalPages > 0) {
+      <nav class="pagination" aria-label="Phân trang phường/xã">
+        <button class="btn-secondary" type="button" [disabled]="data.currentPage === 0" (click)="load(data.currentPage - 1)">Trang trước</button>
+        <span>Trang {{ data.currentPage + 1 }} / {{ data.totalPages }}</span>
+        <button class="btn-secondary" type="button" [disabled]="data.currentPage + 1 >= data.totalPages" (click)="load(data.currentPage + 1)">Trang sau</button>
+      </nav>
+    }
+  }
+</section>
