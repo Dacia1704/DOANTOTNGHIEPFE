@@ -11,6 +11,7 @@ import { RegisterRequest } from '@model/auth/request/register-request';
 import { RefreshTokenResponse } from '@model/auth/response/refresh-token-response';
 import { AuthMapper } from '@model/auth/auth.mapper';
 import { AuthSession, RoleCode } from '@model/auth/auth.model';
+import { EmailOtpRequest, VerifyEmailRequest, ResetPasswordRequest } from '@model/auth/request/otp-request';
 
 const KEY = 'trotot_auth';
 
@@ -124,10 +125,26 @@ export class AuthService {
       });
   }
 
-  clearSession(): void {
+  forgotPassword(request: EmailOtpRequest): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.api}/forgot-password`, request);
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.api}/reset-password`, request);
+  }
+
+  sendVerifyEmail(request: EmailOtpRequest): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.api}/send-verify-email`, request);
+  }
+
+  verifyEmail(request: VerifyEmailRequest): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.api}/verify-email`, request);
+  }
+
+  clearSession(redirect = true): void {
     this._session.set(null);
     localStorage.removeItem(KEY);
-    this.router.navigateByUrl('/login');
+    if (redirect) this.router.navigateByUrl('/login');
   }
 
   /** Đồng bộ hồ sơ, giữ nguyên token và quyền của phiên hiện tại. */
