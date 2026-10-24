@@ -3,6 +3,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@services/auth.service';
+import { ChatService } from '@services/chat.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoleCode } from '@model/auth/auth.model';
 
@@ -35,6 +36,7 @@ export class SiteHeaderComponent {
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly chat = inject(ChatService);
 
   readonly imageUtils = ImageUtils;
 

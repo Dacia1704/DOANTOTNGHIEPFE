@@ -1023,3 +1023,227 @@ Các mã lỗi cần xử lý thêm cho Authentication, Users và Administrative
 - 502: upload avatar lên Cloudinary thất bại.
 - 503: Cloudinary chưa được cấu hình.
 - 500: lỗi hệ thống chưa được xử lý cụ thể.
+
+---
+
+## 12. Chat (REST + WebSocket)
+
+> Tất cả REST endpoint yêu cầu `Authorization: Bearer <access_token>`.
+
+### 12.1 WebSocket Configuration
+
+- **Endpoint SockJS/STOMP:** `http://localhost:8080/ws`
+- **Application Destination Prefix (gửi đi):** `/app`
+- **User Destination Prefix (nhận tin riêng/thông báo):** `/user`
+- **Topic Prefix (nhận tin theo phòng chat):** `/topic`
+- **Xác thực WebSocket:**
+  - Header STOMP CONNECT: `Authorization: Bearer <access_token>`
+  - Hoặc query param: `/ws?token=<access_token>`
+
+#### Kênh nhận tin nhắn Realtime:
+1. **Topic của cuộc trò chuyện:** `/topic/conversations/{conversationId}`
+   - Khi đang mở một cuộc trò chuyện, frontend subscribe vào topic này để nhận ngay tin nhắn mới.
+2. **Kênh cá nhân:** `/user/queue/messages`
+   - Nhận tin nhắn và cập nhật danh sách cuộc trò chuyện, unread count toàn cục khi đang ở ngoài cuộc trò chuyện.
+
+#### Gửi tin nhắn qua STOMP:
+- Send destination: `/app/chat.send`
+- Payload:
+```json
+{
+  "conversationId": "uuid-conversation",
+  "content": "Chào bạn, phòng còn trống không ạ?",
+  "messageType": "TEXT"
+}
+```
+
+---
+
+### 12.2 Tạo hoặc lấy cuộc trò chuyện từ phòng (Listing)
+
+- **Method:** `POST`
+- **URL:** `/api/chat/conversations/listing/{listingId}`
+- **Mô tả:** Người thuê nhấn "Nhắn tin cho chủ trọ" trên trang chi tiết phòng. Nếu cuộc trò chuyện cho phòng này giữa người thuê và chủ trọ đã tồn tại, trả về cuộc trò chuyện đó. Nếu chưa, tạo mới cuộc trò chuyện gắn với `listingId`.
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Lấy cuộc trò chuyện thành công",
+  "data": {
+    "id": "c1f7a28e-...",
+    "listing": {
+      "id": "l-123",
+      "title": "Phòng trọ cao cấp Cầu Giấy"
+    },
+    "otherUser": {
+      "id": "u-landlord",
+      "fullName": "Nguyễn Văn Chủ",
+      "avatarUrl": "https://res.cloudinary.com/.../avatar.jpg",
+      "roles": ["LANDLORD"]
+    },
+    "lastMessage": null,
+    "lastMessageAt": null,
+    "unreadCount": 0
+  }
+}
+```
+
+---
+
+### 12.3 Tạo hoặc lấy cuộc trò chuyện hỗ trợ trực tuyến với Admin
+
+- **Method:** `POST`
+- **URL:** `/api/chat/conversations/support`
+- **Mô tả:** Người dùng nhấn "Liên hệ hỗ trợ", hệ thống tự động kết nối với tài khoản Admin hỗ trợ khách hàng.
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Lấy cuộc trò chuyện hỗ trợ thành công",
+  "data": {
+    "id": "c-support-123",
+    "listing": null,
+    "otherUser": {
+      "id": "u-admin",
+      "fullName": "Quản trị viên hệ thống",
+      "avatarUrl": null,
+      "roles": ["ADMIN"]
+    },
+    "lastMessage": null,
+    "lastMessageAt": null,
+    "unreadCount": 0
+  }
+}
+```
+
+---
+
+### 12.4 Lấy danh sách cuộc trò chuyện của tôi
+
+- **Method:** `GET`
+- **URL:** `/api/chat/conversations`
+- **Mô tả:** Lấy toàn bộ danh sách các cuộc trò chuyện mà user hiện tại tham gia, sắp xếp theo thời gian tin nhắn mới nhất giảm dần. Kèm `unreadCount` là số tin nhắn chưa đọc của user này trong conversation.
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Lấy danh sách cuộc trò chuyện thành công",
+  "data": [
+    {
+      "id": "c1f7a28e-...",
+      "listing": {
+        "id": "l-123",
+        "title": "Phòng trọ cao cấp Cầu Giấy"
+      },
+      "otherUser": {
+        "id": "u-landlord",
+        "fullName": "Nguyễn Văn Chủ",
+        "avatarUrl": null,
+        "roles": ["LANDLORD"]
+      },
+      "lastMessage": {
+        "id": "m-999",
+        "conversationId": "c1f7a28e-...",
+        "sender": {
+          "id": "u-landlord",
+          "fullName": "Nguyễn Văn Chủ",
+          "avatarUrl": null,
+          "roles": ["LANDLORD"]
+        },
+        "content": "Phòng vẫn còn bạn nhé!",
+        "messageType": "TEXT",
+        "status": "SENT",
+        "createdAt": "2026-10-24T19:40:00"
+      },
+      "lastMessageAt": "2026-10-24T19:40:00",
+      "unreadCount": 2
+    }
+  ]
+}
+```
+
+---
+
+### 12.5 Lấy chi tiết một cuộc trò chuyện
+
+- **Method:** `GET`
+- **URL:** `/api/chat/conversations/{conversationId}`
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Lấy chi tiết cuộc trò chuyện thành công",
+  "data": {
+    "id": "c1f7a28e-...",
+    "listing": { ... },
+    "otherUser": { ... },
+    "lastMessage": { ... },
+    "lastMessageAt": "2026-10-24T19:40:00",
+    "unreadCount": 0
+  }
+}
+```
+
+---
+
+### 12.6 Lấy lịch sử tin nhắn (phân trang)
+
+- **Method:** `GET`
+- **URL:** `/api/chat/conversations/{conversationId}/messages?page=0&size=20`
+- **Query Params:**
+  - `page`: số trang (bắt đầu từ 0, mặc định 0).
+  - `size`: số lượng tin nhắn mỗi trang (mặc định 20).
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Lấy lịch sử tin nhắn thành công",
+  "data": {
+    "data": [
+      {
+        "id": "m-999",
+        "conversationId": "c1f7a28e-...",
+        "sender": {
+          "id": "u-landlord",
+          "fullName": "Nguyễn Văn Chủ",
+          "avatarUrl": null,
+          "roles": ["LANDLORD"]
+        },
+        "content": "Phòng vẫn còn bạn nhé!",
+        "messageType": "TEXT",
+        "status": "SENT",
+        "createdAt": "2026-10-24T19:40:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 45,
+    "totalPages": 3,
+    "first": true,
+    "last": false
+  }
+}
+```
+
+---
+
+### 12.7 Đánh dấu đã đọc tin nhắn
+
+- **Method:** `PUT`
+- **URL:** `/api/chat/conversations/{conversationId}/read`
+- **Mô tả:** Đánh dấu tất cả tin nhắn đối phương gửi trong cuộc trò chuyện thành `READ`.
+
+**Response (HTTP 200):**
+```json
+{
+  "code": 200,
+  "message": "Đã đánh dấu đọc thành công",
+  "data": null
+}
+```
+

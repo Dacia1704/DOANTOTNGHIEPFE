@@ -20,6 +20,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/profile/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent),
       },
       {
+        path: 'tin-nhan',
+        canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])],
+        loadComponent: () => import('./features/chat/pages/chat-page/chat-page.component').then(m => m.ChatPageComponent),
+      },
+      {
+        path: 'chat',
+        redirectTo: 'tin-nhan',
+        pathMatch: 'full',
+      },
+      {
         path: 'phong-cua-toi',
         canActivate: [roleGuard([RoleCode.LANDLORD])],
         loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),

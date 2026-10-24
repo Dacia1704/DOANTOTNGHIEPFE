@@ -35,6 +35,12 @@
         <span>VNĐ</span>
       </button>
 
+      @if (isLoggedIn()) {
+        <button type="button" class="site-header__icon-btn" title="Tin nhắn" (click)="chat.toggleWidget()">
+          <span class="material-symbols-outlined">chat</span>
+        </button>
+      }
+
       <button type="button" class="site-header__icon-btn" title="Thông báo">
         <span class="material-symbols-outlined">notifications</span>
         <span class="site-header__dot"></span>
@@ -51,6 +57,10 @@
             <span class="material-symbols-outlined mi">person</span>
             Hồ sơ cá nhân
           </a>
+          <button mat-menu-item (click)="chat.openWidget()">
+            <span class="material-symbols-outlined mi">chat</span>
+            Tin nhắn
+          </button>
           @if (isAdmin) {
             <a mat-menu-item routerLink="/admin/users">
               <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>

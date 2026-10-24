@@ -1,0 +1,121 @@
+<div class="chat-window-container">
+  <!-- HEADER: Thông tin đối phương & phòng cho thuê (nếu có) -->
+  @if (showHeader) {
+    <header class="chat-header">
+      <div class="chat-header-user">
+        <div class="avatar-wrapper">
+          @if (conversation.otherUser?.avatarUrl) {
+            <img [src]="conversation.otherUser.avatarUrl" [alt]="conversation.otherUser.fullName" class="user-avatar" />
+          } @else {
+            <div class="user-avatar-fallback">
+              {{ getAvatarFallback(conversation.otherUser?.fullName || 'Người dùng') }}
+            </div>
+          }
+          <span class="online-indicator"></span>
+        </div>
+
+        <div class="user-info">
+          <h3 class="user-name">{{ conversation.otherUser?.fullName || 'Người dùng' }}</h3>
+          <p class="user-role">
+            {{ conversation.otherUser?.roles?.join(', ') || 'Thành viên' }}
+          </p>
+        </div>
+      </div>
+
+      @if (conversation.listing) {
+        <div class="chat-header-listing">
+          <span class="listing-badge">Phòng liên quan:</span>
+          <span class="listing-title" [title]="conversation.listing.title">{{ conversation.listing.title }}</span>
+        </div>
+      }
+    </header>
+  }
+
+  <!-- BODY: Danh sách tin nhắn -->
+  <div class="chat-messages-container" #scrollContainer>
+    @if (hasMore) {
+      <div class="load-more-wrapper">
+        <button class="load-more-btn" (click)="loadMore.emit()" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner"></span> Đang tải...
+          } @else {
+            Tải tin nhắn cũ hơn
+          }
+        </button>
+      </div>
+    }
+
+    <div class="messages-list">
+      @for (msg of messages; track trackById($index, msg); let i = $index) {
+        <!-- Date separator -->
+        @if (showDateSeparator(i)) {
+          <div class="date-separator">
+            <span>{{ formatDate(msg.createdAt) }}</span>
+          </div>
+        }
+
+        <!-- Message Item -->
+        <div class="message-row" [class.is-mine]="isMine(msg)">
+          @if (!isMine(msg)) {
+            <div class="msg-avatar-col">
+              @if (msg.sender.avatarUrl) {
+                <img [src]="msg.sender.avatarUrl" [alt]="msg.sender.fullName" class="msg-avatar" />
+              } @else {
+                <div class="msg-avatar msg-avatar-fallback">
+                  {{ getAvatarFallback(msg.sender.fullName) }}
+                </div>
+              }
+            </div>
+          }
+
+          <div class="msg-bubble-group">
+            <div class="msg-bubble">
+              <p class="msg-content">{{ msg.content }}</p>
+              <div class="msg-meta">
+                <span class="msg-time">{{ formatTime(msg.createdAt) }}</span>
+                @if (isMine(msg)) {
+                  <span class="msg-status">
+                    @if (msg.status === 'READ') {
+                      <svg class="check-icon double" viewBox="0 0 24 24" width="14" height="14">
+                        <path fill="currentColor" d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/>
+                      </svg>
+                    } @else {
+                      <svg class="check-icon single" viewBox="0 0 24 24" width="14" height="14">
+                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      <div #messagesEnd></div>
+    </div>
+  </div>
+
+  <!-- FOOTER: Message Input Area -->
+  <footer class="chat-input-area">
+    <div class="input-box-wrapper">
+      <textarea
+        #messageInput
+        [(ngModel)]="inputText"
+        (keydown)="onKeyDown($event)"
+        placeholder="Nhập tin nhắn... (Nhấn Enter để gửi, Shift+Enter xuống dòng)"
+        rows="1"
+        class="chat-textarea"
+      ></textarea>
+      <button
+        class="send-btn"
+        (click)="onSend()"
+        [disabled]="!inputText.trim()"
+        title="Gửi tin nhắn"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </footer>
+</div>

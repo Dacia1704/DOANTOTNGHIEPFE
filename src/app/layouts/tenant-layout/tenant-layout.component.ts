@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 import { SiteFooterComponent } from '@shared/components/site-footer/site-footer.component';
 import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/mobile-bottom-nav.component';
+import { ChatWidgetComponent } from '@features/chat/components/chat-widget/chat-widget.component';
 
 /**
  * Shell dùng cho mọi trang public của tenant:
@@ -18,6 +19,7 @@ import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/m
     SiteHeaderComponent,
     SiteFooterComponent,
     MobileBottomNavComponent,
+    ChatWidgetComponent,
   ],
   templateUrl: './tenant-layout.component.html',
   styleUrl: './tenant-layout.component.scss',

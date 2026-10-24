@@ -78,9 +78,9 @@ export class RoomManagementPageComponent implements OnInit {
 
     this.activeParams.page = page;
 
-    // Landlord fetches my rooms or search
+    // Keep landlord results owner-scoped while using the same name-based filters as the public listing.
     const request$ = this.isLandlord()
-      ? this.roomService.getMyRooms(page, this.activeParams.size ?? 12)
+      ? this.roomService.filterMyRooms({ ...this.activeParams, page, size: this.activeParams.size ?? 12 })
       : this.roomService.getRooms(this.activeParams);
 
     request$.pipe(

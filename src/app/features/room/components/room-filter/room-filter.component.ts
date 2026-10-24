@@ -80,6 +80,7 @@ export class RoomFilterComponent implements OnInit {
     const query: RoomQueryParams = {
       page: 0,
       roomTypeId: raw.roomTypeId || undefined,
+      roomTypeName: this.roomTypes().find(type => type.id === raw.roomTypeId)?.name,
       provinceId: raw.provinceId || undefined,
       wardId: raw.wardId || undefined,
       rentalStatus: raw.rentalStatus || undefined,

@@ -1,0 +1,59 @@
+<div class="conv-list">
+  @if (loading) {
+    <div class="conv-skeleton" *ngFor="let i of [1,2,3,4,5]">
+      <div class="sk-avatar"></div>
+      <div class="sk-content">
+        <div class="sk-line sk-name"></div>
+        <div class="sk-line sk-msg"></div>
+      </div>
+    </div>
+  } @else if (conversations.length === 0) {
+    <div class="conv-empty">
+      <p>Chưa có cuộc trò chuyện nào</p>
+    </div>
+  } @else {
+    @for (conv of conversations; track trackById($index, conv)) {
+      <button
+        class="conv-item"
+        [class.active]="conv.id === activeId"
+        [class.has-unread]="conv.unreadCount > 0"
+        (click)="selectConversation.emit(conv)"
+      >
+        <!-- Avatar -->
+        <div class="conv-avatar">
+          @if (conv.otherUser.avatarUrl) {
+            <img [src]="conv.otherUser.avatarUrl" [alt]="conv.otherUser.fullName" class="avatar-img" />
+          } @else {
+            <div class="avatar-fallback">{{ getAvatarFallback(conv.otherUser.fullName) }}</div>
+          }
+          @if (conv.unreadCount > 0) {
+            <span class="unread-dot"></span>
+          }
+        </div>
+
+        <!-- Info -->
+        <div class="conv-info">
+          <div class="conv-row-top">
+            <span class="conv-name">{{ conv.otherUser.fullName }}</span>
+            <span class="conv-time">{{ formatTime(conv.lastMessageAt) }}</span>
+          </div>
+
+          <div class="conv-row-bottom">
+            <span class="conv-preview">
+              @if (conv.listing) {
+                <span class="conv-listing-badge">{{ conv.listing.title }}</span>
+              } @else if (conv.lastMessage) {
+                {{ conv.lastMessage.content }}
+              } @else {
+                Bắt đầu cuộc trò chuyện
+              }
+            </span>
+            @if (conv.unreadCount > 0) {
+              <span class="unread-badge">{{ conv.unreadCount > 99 ? '99+' : conv.unreadCount }}</span>
+            }
+          </div>
+        </div>
+      </button>
+    }
+  }
+</div>
