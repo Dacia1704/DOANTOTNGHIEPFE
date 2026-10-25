@@ -1,0 +1,300 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Dịch vụ dành cho chủ trọ</p>
+      <h1>Gói dịch vụ</h1>
+      <p class="description">Chọn quyền đăng tin phù hợp với nhu cầu của bạn.</p>
+    </div>
+    <a class="button" routerLink="/lich-su-thanh-toan">Lịch sử thanh toán</a>
+  </header>
+  <nav class="actions" aria-label="Dịch vụ">
+    <a class="button subtle" routerLink="/tin-cua-toi">Tin của tôi</a
+    ><a class="button" routerLink="/boost">Boost tin đăng</a>
+  </nav>
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Thử lại</button>
+    </div>
+  }
+  @if (loading()) {
+    <div class="loading" role="status">Đang tải gói dịch vụ và quyền hiện tại…</div>
+  }
+  @if (success()) {
+    <p class="notice success" role="status">{{ success() }}</p>
+  }
+  @if (!loading() && current(); as current) {
+    <section class="panel current current-package" aria-label="Gói hiện tại">
+      <div class="row">
+        <div>
+          <p class="eyebrow">Gói hiện tại</p>
+          <h2>{{ current.rights.packageName || 'Gói trả phí đã hết hạn' }}</h2>
+          <app-billing-status
+            [status]="current.free ? 'FREE' : current.canSubmitListings ? 'ACTIVE' : 'EXPIRED'"
+          />
+        </div>
+        <div class="muted">
+          {{
+            current.free
+              ? 'Quyền mặc định cho tài khoản mới'
+              : 'Hạn tổng: ' + ui.date(current.subscriptionEndsAt)
+          }}
+        </div>
+      </div>
+      <div class="rights">
+        <span
+          ><strong>{{
+            current.rights.maxListings === null ? 'Không giới hạn' : current.rights.maxListings
+          }}</strong
+          >Giới hạn tin</span
+        ><span
+          ><strong>{{ current.rights.highPrioritySlots }}</strong
+          >Suất ưu tiên cao</span
+        ><span
+          ><strong>{{ current.rights.lowPrioritySlots }}</strong
+          >Suất ưu tiên thấp</span
+        ><span
+          ><strong>{{ current.rights.hasStats ? 'Có' : 'Không' }}</strong
+          >Quyền thống kê</span
+        >
+      </div>
+      @if (current.currentPeriod) {
+        <p class="muted">
+          Kỳ hiện tại: {{ ui.date(current.currentPeriod.startAt) }} –
+          {{ ui.date(current.currentPeriod.endAt) }}
+        </p>
+      }
+      @if (current.nextPeriod) {
+        <p class="muted">
+          Kỳ tiếp theo: {{ current.nextPeriod.rights.packageName }} ·
+          {{ ui.date(current.nextPeriod.startAt) }} – {{ ui.date(current.nextPeriod.endAt) }}
+        </p>
+      }
+      @if (!current.free && !current.canSubmitListings) {
+        <p>Gói đã hết hạn. Chọn một gói bên dưới để mua lại quyền đăng tin.</p>
+      }
+    </section>
+    @if (openChange(); as change) {
+      <div class="notice warning">
+        <strong>{{ ui.label(change.status) }} · {{ change.rights.packageName }}</strong>
+        <p>
+          {{
+            change.status === 'SCHEDULED'
+              ? 'Hiệu lực: ' +
+                ui.date(change.effectiveAt) +
+                ' – ' +
+                ui.date(change.endAt) +
+                '. Các thao tác mua/gia hạn/đổi gói tạm khóa.'
+              : 'Bạn đã có yêu cầu đổi gói đang mở. Hoàn tất yêu cầu này trước khi tạo đổi gói khác.'
+          }}
+        </p>
+        @if (change.status === 'PENDING_PAYMENT' && ui.future(change.expiresAt)) {
+          <a class="button" [routerLink]="['/thanh-toan/xac-nhan/SERVICE_PACKAGE', change.id]"
+            >Tiếp tục thanh toán</a
+          >
+        }
+      </div>
+    }
+    <div class="section-heading">
+      <h2>Chọn gói phù hợp</h2>
+      <div class="segments" aria-label="Thời hạn mua">
+        @for (duration of availableMonths(); track duration) {
+          <button [attr.aria-pressed]="months() === duration" (click)="months.set(duration)">
+            {{ duration }} tháng
+          </button>
+        }
+      </div>
+    </div>
+    <div class="grid">
+      @for (pkg of packages(); track pkg.id) {
+        <article class="panel card" [class.current]="pkg.code === current.rights.packageCode">
+          <div class="row">
+            <h3>{{ pkg.name }}</h3>
+            @if (pkg.code === current.rights.packageCode) {
+              <span class="eyebrow">Đang dùng</span>
+            }
+          </div>
+          @if (pkg.code === 'FREE') {
+            <strong class="price">Miễn phí</strong><span class="muted">Quyền mặc định</span>
+          } @else if (price(pkg); as option) {
+            <strong class="price">{{
+              option.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi'
+            }}</strong
+            ><span class="muted"
+              >{{ type(pkg) === 'CHANGE' ? 'Giá bảng tham chiếu' : 'Tổng cho' }}
+              {{ option.durationMonths }} tháng</span
+            >
+            @if (type(pkg) === 'CHANGE') {
+              <p class="muted">
+                Phí đổi gói thực tế được máy chủ báo sau khi tạo đơn, dựa trên các kỳ đã mua.
+              </p>
+            }
+          } @else {
+            <p class="muted">Chưa bán thời hạn này. Vui lòng chọn thời hạn khác.</p>
+          }
+          <ul class="benefits">
+            <li>
+              {{
+                pkg.maxListings === null
+                  ? 'Không giới hạn số tin'
+                  : 'Tối đa ' + pkg.maxListings + ' tin đồng thời'
+              }}
+            </li>
+            <li>{{ pkg.highPrioritySlots }} suất ưu tiên cao</li>
+            <li>{{ pkg.lowPrioritySlots }} suất ưu tiên thấp</li>
+            <li>
+              {{
+                pkg.defaultPriorityLevel === 1
+                  ? 'Ưu tiên thấp mặc định cho tin còn lại'
+                  : 'Hiển thị thường mặc định'
+              }}
+            </li>
+            <li>{{ pkg.hasStats ? 'Có quyền thống kê' : 'Không kèm quyền thống kê' }}</li>
+          </ul>
+          @if (pkg.code !== 'FREE') {
+            <button
+              class="primary"
+              [disabled]="!price(pkg) || busy() || blocked(pkg)"
+              (click)="choose(pkg)"
+            >
+              {{ type(pkg) === 'CHANGE' ? 'Xem báo giá đổi gói' : ui.label(type(pkg)) }}
+            </button>
+          } @else {
+            <p class="muted">Gói mặc định, không tạo đơn mua.</p>
+          }
+        </article>
+      } @empty {
+        <p class="empty">Chưa có gói dịch vụ đang bán.</p>
+      }
+    </div>
+    <div class="section-heading"><h2>Lịch sử sử dụng</h2></div>
+    <div class="tabs" role="tablist" aria-label="Lịch sử sử dụng">
+      @for (item of ['orders', 'history', 'periods']; track item) {
+        <button
+          role="tab"
+          [disabled]="historyLoading()"
+          [attr.aria-selected]="tab() === item"
+          (click)="switchTab($any(item))"
+        >
+          {{
+            item === 'orders'
+              ? 'Đơn đăng ký'
+              : item === 'history'
+                ? 'Lịch sử gói'
+                : 'Các kỳ sử dụng'
+          }}
+        </button>
+      }
+    </div>
+    @if (historyLoading()) {
+      <p class="loading" role="status">Đang tải lịch sử…</p>
+    } @else if (historyError()) {
+      <div class="notice error" role="alert">
+        {{ historyError() }} <button (click)="loadHistory(page())">Thử lại</button>
+      </div>
+    } @else {
+      <div class="list">
+        @if (tab() === 'orders') {
+          @for (order of orders(); track order.id) {
+            <article class="panel">
+              <div class="row">
+                <div>
+                  <h3>{{ order.rights.packageName }} · {{ ui.orderLabel(order) }}</h3>
+                  <p class="muted">
+                    {{ order.immediateUpgrade ? 'Bảng giá tham chiếu ' : ''
+                    }}{{ order.durationMonths }} tháng ·
+                    {{ order.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }} ·
+                    {{ ui.date(order.createdAt) }}
+                  </p>
+                  <app-billing-status [status]="order.status" />
+                </div>
+                <div class="actions">
+                  <button
+                    (click)="expanded.set(expanded() === order.id ? null : order.id)"
+                    [attr.aria-expanded]="expanded() === order.id"
+                  >
+                    Chi tiết
+                  </button>
+                  @if (order.status === 'PENDING_PAYMENT' && ui.future(order.expiresAt)) {
+                    <a
+                      class="button primary"
+                      [routerLink]="['/thanh-toan/xac-nhan/SERVICE_PACKAGE', order.id]"
+                      >Thanh toán</a
+                    >
+                  }
+                </div>
+              </div>
+              @if (expanded() === order.id) {
+                <div class="notice">
+                  <p class="mono">Mã đơn: {{ order.id }}</p>
+                  <p>Hạn thanh toán: {{ ui.date(order.expiresAt) }}</p>
+                  <p>Hiệu lực: {{ ui.date(order.effectiveAt) }} – {{ ui.date(order.endAt) }}</p>
+                  <p>
+                    Quyền đã mua:
+                    {{
+                      order.rights.maxListings === null
+                        ? 'Không giới hạn'
+                        : order.rights.maxListings
+                    }}
+                    tin · {{ order.rights.highPrioritySlots }} suất cao ·
+                    {{ order.rights.lowPrioritySlots }} suất thấp
+                  </p>
+                  @if (order.status === 'AWAITING_ADMIN_CONFIRMATION') {
+                    <p>Đơn đổi gói cũ đang chờ admin xác nhận.</p>
+                  } @else if (order.immediateUpgrade) {
+                    <p>
+                      Phí nâng gói theo thời gian còn lại; áp dụng sau xác nhận thanh toán và giữ
+                      nguyên hạn tổng đã mua. Không reset quota hoặc hạn tin/Boost.
+                    </p>
+                  } @else if (order.type === 'CHANGE' && order.immediateUpgrade === false) {
+                    <p>Thanh toán cả kỳ mới và tự xếp lịch từ hạn tổng gói cũ, không cần admin.</p>
+                  }
+                  @if (order.status === 'APPLIED' && order.price === 0) {
+                    <p>Đã áp dụng với phí bằng 0, không phát sinh thanh toán VNPay.</p>
+                  }
+                </div>
+              }
+            </article>
+          } @empty {
+            <p class="empty">Bạn chưa có đơn đăng ký.</p>
+          }
+        }
+        @if (tab() === 'history') {
+          @for (entry of history(); track entry.id) {
+            <article class="list-item">
+              <div>
+                <h3>
+                  Gói đăng ký <span class="mono">{{ entry.id }}</span>
+                </h3>
+                <p>{{ ui.date(entry.startAt) }} – {{ ui.date(entry.endAt) }}</p>
+              </div>
+              <app-billing-status [status]="entry.status" />
+            </article>
+          } @empty {
+            <p class="empty">Chưa có lịch sử gói trả phí.</p>
+          }
+        }
+        @if (tab() === 'periods') {
+          @for (period of periods(); track period.id) {
+            <article class="list-item">
+              <div>
+                <h3>{{ period.rights.packageName }} · Kỳ {{ period.periodNumber }}</h3>
+                <p>{{ ui.date(period.startAt) }} – {{ ui.date(period.endAt) }}</p>
+                <p>
+                  {{ period.rights.highPrioritySlots }} suất cao ·
+                  {{ period.rights.lowPrioritySlots }} suất thấp
+                </p>
+              </div>
+            </article>
+          } @empty {
+            <p class="empty">Chưa có kỳ sử dụng đã mua.</p>
+          }
+        }
+      </div>
+      <app-billing-pager
+        [page]="page()"
+        [totalPages]="totalPages()"
+        (changePage)="loadHistory($event)"
+      />
+    }
+  }
+</section>

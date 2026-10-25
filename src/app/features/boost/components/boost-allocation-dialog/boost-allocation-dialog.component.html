@@ -1,0 +1,93 @@
+<h2 mat-dialog-title>Phân bổ suất Boost</h2>
+<mat-dialog-content>
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }}
+      <button (click)="load()" [disabled]="loading() || busy()">Cập nhật số suất và thử lại</button>
+    </div>
+  }
+  @if (loading()) {
+    <p class="loading" role="status">Đang đọc số suất và tin đăng…</p>
+  } @else {
+    @if (!groups().length) {
+      <p class="notice">
+        Bạn chưa có gói Boost còn hiệu lực. Mua và kích hoạt một gói trước khi phân bổ.
+      </p>
+    }
+    @if (!eligibleListings().length) {
+      <p class="notice warning">
+        Chưa có tin đang hiển thị còn hạn để gán Boost. Bạn vẫn có thể mua gói trước và phân bổ khi
+        có tin.
+      </p>
+    }
+    <form [formGroup]="form" class="stack" (ngSubmit)="save()" id="allocation-form">
+      <label class="field"
+        >Tin đăng<select formControlName="listingId">
+          <option value="">Chọn tin đang hiển thị</option>
+          @for (listing of eligibleListings(); track listing.id) {
+            <option [value]="listing.id">{{ listing.title }}</option>
+          }
+        </select></label
+      >
+      @if (selectedListing(); as listing) {
+        <p class="muted">
+          Hạn tin: {{ ui.date(listing.expiresAt) }} · Mức hiển thị thực tế:
+          {{
+            listing.priorityLevel === 2 ? 'Cao' : listing.priorityLevel === 1 ? 'Thấp' : 'Thường'
+          }}
+        </p>
+      }
+      @if (existing(); as allocation) {
+        <p class="notice">
+          Tin đang giữ một suất {{ allocation.level === 2 ? 'cao' : 'thấp' }}. Lưu lựa chọn mới sẽ
+          thay thế phân bổ cũ; nếu gói đích hết suất, phân bổ cũ được giữ nguyên.
+        </p>
+      }
+      <label class="field"
+        >Gói Boost đã mua<select formControlName="boostSubscriptionId">
+          <option value="">Chọn gói còn hiệu lực</option>
+          @for (group of groups(); track group.subscription.id) {
+            <option [value]="group.subscription.id">
+              {{ group.subscription.packageNameSnapshot }} · Hết hạn
+              {{ ui.date(group.subscription.endAt) }} · {{ group.subscription.id.slice(-6) }}
+            </option>
+          }
+        </select></label
+      >
+      @if (selectedGroup(); as group) {
+        <p class="muted">
+          Còn {{ group.remainingHighPrioritySlots }} suất cao ·
+          {{ group.remainingLowPrioritySlots }} suất thấp. Mỗi gói có hạn riêng.
+        </p>
+      }
+      <label class="field"
+        >Mức Boost<select formControlName="level">
+          <option [ngValue]="2" [disabled]="!canUse(2)">
+            Ưu tiên cao{{ !canUse(2) ? ' — không còn suất' : '' }}
+          </option>
+          <option [ngValue]="1" [disabled]="!canUse(1)">
+            Ưu tiên thấp{{ !canUse(1) ? ' — không còn suất' : '' }}
+          </option>
+        </select></label
+      >
+      <p class="notice warning">
+        Boost không tăng hạn tin hoặc số tin được đăng. Mức hiển thị cuối cùng là mức cao hơn giữa
+        quyền gói dịch vụ và Boost được gán.
+      </p>
+    </form>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (existing()) {
+    <button class="danger" (click)="release()" [disabled]="busy()">Thu hồi suất</button>
+  }
+  <button [mat-dialog-close]="false" [disabled]="busy()">Đóng</button>
+  <button
+    class="primary"
+    type="submit"
+    form="allocation-form"
+    [disabled]="loading() || busy() || form.invalid || !canUse(form.controls.level.value)"
+  >
+    {{ busy() ? 'Đang lưu…' : 'Lưu phân bổ' }}
+  </button>
+</mat-dialog-actions>

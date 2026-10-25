@@ -1,0 +1,203 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Ưu tiên hiển thị</p>
+      <h1>Gói suất Boost</h1>
+      <p class="description">Mua gói trước, phân bổ suất cao và thấp cho tin khi cần.</p>
+    </div>
+    <div class="actions">
+      <a class="button" routerLink="/tin-cua-toi">Tin của tôi</a
+      ><button class="primary" (click)="switchTab('catalog')">Mua gói Boost</button>
+    </div>
+  </header>
+  <div class="notice">
+    Bạn có thể dùng nhiều gói Boost đồng thời, kể cả khi đang dùng Free hoặc gói dịch vụ đã hết hạn.
+    Mỗi gói giữ thời hạn riêng; Boost không tăng số tin hoặc kéo dài hạn tin.
+  </div>
+  <div class="tabs" role="tablist" aria-label="Quản lý Boost">
+    @for (item of ['active', 'catalog', 'history']; track item) {
+      <button role="tab" [attr.aria-selected]="tab() === item" (click)="switchTab($any(item))">
+        {{
+          item === 'active' ? 'Gói đang dùng' : item === 'catalog' ? 'Mua gói Boost' : 'Lịch sử mua'
+        }}
+      </button>
+    }
+  </div>
+  @if (purchaseError()) {
+    <div class="notice error" role="alert">{{ purchaseError() }}</div>
+  }
+  @if (tab() === 'active') {
+    @if (activeLoading()) {
+      <div class="loading" role="status">Đang cập nhật số suất Boost…</div>
+    } @else if (activeError()) {
+      <div class="notice error" role="alert">
+        {{ activeError() }} <button (click)="loadActive()">Thử lại</button>
+      </div>
+    } @else {
+      @if (active().length) {
+        <div class="section-heading">
+          <div>
+            <h2>Suất còn trống</h2>
+            <p class="muted">
+              {{ totals().high }} suất cao · {{ totals().low }} suất thấp trên
+              {{ active().length }} gói còn hiệu lực
+            </p>
+          </div>
+          <button class="primary" (click)="allocate()">Phân bổ cho tin</button>
+        </div>
+      }
+      <div class="stack active-groups">
+        @for (group of active(); track group.subscription.id) {
+          <article class="panel">
+            <div class="row">
+              <div>
+                <h2>{{ group.subscription.packageNameSnapshot }}</h2>
+                <p class="muted">
+                  {{ ui.date(group.subscription.startAt) }} –
+                  {{ ui.date(group.subscription.endAt) }}
+                </p>
+                <p class="mono">{{ group.subscription.id }}</p>
+              </div>
+              <button (click)="allocate(group.subscription.id)">Gán / chuyển suất</button>
+            </div>
+            <div class="rights">
+              <span
+                ><strong
+                  >{{ group.usedHighPrioritySlots }} /
+                  {{ group.subscription.highPrioritySlotsSnapshot }}</strong
+                >Suất cao đang dùng · còn {{ group.remainingHighPrioritySlots }}</span
+              ><span
+                ><strong
+                  >{{ group.usedLowPrioritySlots }} /
+                  {{ group.subscription.lowPrioritySlotsSnapshot }}</strong
+                >Suất thấp đang dùng · còn {{ group.remainingLowPrioritySlots }}</span
+              >
+            </div>
+            <div class="list">
+              @for (allocation of group.allocations; track allocation.listingId) {
+                <div class="list-item">
+                  <div>
+                    <h3>{{ listings()[allocation.listingId]?.title || 'Tin đã phân bổ Boost' }}</h3>
+                    <strong
+                      >Boost được gán:
+                      {{ allocation.level === 2 ? 'ưu tiên cao' : 'ưu tiên thấp' }}</strong
+                    >
+                    <p class="mono">Mã tin: {{ allocation.listingId }}</p>
+                    @if (listings()[allocation.listingId]; as listing) {
+                      <p class="muted">
+                        Mức hiển thị thực tế:
+                        {{
+                          listing.priorityLevel === 2
+                            ? 'Cao'
+                            : listing.priorityLevel === 1
+                              ? 'Thấp'
+                              : 'Thường'
+                        }}
+                        · Hạn tin: {{ ui.date(listing.expiresAt) }}
+                      </p>
+                    }
+                  </div>
+                  <button (click)="allocate(undefined, allocation.listingId)">Đổi / thu hồi</button>
+                </div>
+              } @empty {
+                <p class="muted">
+                  Chưa phân bổ cho tin nào. Hạn gói vẫn được tính từ lúc kích hoạt.
+                </p>
+              }
+            </div>
+            <p class="muted">Khi gói hết hạn, các phân bổ này không tự chuyển sang gói khác.</p>
+          </article>
+        } @empty {
+          <div class="empty">
+            <h2>Chưa có gói Boost đang dùng</h2>
+            <p>Mua gói ngay cả khi chưa có tin đăng; bạn có thể phân bổ sau khi tin được duyệt.</p>
+            <button class="primary" (click)="switchTab('catalog')">Xem gói Boost</button>
+          </div>
+        }
+      </div>
+    }
+  }
+  @if (tab() === 'catalog') {
+    <div class="section-heading"><h2>Chọn gói suất ưu tiên</h2></div>
+    <p class="muted">
+      Suất cao và thấp được quản lý riêng, không hoán đổi và không reset theo lượt sử dụng.
+    </p>
+    @if (catalogLoading()) {
+      <p class="loading" role="status">Đang tải gói đang bán…</p>
+    } @else if (catalogError()) {
+      <div class="notice error" role="alert">
+        {{ catalogError() }} <button (click)="loadCatalog()">Thử lại</button>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (pkg of catalog(); track pkg.id) {
+          <article class="panel card">
+            <h3>{{ pkg.name }}</h3>
+            <strong class="price">{{
+              pkg.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi'
+            }}</strong>
+            <p class="muted">Tổng cho {{ pkg.durationMonths }} tháng kể từ kích hoạt</p>
+            <ul class="benefits">
+              <li>{{ pkg.highPrioritySlots }} suất ưu tiên cao</li>
+              <li>{{ pkg.lowPrioritySlots }} suất ưu tiên thấp</li>
+              <li>Gán, đổi hoặc thu hồi suất khi cần</li>
+              <li>Dùng đồng thời với các gói đã mua</li>
+            </ul>
+            <button class="primary" [disabled]="busy()" (click)="buy(pkg)">Mua gói Boost</button>
+          </article>
+        } @empty {
+          <p class="empty">Chưa có gói Boost đang bán.</p>
+        }
+      </div>
+    }
+  }
+  @if (tab() === 'history') {
+    @if (historyLoading()) {
+      <p class="loading" role="status">Đang tải lịch sử mua…</p>
+    } @else if (historyError()) {
+      <div class="notice error" role="alert">
+        {{ historyError() }} <button (click)="loadHistory(page())">Thử lại</button>
+      </div>
+    } @else {
+      <div class="list">
+        @for (boost of history(); track boost.id) {
+          <article class="list-item">
+            <div>
+              <h3>{{ boost.packageNameSnapshot }}</h3>
+              <p>
+                {{ boost.highPrioritySlotsSnapshot }} suất cao ·
+                {{ boost.lowPrioritySlotsSnapshot }} suất thấp ·
+                {{ boost.durationMonthsSnapshot }} tháng
+              </p>
+              <p class="muted">
+                {{
+                  boost.startAt
+                    ? ui.date(boost.startAt) + ' – ' + ui.date(boost.endAt)
+                    : 'Bắt đầu sau khi kích hoạt'
+                }}
+              </p>
+              <p class="muted">{{ boost.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</p>
+            </div>
+            <div class="actions">
+              <app-billing-status [status]="boost.status" />
+              @if (boost.status === 'PENDING_PAYMENT' && ui.future(boost.paymentExpiresAt)) {
+                <a
+                  class="button primary"
+                  [routerLink]="['/thanh-toan/xac-nhan/BOOST_PACKAGE', boost.id]"
+                  >Thanh toán</a
+                >
+              }
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">Bạn chưa mua gói Boost.</p>
+        }
+      </div>
+      <app-billing-pager
+        [page]="page()"
+        [totalPages]="totalPages()"
+        (changePage)="loadHistory($event)"
+      />
+    }
+  }
+</section>

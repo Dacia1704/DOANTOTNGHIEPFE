@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { RouterLink } from '@angular/router';
 import { RoomService } from '@services/room.service';
 import { AuthService } from '@services/auth.service';
 import { Room, RoomListResult, RoomRentalStatus, ROOM_STATUS_LABELS } from '@model/room/room.model';
@@ -20,7 +21,7 @@ import { RoomDeleteDialogComponent } from '../../components/room-delete-dialog/r
 
 @Component({
   selector: 'app-room-management-page',
-  imports: [RoomCardComponent, RoomFilterComponent],
+  imports: [RoomCardComponent, RoomFilterComponent, RouterLink],
   templateUrl: './room-management-page.component.html',
   styleUrl: './room-management-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

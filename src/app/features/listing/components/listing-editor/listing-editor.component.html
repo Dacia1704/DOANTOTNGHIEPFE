@@ -1,0 +1,75 @@
+<h2 mat-dialog-title>
+  {{
+    data.reject ? 'Từ chối tin đăng' : data.listing ? 'Sửa nội dung tin' : 'Tạo tin và gửi duyệt'
+  }}
+</h2>
+<mat-dialog-content>
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }}
+      @if (!data.listing) {
+        <button (click)="loadRooms()" [disabled]="loading()">Tải lại phòng</button>
+      }
+    </div>
+  }
+  @if (loading()) {
+    <p class="loading" role="status">Đang tải phòng của bạn…</p>
+  }
+  <form id="listing-form" [formGroup]="form" (ngSubmit)="save()" class="stack">
+    @if (data.reject) {
+      <p>{{ data.listing?.title }}</p>
+      <label class="field"
+        >Lý do từ chối<textarea formControlName="reason" maxlength="2000" required></textarea>
+      </label>
+      @if (form.controls.reason.touched && form.controls.reason.invalid) {
+        <p class="field-error">Nhập lý do từ chối, tối đa 2.000 ký tự.</p>
+      }
+    } @else {
+      @if (!data.listing) {
+        <label class="field"
+          >Phòng của bạn<select formControlName="roomId" required>
+            <option value="">Chọn phòng còn trống</option>
+            @for (room of rooms(); track room.id) {
+              <option [value]="room.id">{{ room.roomTypeName }} · {{ room.fullAddress }}</option>
+            }
+          </select></label
+        >
+        @if (!loading() && !rooms().length) {
+          <p class="notice warning">
+            Chưa có phòng còn trống. Thêm phòng tại “Phòng của tôi” trước khi tạo tin.
+          </p>
+        }
+      }
+      <label class="field"
+        >Tiêu đề tin<input formControlName="title" maxlength="255" required
+      /></label>
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <p class="field-error">Nhập tiêu đề, tối đa 255 ký tự.</p>
+      }
+      <label class="field"
+        >Nội dung<textarea formControlName="description" maxlength="20000"></textarea>
+      </label>
+      <p class="notice">
+        {{
+          data.listing
+            ? 'Lưu nội dung chưa gửi duyệt. Chọn “Gửi duyệt lại” sau khi sửa xong.'
+            : 'Tin mới chờ duyệt tối đa 7 ngày. Khi được duyệt, tin hiển thị trong một tháng theo lịch.'
+        }}
+      </p>
+    }
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end"
+  ><button [mat-dialog-close]="false" [disabled]="busy()">Hủy</button
+  ><button class="primary" form="listing-form" type="submit" [disabled]="busy() || loading()">
+    {{
+      busy()
+        ? 'Đang gửi…'
+        : data.reject
+          ? 'Từ chối tin'
+          : data.listing
+            ? 'Lưu nội dung'
+            : 'Tạo và gửi duyệt'
+    }}
+  </button></mat-dialog-actions
+>

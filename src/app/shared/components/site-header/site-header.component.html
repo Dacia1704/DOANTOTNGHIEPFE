@@ -69,6 +69,10 @@
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
             </a>
           } @else if (isLandlord) {
+            <a mat-menu-item routerLink="/goi-dich-vu"><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a>
+            <a mat-menu-item routerLink="/boost"><span class="material-symbols-outlined mi">bolt</span>Gói suất Boost</a>
+            <a mat-menu-item routerLink="/lich-su-thanh-toan"><span class="material-symbols-outlined mi">receipt_long</span>Lịch sử thanh toán</a>
+            <a mat-menu-item routerLink="/tin-cua-toi"><span class="material-symbols-outlined mi">article</span>Tin của tôi</a>
             <a mat-menu-item routerLink="/phong-cua-toi">
               <span class="material-symbols-outlined mi">real_estate_agent</span>
               Quản lý phòng của tôi
