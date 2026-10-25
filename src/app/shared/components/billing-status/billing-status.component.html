@@ -1,0 +1,15 @@
+<span
+  class="status"
+  [class.success]="['SUCCESS', 'ACTIVE', 'APPLIED', 'PUBLISHED', 'COMPLETED'].includes(status())"
+  [class.warning]="
+    [
+      'PENDING',
+      'PENDING_PAYMENT',
+      'AWAITING_ADMIN_CONFIRMATION',
+      'SCHEDULED',
+      'REQUIRES_REVIEW',
+    ].includes(status())
+  "
+  [class.error]="['FAILED', 'REJECTED'].includes(status())"
+  >{{ label(status()) }}</span
+>

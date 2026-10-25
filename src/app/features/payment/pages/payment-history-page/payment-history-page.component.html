@@ -1,0 +1,59 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Tài khoản chủ trọ</p>
+      <h1>Lịch sử thanh toán</h1>
+      <p class="description">Theo dõi giao dịch và hóa đơn của bạn.</p>
+    </div>
+    <div class="actions">
+      <a class="button" routerLink="/goi-dich-vu">Gói dịch vụ</a
+      ><a class="button" routerLink="/boost">Boost</a>
+    </div>
+  </header>
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }} <button (click)="load(page())">Thử lại</button>
+    </div>
+  }
+  @if (loading()) {
+    <div class="loading" role="status">Đang tải giao dịch…</div>
+  } @else if (!error()) {
+    <div class="list">
+      @for (payment of items(); track payment.id) {
+        <article class="list-item">
+          <div>
+            <h3>{{ ui.label(payment.type) }}</h3>
+            <p class="mono">{{ payment.merchantOrderId }}</p>
+            <p class="muted">
+              {{
+                payment.paidAt
+                  ? 'Thanh toán: ' + ui.date(payment.paidAt)
+                  : 'Hạn thanh toán: ' + ui.date(payment.expiresAt)
+              }}
+            </p>
+          </div>
+          <div class="actions">
+            <strong>{{ payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong
+            ><app-billing-status [status]="payment.status" />
+            @if (payment.requiresReview) {
+              <app-billing-status status="REQUIRES_REVIEW" />
+            }
+            <a class="button" [routerLink]="['/thanh-toan', payment.id]">Chi tiết</a>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty">
+          <h2>Chưa có giao dịch</h2>
+          <p>Giao dịch gói dịch vụ và Boost sẽ xuất hiện tại đây.</p>
+          <a class="button primary" routerLink="/goi-dich-vu">Xem gói dịch vụ</a>
+        </div>
+      }
+    </div>
+    <app-billing-pager
+      [page]="page()"
+      [totalPages]="totalPages()"
+      [disabled]="loading()"
+      (changePage)="load($event)"
+    />
+  }
+</section>

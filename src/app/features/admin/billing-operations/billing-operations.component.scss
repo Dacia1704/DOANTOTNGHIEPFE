@@ -1,0 +1,8 @@
+@use '../../../shared/styles/billing';
+.billing-page {
+  padding: 0;
+}
+summary {
+  cursor: pointer;
+  color: var(--primary);
+}

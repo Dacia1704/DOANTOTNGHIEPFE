@@ -10,6 +10,7 @@
       </p>
     </div>
     <div class="header-right">
+      @if (isLandlord()) { <a class="btn-primary" routerLink="/tin-cua-toi">Quản lý tin đăng và Boost</a> }
       <button type="button" class="btn-primary btn-post" (click)="openCreate()">
         <span class="material-symbols-outlined">add_circle</span>
         <span>{{ isLandlord() ? 'Thêm phòng' : 'Tạo phòng' }}</span>

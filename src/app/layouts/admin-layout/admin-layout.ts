@@ -24,6 +24,11 @@ export class AdminLayout {
   readonly collapsed = signal(false);
   readonly pageLabel = signal('Quản trị');
   readonly menu: NavItem[] = [
+    { icon: 'inventory_2', label: 'Gói dịch vụ', route: '/admin/service-packages' },
+    { icon: 'bolt', label: 'Gói suất Boost', route: '/admin/boost-packages' },
+    { icon: 'published_with_changes', label: 'Đơn đổi gói cũ', route: '/admin/subscription-orders' },
+    { icon: 'receipt_long', label: 'Đối soát thanh toán', route: '/admin/payment-review' },
+    { icon: 'fact_check', label: 'Duyệt tin đăng', route: '/admin/listings' },
     { icon: 'manage_accounts', label: 'Quản lý người dùng', route: '/admin/users' },
     { icon: 'category', label: 'Quản lý loại phòng', route: '/admin/room-types' },
     { icon: 'local_convenience_store', label: 'Quản lý tiện ích', route: '/admin/amenities' },

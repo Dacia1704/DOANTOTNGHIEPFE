@@ -1,0 +1,15 @@
+@use '../../../../shared/styles/billing';
+.listing-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.package-priority {
+  margin-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-md);
+}
+summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 600;
+}

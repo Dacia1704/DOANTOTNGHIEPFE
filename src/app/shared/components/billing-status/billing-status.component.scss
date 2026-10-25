@@ -1,0 +1,22 @@
+.status {
+  display: inline-flex;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.success {
+  color: var(--success-text);
+  background: var(--success-bg);
+}
+.warning {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+}
+.error {
+  color: var(--error-text);
+  background: var(--error-bg);
+}

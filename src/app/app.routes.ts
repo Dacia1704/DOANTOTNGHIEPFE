@@ -10,6 +10,34 @@ export const routes: Routes = [
       import('./layouts/tenant-layout/tenant-layout.component').then(m => m.TenantLayoutComponent),
     children: [
       {
+        path: 'goi-dich-vu', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/service-package/pages/service-package-page/service-package-page.component').then(m => m.ServicePackagePageComponent),
+      },
+      {
+        path: 'boost', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/boost/pages/boost-page/boost-page.component').then(m => m.BoostPageComponent),
+      },
+      {
+        path: 'tin-cua-toi', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/listing/pages/listing-page/listing-page.component').then(m => m.ListingPageComponent),
+      },
+      {
+        path: 'lich-su-thanh-toan', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/payment/pages/payment-history-page/payment-history-page.component').then(m => m.PaymentHistoryPageComponent),
+      },
+      {
+        path: 'thanh-toan/ket-qua', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/payment/pages/payment-result-page/payment-result-page.component').then(m => m.PaymentResultPageComponent),
+      },
+      {
+        path: 'thanh-toan/xac-nhan/:type/:targetId', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/payment/pages/checkout-page/checkout-page.component').then(m => m.CheckoutPageComponent),
+      },
+      {
+        path: 'thanh-toan/:paymentId', canActivate: [roleGuard([RoleCode.LANDLORD])],
+        loadComponent: () => import('./features/payment/pages/payment-result-page/payment-result-page.component').then(m => m.PaymentResultPageComponent),
+      },
+      {
         path: '',
         loadComponent: () =>
           import('./features/landing/pages/landing-page/landing-page.component').then(m => m.LandingPageComponent),

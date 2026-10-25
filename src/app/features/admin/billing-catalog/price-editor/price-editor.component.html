@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>Giá bán · {{ data.name }}</h2>
+<mat-dialog-content>
+  @if (error()) {
+    <p class="notice error" role="alert">
+      {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Tải lại</button>
+    </p>
+  }
+  @if (success()) {
+    <p class="notice success" role="status">{{ success() }}</p>
+  }
+  @if (loading()) {
+    <p class="loading">Đang tải bảng giá…</p>
+  } @else {
+    <div class="list">
+      @for (price of prices(); track price.id) {
+        <div class="list-item">
+          <div>
+            <strong
+              >{{ price.durationMonths }} tháng ·
+              {{ price.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong
+            >
+            <p>{{ price.active ? 'Đang bán' : 'Ngừng bán' }}</p>
+          </div>
+          <button (click)="select(price)" [disabled]="busy()">Sửa / bật tắt</button>
+        </div>
+      } @empty {
+        <p class="muted">Chưa có giá. Thêm một mức giá đang bán để chủ trọ có thể chọn gói.</p>
+      }
+    </div>
+  }
+  <div class="section-heading">
+    <h3>{{ editing() ? 'Cập nhật mức giá' : 'Thêm mức giá' }}</h3>
+    <button (click)="reset()" [disabled]="busy()">Thêm mới</button>
+  </div>
+  <form class="form-grid" id="price-form" [formGroup]="form" (ngSubmit)="save()">
+    <label class="field"
+      >Thời hạn<select formControlName="durationMonths">
+        @for (month of [1, 3, 6, 12]; track month) {
+          <option [ngValue]="month" [disabled]="!editing() && durationExists(month)">
+            {{ month }} tháng
+          </option>
+        }
+      </select></label
+    ><label class="field"
+      >Tổng giá (VND)<input
+        type="number"
+        formControlName="price"
+        min="0"
+        max="9999999999.99"
+        step="0.01"
+        required /></label
+    ><label class="check span-all"
+      ><input type="checkbox" formControlName="active" /> Đang bán</label
+    >
+  </form> </mat-dialog-content
+><mat-dialog-actions align="end"
+  ><button [mat-dialog-close]="true" [disabled]="busy()">Đóng</button
+  ><button class="primary" type="submit" form="price-form" [disabled]="busy() || loading()">
+    {{ busy() ? 'Đang lưu…' : 'Lưu giá' }}
+  </button></mat-dialog-actions
+>
