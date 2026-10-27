@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EMPTY, expand, reduce } from 'rxjs';
-import { RoomService } from '@services/room.service';
+import { PropertyService } from '@services/property.service';
 import { ListingService } from '@services/listing.service';
-import { Room } from '@model/room/room.model';
+import { Property } from '@model/property/property.model';
 import { Listing } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 
@@ -18,50 +17,44 @@ import { BillingUtils } from '@shared/utils/billing-utils';
 })
 export class ListingEditorComponent {
   private readonly api = inject(ListingService);
-  private readonly roomsApi = inject(RoomService);
+  private readonly propertiesApi = inject(PropertyService);
   private readonly fb = inject(FormBuilder);
   private readonly ref = inject(MatDialogRef<ListingEditorComponent>);
   private readonly destroy = inject(DestroyRef);
   readonly data = inject<{ listing?: Listing; reject?: boolean }>(MAT_DIALOG_DATA);
-  readonly rooms = signal<Room[]>([]);
+  readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
   readonly busy = signal(false);
   readonly error = signal('');
   readonly form = this.fb.nonNullable.group({
-    roomId: ['', Validators.required],
+    propertyId: ['', Validators.required],
     title: ['', [Validators.required, Validators.maxLength(255)]],
     description: ['', Validators.maxLength(20000)],
     reason: [''],
   });
   constructor() {
     if (this.data.reject) {
-      this.form.controls.roomId.clearValidators();
+      this.form.controls.propertyId.clearValidators();
       this.form.controls.title.clearValidators();
       this.form.controls.reason.setValidators([Validators.required, Validators.maxLength(2000)]);
     } else if (this.data.listing) {
       this.form.patchValue(this.data.listing);
-      this.form.controls.roomId.clearValidators();
-    } else this.loadRooms();
+      this.form.controls.propertyId.clearValidators();
+    } else this.loadProperties();
     Object.values(this.form.controls).forEach((control) =>
       control.updateValueAndValidity({ emitEvent: false }),
     );
     this.form.updateValueAndValidity();
   }
-  loadRooms(): void {
+  loadProperties(): void {
     this.loading.set(true);
     this.error.set('');
-    this.roomsApi
-      .getMyRooms(0, 100)
-      .pipe(
-        expand((page) =>
-          page.page + 1 < page.totalPages ? this.roomsApi.getMyRooms(page.page + 1, 100) : EMPTY,
-        ),
-        reduce((rooms, page) => [...rooms, ...page.items], [] as Room[]),
-        takeUntilDestroyed(this.destroy),
-      )
+    this.propertiesApi
+      .getAllMine()
+      .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
-        next: (rooms) => {
-          this.rooms.set(rooms.filter((room) => room.rentalStatus === 'AVAILABLE'));
+        next: (properties) => {
+          this.properties.set(properties.filter((property) => property.availableCount > 0));
           this.loading.set(false);
         },
         error: (error) => {
@@ -92,7 +85,7 @@ export class ListingEditorComponent {
             description: value.description,
           })
         : this.api.create({
-            roomId: value.roomId,
+            propertyId: value.propertyId,
             title: value.title.trim(),
             description: value.description,
           });

@@ -10,6 +10,7 @@
       </p>
     </div>
     <div class="header-right">
+      <a class="btn-secondary" routerLink="/phong-cua-toi">Quản lý theo cơ sở</a>
       @if (isLandlord()) { <a class="btn-primary" routerLink="/tin-cua-toi">Quản lý tin đăng và Boost</a> }
       <button type="button" class="btn-primary btn-post" (click)="openCreate()">
         <span class="material-symbols-outlined">add_circle</span>
@@ -43,7 +44,7 @@
         <span class="material-symbols-outlined">check_circle</span>
       </div>
       <div class="kpi-info">
-        <span class="kpi-label">Còn phòng (Trống)</span>
+        <span class="kpi-label">Còn phòng (trang này)</span>
         <strong class="kpi-value">{{ stats().available }}</strong>
       </div>
     </div>
@@ -53,7 +54,7 @@
         <span class="material-symbols-outlined">key</span>
       </div>
       <div class="kpi-info">
-        <span class="kpi-label">Đã cho thuê</span>
+        <span class="kpi-label">Đã cho thuê (trang này)</span>
         <strong class="kpi-value">{{ stats().rented }}</strong>
       </div>
     </div>
@@ -63,7 +64,7 @@
         <span class="material-symbols-outlined">build</span>
       </div>
       <div class="kpi-info">
-        <span class="kpi-label">Đang bảo trì</span>
+        <span class="kpi-label">Bảo trì (trang này)</span>
         <strong class="kpi-value">{{ stats().maintenance }}</strong>
       </div>
     </div>

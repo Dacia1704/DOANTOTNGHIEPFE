@@ -121,8 +121,10 @@ export interface ActiveBoost {
   allocations: BoostAllocation[];
 }
 export interface Listing {
+  landlordName?: string;
+  propertyName?: string;
   id: string;
-  roomId: string;
+  propertyId: string;
   landlordId: string;
   title: string;
   slug: string;

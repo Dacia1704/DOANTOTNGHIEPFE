@@ -14,6 +14,9 @@ export interface RoomImageResponse {
 }
 
 export interface RoomResponse {
+  propertyId: string;
+  roomNumber: string;
+  floorNumber: number | null;
   id: string;
   landlordId: string;
   roomTypeId: string;

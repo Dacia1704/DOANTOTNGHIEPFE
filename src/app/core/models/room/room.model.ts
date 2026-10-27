@@ -30,15 +30,19 @@ export interface RoomImage {
 }
 
 export interface Room {
+  propertyId: string;
+  roomNumber: string;
+  displayName: string;
+  floorNumber: number | null;
   id: string;
   landlordId: string;
   roomTypeId: string;
   roomTypeName: string;
   price: number;
-  electricityPrice: number;
-  waterPrice: number;
-  serviceFee: number;
-  defaultDeposit: number;
+  electricityPrice: number | null;
+  waterPrice: number | null;
+  serviceFee: number | null;
+  defaultDeposit: number | null;
   areaM2: number;
   maxOccupants: number;
   provinceId: string;

@@ -1,0 +1,87 @@
+<div class="type-tree" [class.compact]="compact()" aria-label="Cây phân cấp loại phòng">
+  <ng-container *ngTemplateOutlet="branch; context: { $implicit: nodes() }" />
+  @if (!nodes().length) {
+    <p class="empty" role="status">Không tìm thấy loại phòng phù hợp.</p>
+  }
+</div>
+<ng-template #branch let-nodes>
+  <ul class="branches">
+    @for (node of nodes; track node.type.id) {
+      <li>
+        <div class="node" [class.selected]="selectedName() === node.type.name">
+          @if (node.children.length) {
+            <button
+              type="button"
+              class="toggle"
+              [attr.aria-expanded]="isExpanded(node.type.id)"
+              [attr.aria-label]="
+                (isExpanded(node.type.id) ? 'Thu gọn ' : 'Mở rộng ') + node.type.name
+              "
+              (click)="toggle(node.type.id)"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">{{
+                isExpanded(node.type.id) ? 'expand_more' : 'chevron_right'
+              }}</span>
+            </button>
+          } @else {
+            <span class="leaf material-symbols-outlined" aria-hidden="true"
+              >subdirectory_arrow_right</span
+            >
+          }
+          <div class="content">
+            @if (editable()) {
+              <strong>{{ node.type.name }}</strong>
+            } @else {
+              <button
+                type="button"
+                class="name"
+                [attr.aria-pressed]="selectedName() === node.type.name"
+                (click)="selectType.emit(node.type)"
+              >
+                {{ node.type.name }}
+              </button>
+            }
+            @if (node.type.description && !compact()) {
+              <span class="description">{{ node.type.description }}</span>
+            }
+          </div>
+          @if (selectedName() === node.type.name && compact()) {
+            <span class="selection-check material-symbols-outlined" aria-hidden="true">check</span>
+          }
+          @if (node.children.length && !compact()) {
+            <span class="count">{{ node.children.length }} loại con</span>
+          }
+          @if (editable()) {
+            <div class="actions">
+              <button
+                type="button"
+                [attr.aria-label]="'Thêm loại con của ' + node.type.name"
+                (click)="addChild.emit(node.type)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">add</span>Thêm con
+              </button>
+              <button
+                type="button"
+                [attr.aria-label]="'Chỉnh sửa loại phòng ' + node.type.name"
+                (click)="editType.emit(node.type)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>Sửa
+              </button>
+              <button
+                type="button"
+                class="danger"
+                [attr.aria-label]="'Xóa loại phòng ' + node.type.name"
+                (click)="deleteType.emit(node.type)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">delete</span>Xóa
+              </button>
+            </div>
+          }
+        </div>
+        @if (node.children.length && isExpanded(node.type.id)) {
+          <ng-container *ngTemplateOutlet="branch; context: { $implicit: node.children }" />
+        }
+      </li>
+    }
+  </ul>
+</ng-template>

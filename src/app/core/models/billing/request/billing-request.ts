@@ -27,7 +27,7 @@ export interface SaveBoostPackageRequest extends SavePriceRequest {
   lowPrioritySlots: number;
 }
 export interface SaveListingRequest {
-  roomId: string;
+  propertyId: string;
   title: string;
   description: string;
 }

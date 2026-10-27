@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { RoomTypeUtils } from '@shared/utils/room-type-utils';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AmenityService } from '@core/services/amenity.service';
 import { RoomTypeService } from '@core/services/room-type.service';
@@ -25,6 +36,7 @@ export class SearchCapsuleComponent implements OnInit {
 
   readonly amenities = signal<Amenity[]>([]);
   readonly roomTypes = signal<RoomType[]>([]);
+  readonly typeOptions = computed(() => RoomTypeUtils.options(this.roomTypes()));
   readonly provinces = signal<Province[]>([]);
   readonly wards = signal<Ward[]>([]);
   readonly location = signal('');
@@ -44,13 +56,30 @@ export class SearchCapsuleComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.amenityService.getAllAmenities().subscribe({ next: values => this.amenities.set(values), error: () => this.amenities.set([]) });
-    this.roomTypeService.getAllRoomTypes().subscribe({ next: values => this.roomTypes.set(values), error: () => this.roomTypes.set([]) });
-    this.addressService.getProvinces().subscribe({ next: values => this.provinces.set(values), error: () => this.provinces.set([]) });
+    this.amenityService
+      .getAllAmenities()
+      .subscribe({
+        next: (values) => this.amenities.set(values),
+        error: () => this.amenities.set([]),
+      });
+    this.roomTypeService
+      .getAllRoomTypes()
+      .subscribe({
+        next: (values) => this.roomTypes.set(values),
+        error: () => this.roomTypes.set([]),
+      });
+    this.addressService
+      .getProvinces()
+      .subscribe({
+        next: (values) => this.provinces.set(values),
+        error: () => this.provinces.set([]),
+      });
   }
 
   toggleAmenity(name: string, checked: boolean): void {
-    this.selectedAmenityNames.update(names => checked ? [...new Set([...names, name])] : names.filter(value => value !== name));
+    this.selectedAmenityNames.update((names) =>
+      checked ? [...new Set([...names, name])] : names.filter((value) => value !== name),
+    );
   }
 
   onProvinceChange(provinceId: string): void {
@@ -59,7 +88,7 @@ export class SearchCapsuleComponent implements OnInit {
     this.wards.set([]);
     if (provinceId) {
       this.addressService.getWards(provinceId, undefined, 0, 100).subscribe({
-        next: result => this.wards.set(result.items),
+        next: (result) => this.wards.set(result.items),
         error: () => this.wards.set([]),
       });
     }
@@ -70,21 +99,28 @@ export class SearchCapsuleComponent implements OnInit {
     const [minPrice, maxPrice] = this.priceBounds();
     const provinceId = this.provinceId() || this.findProvinceByName(this.location());
     this.search.emit({
-      page: 0, size: 12, provinceId: provinceId || undefined,
+      page: 0,
+      size: 12,
+      provinceId: provinceId || undefined,
       roomTypeName: this.roomTypeName() || undefined,
       wardId: this.wardId() || undefined,
       rentalStatus: this.rentalStatus(),
-      minPrice: minPrice ?? undefined, maxPrice: maxPrice ?? undefined,
+      minPrice: minPrice ?? undefined,
+      maxPrice: maxPrice ?? undefined,
       amenityNames: this.selectedAmenityNames(),
     });
   }
 
   private priceBounds(): [number | null, number | null] {
     switch (this.priceRange()) {
-      case 'under3': return [null, 3000000];
-      case '3to5': return [3000000, 5000000];
-      case 'over5': return [5000000, null];
-      default: return [null, null];
+      case 'under3':
+        return [null, 3000000];
+      case '3to5':
+        return [3000000, 5000000];
+      case 'over5':
+        return [5000000, null];
+      default:
+        return [null, null];
     }
   }
 
@@ -98,6 +134,8 @@ export class SearchCapsuleComponent implements OnInit {
 
   private findProvinceByName(query: string): string {
     const normalized = query.trim().toLocaleLowerCase('vi');
-    return normalized ? this.provinces().find(p => p.name.toLocaleLowerCase('vi').includes(normalized))?.id || '' : '';
+    return normalized
+      ? this.provinces().find((p) => p.name.toLocaleLowerCase('vi').includes(normalized))?.id || ''
+      : '';
   }
 }

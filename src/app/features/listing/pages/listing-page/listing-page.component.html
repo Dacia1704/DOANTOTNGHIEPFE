@@ -2,24 +2,38 @@
   <header class="page-heading">
     <div>
       <p class="eyebrow">{{ admin ? 'Kiểm duyệt nội dung' : 'Quản lý đăng tin' }}</p>
-      <h1>{{ admin ? 'Duyệt tin đăng' : 'Tin của tôi' }}</h1>
+      <h1>{{ admin ? 'Quản lý toàn bộ tin đăng' : 'Tin của tôi' }}</h1>
       <p class="description">
         {{
           admin
-            ? 'Kiểm tra nội dung và duyệt các tin còn thời hạn chờ.'
+            ? 'Tất cả bài đăng của các chủ trọ; duyệt hoặc từ chối những tin đang chờ.'
             : 'Theo dõi hạn tin và quản lý ưu tiên theo gói dịch vụ hoặc Boost.'
         }}
       </p>
     </div>
     @if (!admin) {
       <div class="actions">
-        <a class="button" routerLink="/phong-cua-toi">Phòng của tôi</a
+        <a class="button" routerLink="/phong-cua-toi">Cơ sở của tôi</a
         ><a class="button" routerLink="/goi-dich-vu">Gói dịch vụ</a
         ><a class="button" routerLink="/boost">Gói suất Boost</a
         ><button class="primary" (click)="edit()">Tạo tin đăng</button>
       </div>
     }
   </header>
+  @if (admin) {
+    <label class="status-filter"
+      >Trạng thái bài đăng<select
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event); load(0)"
+        [disabled]="loading() || busy()"
+      >
+        <option value="">Tất cả trạng thái</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ ui.label(status) }}</option>
+        }
+      </select></label
+    >
+  }
   @if (error()) {
     <div class="notice error" role="alert">
       {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Tải lại</button>
@@ -46,6 +60,14 @@
             />
           </div>
           <p class="listing-description">{{ listing.description }}</p>
+          @if (admin) {
+            <p class="muted">
+              Chủ trọ: {{ listing.landlordName || listing.landlordId }}
+              @if (listing.propertyName) {
+                · {{ listing.propertyName }}
+              }
+            </p>
+          }
           <p class="mono muted">Mã tin: {{ listing.id }}</p>
           @if (listing.rejectionReason) {
             <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
@@ -80,13 +102,13 @@
             </p>
           }
           <div class="actions">
-            @if (admin) {
+            @if (admin && listing.status === 'PENDING' && ui.future(listing.pendingExpiresAt)) {
               <button class="primary" [disabled]="busy()" (click)="action(listing, 'approve')">
                 Duyệt tin</button
               ><button class="danger" [disabled]="busy()" (click)="edit(listing, true)">
                 Từ chối
               </button>
-            } @else {
+            } @else if (!admin) {
               @if (holding(listing)) {
                 <button [disabled]="busy()" (click)="action(listing, 'hide')">Ẩn tin</button>
               } @else {
@@ -121,9 +143,9 @@
         </article>
       } @empty {
         <div class="empty">
-          <h2>{{ admin ? 'Không có tin đang chờ duyệt' : 'Bạn chưa có tin đăng' }}</h2>
+          <h2>{{ admin ? 'Không có bài đăng phù hợp' : 'Bạn chưa có tin đăng' }}</h2>
           @if (!admin) {
-            <p>Tạo tin từ phòng còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển thị.</p>
+            <p>Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển thị.</p>
             <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
           }
         </div>
@@ -137,3 +159,4 @@
     />
   }
 </section>
+

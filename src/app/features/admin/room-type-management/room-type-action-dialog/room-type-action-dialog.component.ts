@@ -6,8 +6,11 @@ import { Observable, finalize } from 'rxjs';
 import { RoomTypeService } from '@services/room-type.service';
 import { RoomType } from '@model/room-type/room-type.model';
 
+import { RoomTypeUtils } from '@shared/utils/room-type-utils';
+
 export interface RoomTypeActionData {
   roomType?: RoomType;
+  parentId?: string;
   existingTypes: RoomType[];
   action: 'create' | 'edit' | 'delete';
 }
@@ -28,15 +31,14 @@ export class RoomTypeActionDialogComponent {
   readonly busy = signal(false);
   readonly error = signal('');
 
-  // Parent choices exclude current item when editing
-  readonly parentOptions = (this.data.existingTypes || []).filter(
-    t => !this.data.roomType || t.id !== this.data.roomType.id,
+  readonly parentOptions = RoomTypeUtils.options(
+    RoomTypeUtils.parentChoices(this.data.existingTypes || [], this.data.roomType?.id),
   );
 
   readonly form = inject(FormBuilder).nonNullable.group({
     name: [this.data.roomType?.name ?? '', [Validators.required, Validators.maxLength(100)]],
     description: [this.data.roomType?.description ?? ''],
-    parentId: [this.data.roomType?.parentId ?? ''],
+    parentId: [this.data.roomType?.parentId ?? this.data.parentId ?? ''],
   });
 
   submit(): void {
@@ -69,22 +71,24 @@ export class RoomTypeActionDialogComponent {
       });
     }
 
-    req.pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => {
-        this.busy.set(false);
-        this.ref.disableClose = false;
-      }),
-    ).subscribe({
-      next: () => this.ref.close(true),
-      error: (err: { status?: number; error?: { message?: string } }) => {
-        this.error.set(
-          err.error?.message ||
-            (err.status === 403
-              ? 'Bạn không có quyền thực hiện thao tác này.'
-              : 'Không thực hiện được yêu cầu. Vui lòng thử lại.'),
-        );
-      },
-    });
+    req
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.busy.set(false);
+          this.ref.disableClose = false;
+        }),
+      )
+      .subscribe({
+        next: () => this.ref.close(true),
+        error: (err: { status?: number; error?: { message?: string } }) => {
+          this.error.set(
+            err.error?.message ||
+              (err.status === 403
+                ? 'Bạn không có quyền thực hiện thao tác này.'
+                : 'Không thực hiện được yêu cầu. Vui lòng thử lại.'),
+          );
+        },
+      });
   }
 }

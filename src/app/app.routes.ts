@@ -48,14 +48,19 @@ export const routes: Routes = [
         loadComponent: () => import('./features/profile/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent),
       },
       {
+        path: 'phong-cua-toi/tat-ca',
+        redirectTo: '/phong-cua-toi',
+        pathMatch: 'full',
+      },
+      {
         path: 'phong-cua-toi',
         canActivate: [roleGuard([RoleCode.LANDLORD])],
-        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+        loadComponent: () => import('./features/property/pages/property-management-page/property-management-page.component').then(m => m.PropertyManagementPageComponent),
       },
       {
         path: 'dang-tin',
-        canActivate: [roleGuard([RoleCode.LANDLORD])],
-        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+        redirectTo: '/tin-cua-toi',
+        pathMatch: 'full',
       },
       {
         path: 'quan-ly-loai-phong',
@@ -84,7 +89,8 @@ export const routes: Routes = [
       },
       {
         path: 'danh-sach-phong',
-        loadComponent: () => import('./features/room/pages/room-management-page/room-management-page.component').then(m => m.RoomManagementPageComponent),
+        redirectTo: 'phong-cua-toi',
+        pathMatch: 'full',
       },
       {
         path: 'cai-dat',

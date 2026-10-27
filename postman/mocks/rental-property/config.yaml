@@ -1,0 +1,11 @@
+version: 1
+id: 808e9dc9-a775-4ea0-aacf-1f3f71730f5f
+name: rental-property
+slug: rental-property
+protocol: http
+port: 4500
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

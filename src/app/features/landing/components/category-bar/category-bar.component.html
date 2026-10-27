@@ -1,13 +1,115 @@
 <nav class="category-bar" aria-label="Lọc theo loại phòng">
-  <div class="category-bar__scroll">
-    <button type="button" class="category-bar__pill" [class.is-active]="!selectedName()" (click)="select('')">
-      <span class="material-symbols-outlined">apps</span><span>Tất cả phòng</span>
-    </button>
-    @for (type of roomTypes(); track type.id) {
-      <button type="button" class="category-bar__pill" [class.is-active]="selectedName() === type.name" (click)="select(type.name)">
-        <span class="material-symbols-outlined">apartment</span><span>{{ type.name }}</span>
+  <div class="category-bar__inner">
+    <span class="category-bar__label">Loại phòng</span>
+    <div class="category-bar__shortcuts">
+      <button
+        type="button"
+        class="category-chip"
+        [class.is-active]="!selectedName()"
+        [attr.aria-pressed]="!selectedName()"
+        (click)="select('')"
+      >
+        Tất cả
       </button>
-    }
-    @if (!roomTypes().length) { <span class="category-bar__empty">Chưa tải được loại phòng</span> }
+      @for (type of quickTypes(); track type.id) {
+        <button
+          type="button"
+          class="category-chip"
+          [class.is-active]="selectedName() === type.name"
+          [attr.aria-pressed]="selectedName() === type.name"
+          (click)="select(type.name)"
+          [title]="type.name"
+        >
+          {{ type.name }}
+        </button>
+      }
+    </div>
+    <button
+      type="button"
+      class="category-picker"
+      cdkOverlayOrigin
+      #origin="cdkOverlayOrigin"
+      [class.has-selection]="!!selectedName()"
+      [attr.aria-expanded]="expanded()"
+      aria-haspopup="dialog"
+      aria-controls="public-type-picker"
+      (click)="expanded() ? closePicker() : expanded.set(true)"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+      <span class="category-picker__name">{{ selectedName() || 'Xem tất cả loại' }}</span>
+      <span
+        class="material-symbols-outlined chevron"
+        [class.is-open]="expanded()"
+        aria-hidden="true"
+        >expand_more</span
+      >
+    </button>
   </div>
 </nav>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="expanded()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayViewportMargin]="16"
+  (backdropClick)="closePicker()"
+  (overlayKeydown)="onOverlayKeydown($event)"
+>
+  <section
+    id="public-type-picker"
+    class="type-picker"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="type-picker-title"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="true"
+  >
+    <header class="type-picker__header">
+      <div>
+        <h2 id="type-picker-title">Bạn tìm loại phòng nào?</h2>
+        <p>Chọn theo nhóm hoặc loại cụ thể</p>
+      </div>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Đóng chọn loại phòng"
+        (click)="closePicker()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <label class="type-search">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <input
+        type="search"
+        aria-label="Tìm loại phòng"
+        placeholder="Tìm tên loại phòng…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        cdkFocusInitial
+      />
+    </label>
+    <div class="type-picker__list">
+      @if (loading()) {
+        <p class="picker-state" role="status">Đang tải loại phòng…</p>
+      } @else if (error()) {
+        <p class="picker-state" role="alert">{{ error() }}</p>
+        <button type="button" class="reset-button" (click)="ngOnInit()">Thử lại</button>
+      } @else {
+        <app-room-type-tree
+          [types]="roomTypes()"
+          [query]="query()"
+          [selectedName]="selectedName()"
+          [compact]="true"
+          (selectType)="select($event.name)"
+        />
+      }
+    </div>
+    <footer class="type-picker__footer">
+      <span>{{ roomTypes().length }} loại phòng</span
+      ><button type="button" class="reset-button" (click)="select('')">Xem tất cả tin</button>
+    </footer>
+  </section>
+</ng-template>

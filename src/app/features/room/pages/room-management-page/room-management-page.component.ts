@@ -4,10 +4,8 @@ import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { RoomService } from '@services/room.service';
-import { AuthService } from '@services/auth.service';
 import { Room, RoomListResult, RoomRentalStatus, ROOM_STATUS_LABELS } from '@model/room/room.model';
 import { RoomQueryParams } from '@model/room/request/room-query-params';
-import { RoleCode } from '@model/auth/auth.model';
 import { RoomUtils } from '@shared/utils/room-utils';
 import { TextUtils } from '@shared/utils/text-utils';
 import { ImageUtils } from '@shared/utils/image-utils';
@@ -28,7 +26,6 @@ import { RoomDeleteDialogComponent } from '../../components/room-delete-dialog/r
 })
 export class RoomManagementPageComponent implements OnInit {
   private readonly roomService = inject(RoomService);
-  private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -37,8 +34,7 @@ export class RoomManagementPageComponent implements OnInit {
   readonly imageUtils = ImageUtils;
   readonly statusLabels = ROOM_STATUS_LABELS;
 
-  readonly isLandlord = signal(this.auth.primaryRole() === RoleCode.LANDLORD);
-  readonly isAdmin = signal(this.auth.primaryRole() === RoleCode.ADMIN);
+  readonly isLandlord = signal(true); // Trang này chỉ dành cho LANDLORD (guard đã bảo đảm)
 
   // Active view: grid cards or table
   readonly viewMode = signal<'grid' | 'table'>('grid');
@@ -79,10 +75,18 @@ export class RoomManagementPageComponent implements OnInit {
 
     this.activeParams.page = page;
 
-    // Landlord fetches my rooms or search
-    const request$ = this.isLandlord()
-      ? this.roomService.getMyRooms(page, this.activeParams.size ?? 12)
-      : this.roomService.getRooms(this.activeParams);
+    // Kiểm tra xem có param lọc không
+    const hasFilter = !!(this.activeParams.roomTypeName ||
+      this.activeParams.provinceId ||
+      this.activeParams.wardId ||
+      this.activeParams.rentalStatus ||
+      this.activeParams.minPrice != null ||
+      this.activeParams.maxPrice != null ||
+      this.activeParams.amenityNames?.length);
+
+    const request$ = hasFilter
+      ? this.roomService.filterMyRooms(this.activeParams)
+      : this.roomService.getMyRooms(page, this.activeParams.size ?? 12);
 
     request$.pipe(
       takeUntilDestroyed(this.destroyRef),

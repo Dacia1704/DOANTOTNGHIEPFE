@@ -8,7 +8,8 @@
           {{ roomUtils.getStatusLabel(data.room.rentalStatus) }}
         </span>
       </div>
-      <h2 mat-dialog-title class="dialog-title">{{ data.room.fullAddress }}</h2>
+      <h2 mat-dialog-title class="dialog-title">{{ data.listing?.listingTitle || data.room.displayName }}</h2>
+      <p class="body-sm text-secondary">{{ data.room.fullAddress }}</p>
     </div>
     <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
       <span class="material-symbols-outlined">close</span>
@@ -16,6 +17,7 @@
   </div>
 
   <div class="dialog-body">
+    @if (data.listing?.listingDescription) { <section class="detail-section"><h3>Nội dung tin đăng</h3><p class="listing-content">{{ data.listing?.listingDescription }}</p></section> }
     <!-- Image Gallery Section -->
     @if (data.room.images.length > 0) {
       <div class="gallery-wrapper">
@@ -53,7 +55,7 @@
 
       <div class="stat-card">
         <span class="stat-label">Tiền cọc</span>
-        <span class="stat-value">{{ data.room.defaultDeposit ? data.room.defaultDeposit.toLocaleString('vi-VN') + ' đ' : 'Thương lượng' }}</span>
+        <span class="stat-value">{{ roomUtils.formatFee(data.room.defaultDeposit) }}</span>
       </div>
 
       <div class="stat-card">
@@ -76,15 +78,15 @@
       <div class="fees-list">
         <div class="fee-item">
           <span class="fee-name">Tiền điện:</span>
-          <span class="fee-val">{{ data.room.electricityPrice.toLocaleString('vi-VN') }} đ / kWh</span>
+          <span class="fee-val">{{ roomUtils.formatFee(data.room.electricityPrice) }}</span>
         </div>
         <div class="fee-item">
           <span class="fee-name">Tiền nước:</span>
-          <span class="fee-val">{{ data.room.waterPrice.toLocaleString('vi-VN') }} đ / khối (hoặc người)</span>
+          <span class="fee-val">{{ roomUtils.formatFee(data.room.waterPrice) }}</span>
         </div>
         <div class="fee-item">
           <span class="fee-name">Phí dịch vụ & quản lý:</span>
-          <span class="fee-val">{{ data.room.serviceFee.toLocaleString('vi-VN') }} đ / tháng</span>
+          <span class="fee-val">{{ roomUtils.formatFee(data.room.serviceFee) }}</span>
         </div>
       </div>
     </div>
@@ -127,8 +129,8 @@
 
     <!-- Metadata -->
     <div class="meta-section">
-      @if (data.room.createdAt) {
-        <span>Đăng ngày: {{ textUtils.formatDate(data.room.createdAt, 'dd/MM/yyyy HH:mm') }}</span>
+      @if (data.listing?.publishedAt || data.room.createdAt) {
+        <span>Đăng ngày: {{ textUtils.formatDate(data.listing?.publishedAt || data.room.createdAt!, 'dd/MM/yyyy HH:mm') }}</span>
       }
       @if (data.room.updatedAt) {
         <span>• Cập nhật: {{ textUtils.formatDate(data.room.updatedAt, 'dd/MM/yyyy HH:mm') }}</span>

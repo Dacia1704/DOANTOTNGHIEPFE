@@ -12,6 +12,9 @@ export class ListingService {
   allMine() {
     return this.api.all<Listing>('listings/mine');
   }
+  admin(page = 0, status?: string) {
+    return this.api.page<Listing>('listings/admin', page, undefined, status ? { status } : {});
+  }
   pending(page = 0) {
     return this.api.page<Listing>('listings/pending', page);
   }

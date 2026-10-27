@@ -1,0 +1,133 @@
+.catalog-page {
+  padding: var(--space-lg);
+  max-width: var(--container-max);
+  margin: 0 auto;
+  color: var(--text-primary);
+}
+h1 {
+  font-size: 1.8rem;
+  margin: var(--space-sm) 0;
+}
+h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+  align-items: start;
+}
+.list-panel,
+.editor-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.editor-panel {
+  padding: var(--space-lg);
+}
+.editor-panel p {
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+.list-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+.list-title > span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.table-scroll {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8rem;
+}
+th {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  background: var(--background);
+}
+td,
+th {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+.description {
+  color: var(--text-secondary);
+  max-width: 350px;
+  overflow-wrap: anywhere;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.input {
+  width: 100%;
+}
+textarea {
+  resize: vertical;
+}
+.actions,
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.pagination {
+  justify-content: flex-end;
+  padding: var(--space-md);
+  font-size: 0.75rem;
+}
+.danger,
+.error {
+  color: var(--error);
+}
+.error {
+  font-size: 0.8rem;
+}
+.delete-button {
+  background: var(--error);
+}
+.state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-secondary);
+}
+.success {
+  color: var(--success-text);
+  background: var(--success-bg);
+  padding: var(--space-md);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+}
+@media (max-width: 1000px) {
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+}

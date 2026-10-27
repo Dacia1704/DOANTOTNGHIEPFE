@@ -1,0 +1,105 @@
+.unit-editor {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: var(--space-md);
+}
+.unit-main {
+  display: grid;
+  grid-template-columns: auto minmax(100px, 1fr) minmax(90px, 0.6fr) minmax(150px, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+}
+.unit-index {
+  border-radius: var(--radius);
+  padding: var(--space-sm);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.input {
+  width: 100%;
+}
+.effective-price span {
+  color: var(--text-secondary);
+  display: block;
+  font-size: 0.7rem;
+}
+.effective-price strong {
+  display: block;
+  margin-top: var(--space-sm);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+details {
+  margin-top: var(--space-md);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-sm);
+}
+summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--primary);
+  padding: var(--space-xs) 0;
+}
+.overrides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+.hint {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.amenities {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+.amenity-option {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  padding: var(--space-sm);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+}
+.amenity-option.selected {
+  background: var(--primary-subtle);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.danger,
+.field-error {
+  color: var(--error);
+}
+.field-error {
+  font-size: 0.75rem;
+}
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+@media (max-width: 700px) {
+  .unit-main {
+    grid-template-columns: auto 1fr 1fr auto;
+  }
+  .effective-price {
+    grid-column: 2 / 4;
+  }
+  .overrides {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

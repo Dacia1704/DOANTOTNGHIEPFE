@@ -1,0 +1,523 @@
+<div class="property-dialog">
+  <header class="dialog-header">
+    <div>
+      <p class="eyebrow">THÊM KHÔNG GIAN CHO THUÊ</p>
+      <h2 mat-dialog-title>Tạo cơ sở mới</h2>
+      <p>
+        {{
+          isWhole()
+            ? 'Thông tin và giá thuê cho toàn bộ căn nhà.'
+            : 'Một địa chỉ chung, linh hoạt cho từng phòng.'
+        }}
+      </p>
+    </div>
+    <button
+      type="button"
+      class="btn-icon"
+      mat-dialog-close
+      [disabled]="busy()"
+      aria-label="Đóng form"
+    >
+      <span aria-hidden="true" class="material-symbols-outlined">close</span>
+    </button>
+  </header>
+  <ol class="stepper" aria-label="Tiến trình tạo cơ sở">
+    @for (
+      label of [
+        'Thông tin cơ sở',
+        isWhole() ? 'Thông tin căn nhà' : 'Thiết lập phòng',
+        'Xem lại & tạo',
+      ];
+      track label;
+      let i = $index
+    ) {
+      <li
+        [class.active]="step() === i"
+        [class.done]="step() > i"
+        [attr.aria-current]="step() === i ? 'step' : null"
+      >
+        <span>{{ step() > i ? '✓' : i + 1 }}</span
+        >{{ label }}
+      </li>
+    }
+  </ol>
+  <mat-dialog-content>
+    @if (error()) {
+      <div class="error-banner" role="alert">{{ error() }}</div>
+    }
+    @if (loading()) {
+      <div class="loading" role="status">Đang tải danh mục và địa chỉ…</div>
+    } @else if (!propertyTypes().length || !roomTypes().length || !provinces().length) {
+      <div class="loading">
+        <p>
+          Chưa có đủ danh mục loại cơ sở, loại phòng hoặc địa chỉ. Vui lòng liên hệ quản trị viên
+          nếu danh mục chưa được thiết lập.
+        </p>
+        <button type="button" class="btn-secondary" (click)="loadCatalogs()">
+          Tải lại danh mục
+        </button>
+      </div>
+    } @else {
+      <fieldset class="editor-fields" [disabled]="busy()">
+        <section [hidden]="step() !== 0" [formGroup]="info">
+          <div class="section-title">
+            <span class="section-number">01</span>
+            <div>
+              <h3>Thông tin & địa chỉ chung</h3>
+              <p>
+                {{
+                  isWhole()
+                    ? 'Địa chỉ của căn nhà cho thuê.'
+                    : 'Địa chỉ này được dùng cho tất cả phòng trong cơ sở.'
+                }}
+              </p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label class="full"
+              >Tên cơ sở *<input
+                class="input"
+                formControlName="name"
+                maxlength="100"
+                placeholder="Ví dụ: Nhà trọ An Nhiên"
+            /></label>
+            <label
+              >Loại cơ sở *<select class="input" formControlName="propertyTypeId">
+                <option value="">Chọn loại cơ sở</option>
+                @for (type of propertyTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              >Hình thức cho thuê *<select class="input" formControlName="rentalMode">
+                <option value="BY_ROOM">Cho thuê từng phòng</option>
+                <option value="WHOLE">Cho thuê nguyên căn</option>
+              </select></label
+            >
+            <label
+              >Tỉnh / thành phố *<select class="input" formControlName="provinceId">
+                <option value="">Chọn tỉnh / thành phố</option>
+                @for (province of provinces(); track province.id) {
+                  <option [value]="province.id">{{ province.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              >Phường / xã *<select class="input" formControlName="wardId">
+                <option value="">
+                  {{ wardsLoading() ? 'Đang tải phường/xã…' : 'Chọn phường / xã' }}
+                </option>
+                @for (ward of wards(); track ward.id) {
+                  <option [value]="ward.id">{{ ward.name }}</option>
+                }
+              </select></label
+            >
+            @if (wardError()) {
+              <p class="field-error full" role="alert">{{ wardError() }}</p>
+            }
+            <label class="full"
+              >Địa chỉ cụ thể *<input
+                class="input"
+                formControlName="addressLine"
+                maxlength="255"
+                placeholder="Số nhà, ngõ/ngách, tên đường"
+            /></label>
+            <label
+              >Tổng số tầng<input
+                class="input"
+                type="number"
+                min="0"
+                step="1"
+                formControlName="totalFloors"
+                placeholder="Không bắt buộc"
+            /></label>
+          </div>
+          <details class="coordinates">
+            <summary>Bổ sung tọa độ (không bắt buộc)</summary>
+            <div class="form-grid">
+              <label
+                >Vĩ độ<input
+                  class="input"
+                  type="number"
+                  formControlName="latitude"
+                  min="-90"
+                  max="90"
+                  step="any" /></label
+              ><label
+                >Kinh độ<input
+                  class="input"
+                  type="number"
+                  formControlName="longitude"
+                  min="-180"
+                  max="180"
+                  step="any"
+              /></label>
+            </div>
+          </details>
+          <h3 class="small-heading">
+            {{ isWhole() ? 'Tiện ích căn nhà' : 'Tiện ích chung của cơ sở' }}
+          </h3>
+          <p class="hint">
+            {{
+              isWhole()
+                ? 'Chọn các tiện ích có sẵn khi thuê toàn bộ căn nhà.'
+                : 'Ví dụ: bãi xe, camera, thang máy. Tiện ích riêng được chọn ở từng phòng.'
+            }}
+          </p>
+          <div class="amenities">
+            @for (amenity of amenities(); track amenity.id) {
+              <button
+                type="button"
+                class="amenity-option"
+                [class.selected]="info.controls.amenityIds.value.includes(amenity.id)"
+                [attr.aria-pressed]="info.controls.amenityIds.value.includes(amenity.id)"
+                (click)="toggleAmenity(amenity.id)"
+              >
+                <span aria-hidden="true" class="material-symbols-outlined">{{
+                  amenity.icon || 'check_circle'
+                }}</span
+                >{{ amenity.name }}
+              </button>
+            } @empty {
+              <p class="hint">Danh mục chưa có tiện ích.</p>
+            }
+          </div>
+          @if (info.touched && info.invalid) {
+            <p class="field-error">
+              Điền đầy đủ trường bắt buộc; số tầng không âm, tọa độ phải nằm trong phạm vi hợp lệ.
+            </p>
+          }
+        </section>
+        <section [hidden]="step() !== 1">
+          <div class="section-title">
+            <span class="section-number">02</span>
+            <div>
+              <h3>{{ isWhole() ? 'Thông tin căn nhà' : 'Thông tin mặc định' }}</h3>
+              <p>
+                {{
+                  isWhole()
+                    ? 'Nhập giá thuê và thông số cho toàn bộ căn nhà.'
+                    : 'Áp dụng cho các phòng. Bạn có thể chỉnh riêng ở bên dưới.'
+                }}
+              </p>
+            </div>
+          </div>
+          <div class="defaults-panel" [formGroup]="defaults">
+            <div class="form-grid four-cols">
+              <label
+                >{{ isWhole() ? 'Loại căn cho thuê' : 'Loại phòng' }} *<select
+                  class="input"
+                  formControlName="roomTypeId"
+                >
+                  <option value="">{{ isWhole() ? 'Chọn loại căn' : 'Chọn loại phòng' }}</option>
+                  @for (type of roomTypes(); track type.id) {
+                    <option [value]="type.id">{{ type.name }}</option>
+                  }
+                </select></label
+              >
+              <label
+                >Giá thuê (đ/tháng) *<input
+                  class="input"
+                  type="number"
+                  formControlName="price"
+                  min="0.01"
+                  placeholder="Ví dụ: 3000000"
+              /></label>
+              <label
+                >Diện tích (m²) *<input
+                  class="input"
+                  type="number"
+                  formControlName="areaM2"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Ví dụ: 25"
+              /></label>
+              <label
+                >Số người tối đa *<input
+                  class="input"
+                  type="number"
+                  formControlName="maxOccupants"
+                  min="1"
+                  step="1"
+                  placeholder="Ví dụ: 2"
+              /></label>
+              <label
+                >Tiền cọc (đ)<input
+                  class="input"
+                  type="number"
+                  formControlName="defaultDeposit"
+                  min="0"
+                  placeholder="Chưa khai báo"
+              /></label>
+              <label
+                >Giá điện (đ)<input
+                  class="input"
+                  type="number"
+                  formControlName="electricityPrice"
+                  min="0"
+                  placeholder="Chưa khai báo"
+              /></label>
+              <label
+                >Giá nước (đ)<input
+                  class="input"
+                  type="number"
+                  formControlName="waterPrice"
+                  min="0"
+                  placeholder="Chưa khai báo"
+              /></label>
+              <label
+                >Phí dịch vụ (đ)<input
+                  class="input"
+                  type="number"
+                  formControlName="serviceFee"
+                  min="0"
+                  placeholder="Chưa khai báo"
+              /></label>
+            </div>
+            <p class="hint">
+              Phí tùy chọn: để trống nếu chưa khai báo, nhập 0 nếu miễn phí. Giá điện/nước cần thống
+              nhất đơn vị tính với người thuê.
+            </p>
+          </div>
+          @if (!isWhole()) {
+            <div class="rooms-title">
+              <div>
+                <h3>
+                  {{
+                    info.controls.rentalMode.value === 'WHOLE'
+                      ? 'Thông tin căn nhà'
+                      : 'Danh sách phòng'
+                  }}
+                </h3>
+                <p class="hint">
+                  {{
+                    info.controls.rentalMode.value === 'WHOLE'
+                      ? 'Nguyên căn chỉ có một đơn vị cho thuê.'
+                      : 'Nhập số phòng và tầng thực tế. Tầng trệt là 0; có thể để trống nếu chưa xác định.'
+                  }}
+                </p>
+              </div>
+              <span class="count">{{ units.length }} đơn vị</span>
+            </div>
+            <div class="unit-list">
+              @for (unit of units.controls; track unit; let i = $index) {
+                <app-property-unit-editor
+                  [form]="unit"
+                  [defaults]="defaults.getRawValue()"
+                  [roomTypes]="roomTypes()"
+                  [amenities]="amenities()"
+                  [index]="i"
+                  [canRemove]="units.length > 1"
+                  [whole]="info.controls.rentalMode.value === 'WHOLE'"
+                  (remove)="removeUnit(i)"
+                />
+              }
+            </div>
+            @if (info.controls.rentalMode.value === 'BY_ROOM') {
+              <button type="button" class="btn-secondary add-unit" (click)="addUnit()">
+                <span aria-hidden="true" class="material-symbols-outlined">add</span> Thêm một phòng
+              </button>
+            }
+          }
+        </section>
+        <section [hidden]="step() !== 2">
+          <div class="section-title">
+            <span class="section-number">03</span>
+            <div>
+              <h3>Xem lại trước khi tạo</h3>
+              <p>
+                {{
+                  isWhole()
+                    ? 'Kiểm tra thông tin và chi phí thuê toàn bộ căn nhà.'
+                    : 'Giá bên dưới đã bao gồm các thay đổi riêng của từng phòng.'
+                }}
+              </p>
+            </div>
+          </div>
+          <div class="review-property">
+            <span aria-hidden="true" class="material-symbols-outlined">apartment</span>
+            <div>
+              <h3>{{ info.controls.name.value }}</h3>
+              <p>{{ addressLabel() }}</p>
+              <p class="hint">
+                {{
+                  info.controls.rentalMode.value === 'WHOLE'
+                    ? 'Cho thuê nguyên căn'
+                    : 'Cho thuê từng phòng'
+                }}
+                @if (!isWhole()) {
+                  · {{ units.length }} phòng
+                }
+                · {{ info.controls.amenityIds.value.length }} tiện ích
+              </p>
+              <p class="hint">
+                {{ isWhole() ? 'Tiện ích căn nhà' : 'Tiện ích chung' }}:
+                {{ amenityNames(info.controls.amenityIds.value) }}
+              </p>
+            </div>
+          </div>
+          @if (isWhole()) {
+            <div class="defaults-panel whole-review">
+              <h3>Thông tin căn nhà</h3>
+              <div class="form-grid">
+                <p>
+                  Loại căn: <strong>{{ roomTypeName(defaults.controls.roomTypeId.value) }}</strong>
+                </p>
+                <p>
+                  Giá thuê / tháng:
+                  <strong class="price">{{
+                    money(defaults.controls.price.value ?? 0, 'đ')
+                  }}</strong>
+                </p>
+                <p>
+                  Diện tích: <strong>{{ defaults.controls.areaM2.value }} m²</strong>
+                </p>
+                <p>
+                  Số người tối đa: <strong>{{ defaults.controls.maxOccupants.value }}</strong>
+                </p>
+                <p>Tiền cọc: {{ fee(defaults.controls.defaultDeposit.value) }}</p>
+                <p>Giá điện: {{ fee(defaults.controls.electricityPrice.value) }}</p>
+                <p>Giá nước: {{ fee(defaults.controls.waterPrice.value) }}</p>
+                <p>Phí dịch vụ: {{ fee(defaults.controls.serviceFee.value) }}</p>
+              </div>
+            </div>
+          } @else {
+            <div class="review-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Phòng / căn</th>
+                    <th>Tầng</th>
+                    <th>Loại phòng</th>
+                    <th>Giá thuê / tháng</th>
+                    <th>Diện tích</th>
+                    <th>Số người</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (unit of units.controls; track unit) {
+                    <tr>
+                      <td>
+                        <strong>{{ unit.controls.roomNumber.value }}</strong>
+                      </td>
+                      <td>{{ unit.controls.floorNumber.value ?? 'Chưa xác định' }}</td>
+                      <td>
+                        {{
+                          roomTypeName(
+                            unit.controls.roomTypeId.value ?? defaults.controls.roomTypeId.value
+                          )
+                        }}
+                      </td>
+                      <td class="price">
+                        {{
+                          money(
+                            unit.controls.price.value ?? defaults.controls.price.value ?? 0,
+                            'đ'
+                          )
+                        }}
+                      </td>
+                      <td>{{ unit.controls.areaM2.value ?? defaults.controls.areaM2.value }} m²</td>
+                      <td>
+                        {{
+                          unit.controls.maxOccupants.value ?? defaults.controls.maxOccupants.value
+                        }}
+                      </td>
+                    </tr>
+                    <tr class="review-fees">
+                      <td colspan="6">
+                        <div>
+                          <span
+                            >Cọc:
+                            {{
+                              fee(
+                                unit.controls.defaultDeposit.value ??
+                                  defaults.controls.defaultDeposit.value
+                              )
+                            }}</span
+                          ><span
+                            >Điện:
+                            {{
+                              fee(
+                                unit.controls.electricityPrice.value ??
+                                  defaults.controls.electricityPrice.value
+                              )
+                            }}</span
+                          ><span
+                            >Nước:
+                            {{
+                              fee(
+                                unit.controls.waterPrice.value ?? defaults.controls.waterPrice.value
+                              )
+                            }}</span
+                          ><span
+                            >Dịch vụ:
+                            {{
+                              fee(
+                                unit.controls.serviceFee.value ?? defaults.controls.serviceFee.value
+                              )
+                            }}</span
+                          >
+                        </div>
+                        <p>Tiện ích riêng: {{ amenityNames(unit.controls.amenityIds.value) }}</p>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <p class="save-note">
+            <span aria-hidden="true" class="material-symbols-outlined">check_circle</span
+            >{{
+              isWhole()
+                ? 'Thông tin căn nhà được lưu cùng giá thuê và tiện ích. Bạn có thể bổ sung ảnh sau khi tạo.'
+                : 'Cơ sở và các phòng được tạo cùng nhau. Bạn có thể bổ sung ảnh riêng cho từng phòng sau khi tạo.'
+            }}
+          </p>
+        </section>
+      </fieldset>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions class="dialog-footer"
+    ><button
+      type="button"
+      class="btn-secondary"
+      [disabled]="busy()"
+      (click)="step() > 0 ? step.set(step() - 1) : null"
+      [hidden]="step() === 0"
+    >
+      Quay lại
+    </button>
+    @if (step() === 0) {
+      <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+    }
+    <span class="footer-step">Bước {{ step() + 1 }} / 3</span>
+    @if (step() < 2) {
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="
+          busy() ||
+          loading() ||
+          !propertyTypes().length ||
+          !roomTypes().length ||
+          !provinces().length
+        "
+        (click)="next()"
+      >
+        Tiếp tục<span aria-hidden="true" class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    } @else {
+      <button type="button" class="btn-primary" [disabled]="busy()" (click)="submit()">
+        {{
+          busy()
+            ? 'Đang tạo…'
+            : isWhole()
+              ? 'Tạo nhà cho thuê'
+              : 'Tạo cơ sở & ' + units.length + ' phòng'
+        }}<span aria-hidden="true" class="material-symbols-outlined">check</span>
+      </button>
+    }
+  </mat-dialog-actions>
+</div>

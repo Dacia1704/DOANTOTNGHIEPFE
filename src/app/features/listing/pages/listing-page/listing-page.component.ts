@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,7 +14,7 @@ import { BoostAllocationDialogComponent } from '../../../boost/components/boost-
 
 @Component({
   selector: 'app-listing-page',
-  imports: [RouterLink, BillingStatusComponent, BillingPagerComponent],
+  imports: [FormsModule, RouterLink, BillingStatusComponent, BillingPagerComponent],
   templateUrl: './listing-page.component.html',
   styleUrl: './listing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +25,8 @@ export class ListingPageComponent {
   private readonly destroy = inject(DestroyRef);
   readonly admin = !!inject(ActivatedRoute).snapshot.data['admin'];
   readonly ui = BillingUtils;
+  readonly statusFilter = signal('');
+  readonly statuses = ['PENDING', 'PUBLISHED', 'REJECTED', 'HIDDEN', 'EXPIRED'];
   readonly items = signal<Listing[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -38,7 +41,7 @@ export class ListingPageComponent {
     if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
-    (this.admin ? this.api.pending(page) : this.api.mine(page))
+    (this.admin ? this.api.admin(page, this.statusFilter() || undefined) : this.api.mine(page))
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (result) => {

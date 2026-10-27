@@ -1,0 +1,131 @@
+<article class="unit-editor" [formGroup]="form()">
+  <div class="unit-main">
+    <span class="unit-index">{{ index() + 1 }}</span>
+    <label
+      >{{ whole() ? 'Mã căn / nhà' : 'Số phòng' }} *<input
+        class="input"
+        formControlName="roomNumber"
+        maxlength="30"
+        placeholder="Ví dụ: A101"
+        [attr.aria-label]="'Số phòng thứ ' + (index() + 1)"
+    /></label>
+    <label
+      >Tầng<input
+        type="number"
+        class="input"
+        formControlName="floorNumber"
+        min="0"
+        step="1"
+        placeholder="Chưa xác định"
+        [attr.aria-label]="'Tầng của phòng thứ ' + (index() + 1)"
+    /></label>
+    <div class="effective-price">
+      <span>Giá áp dụng / tháng</span
+      ><strong>{{ money(form().controls.price.value ?? defaults().price ?? 0, 'đ') }}</strong>
+    </div>
+    <button
+      type="button"
+      class="btn-icon danger"
+      [disabled]="!canRemove()"
+      [attr.aria-label]="'Bỏ phòng thứ ' + (index() + 1)"
+      (click)="remove.emit()"
+    >
+      <span aria-hidden="true" class="material-symbols-outlined">delete</span>
+    </button>
+  </div>
+  @if (form().invalid && form().touched) {
+    <p class="field-error">
+      Nhập mã phòng hợp lệ; tầng là số nguyên không âm, giá và diện tích phải lớn hơn 0.
+    </p>
+  }
+  <details>
+    <summary>Chỉnh riêng giá, thông số & tiện ích</summary>
+    <p class="hint">
+      Để trống để dùng mặc định. Phí bằng 0 được giữ nguyên, không lấy lại mặc định.
+    </p>
+    <div class="overrides">
+      <label
+        >Loại phòng<select class="input" formControlName="roomTypeId">
+          <option [ngValue]="null">Dùng loại mặc định</option>
+          @for (type of roomTypes(); track type.id) {
+            <option [value]="type.id">{{ type.name }}</option>
+          }
+        </select></label
+      >
+      <label
+        >Giá thuê (đ/tháng)<input
+          class="input"
+          type="number"
+          formControlName="price"
+          min="0.01"
+          [placeholder]="'' + (defaults().price ?? 'Mặc định')"
+      /></label>
+      <label
+        >Diện tích (m²)<input
+          class="input"
+          type="number"
+          formControlName="areaM2"
+          min="0.01"
+          step="0.01"
+          [placeholder]="'' + (defaults().areaM2 ?? 'Mặc định')"
+      /></label>
+      <label
+        >Số người tối đa<input
+          class="input"
+          type="number"
+          formControlName="maxOccupants"
+          min="1"
+          step="1"
+          [placeholder]="'' + (defaults().maxOccupants ?? 'Mặc định')"
+      /></label>
+      <label
+        >Tiền cọc (đ)<input
+          class="input"
+          type="number"
+          formControlName="defaultDeposit"
+          min="0"
+          [placeholder]="'' + (defaults().defaultDeposit ?? 'Chưa khai báo')"
+      /></label>
+      <label
+        >Giá điện (đ)<input
+          class="input"
+          type="number"
+          formControlName="electricityPrice"
+          min="0"
+          [placeholder]="'' + (defaults().electricityPrice ?? 'Chưa khai báo')"
+      /></label>
+      <label
+        >Giá nước (đ)<input
+          class="input"
+          type="number"
+          formControlName="waterPrice"
+          min="0"
+          [placeholder]="'' + (defaults().waterPrice ?? 'Chưa khai báo')"
+      /></label>
+      <label
+        >Phí dịch vụ (đ)<input
+          class="input"
+          type="number"
+          formControlName="serviceFee"
+          min="0"
+          [placeholder]="'' + (defaults().serviceFee ?? 'Chưa khai báo')"
+      /></label>
+    </div>
+    <p class="hint">Tiện ích riêng của phòng</p>
+    <div class="amenities">
+      @for (amenity of amenities(); track amenity.id) {
+        <button
+          type="button"
+          class="amenity-option"
+          [class.selected]="form().controls.amenityIds.value.includes(amenity.id)"
+          [attr.aria-pressed]="form().controls.amenityIds.value.includes(amenity.id)"
+          (click)="toggleAmenity(amenity.id)"
+        >
+          {{ amenity.name }}
+        </button>
+      } @empty {
+        <span class="hint">Chưa có tiện ích trong danh mục.</span>
+      }
+    </div>
+  </details>
+</article>

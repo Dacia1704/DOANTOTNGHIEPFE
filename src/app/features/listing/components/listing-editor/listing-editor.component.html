@@ -8,12 +8,12 @@
     <div class="notice error" role="alert">
       {{ error() }}
       @if (!data.listing) {
-        <button (click)="loadRooms()" [disabled]="loading()">Tải lại phòng</button>
+        <button (click)="loadProperties()" [disabled]="loading()">Tải lại cơ sở</button>
       }
     </div>
   }
   @if (loading()) {
-    <p class="loading" role="status">Đang tải phòng của bạn…</p>
+    <p class="loading" role="status">Đang tải cơ sở của bạn…</p>
   }
   <form id="listing-form" [formGroup]="form" (ngSubmit)="save()" class="stack">
     @if (data.reject) {
@@ -27,16 +27,20 @@
     } @else {
       @if (!data.listing) {
         <label class="field"
-          >Phòng của bạn<select formControlName="roomId" required>
-            <option value="">Chọn phòng còn trống</option>
-            @for (room of rooms(); track room.id) {
-              <option [value]="room.id">{{ room.roomTypeName }} · {{ room.fullAddress }}</option>
+          >Cơ sở cho thuê<select formControlName="propertyId" required>
+            <option value="">Chọn cơ sở có phòng/căn còn trống</option>
+            @for (property of properties(); track property.id) {
+              <option [value]="property.id">
+                {{ property.name }} · {{ property.rentalModeLabel }} ·
+                {{ property.availableCount }} còn trống
+              </option>
             }
           </select></label
         >
-        @if (!loading() && !rooms().length) {
+        @if (!loading() && !properties().length) {
           <p class="notice warning">
-            Chưa có phòng còn trống. Thêm phòng tại “Phòng của tôi” trước khi tạo tin.
+            Chưa có cơ sở sẵn sàng cho thuê. Tạo cơ sở và phòng tại “Cơ sở cho thuê của tôi” trước
+            khi đăng bài.
           </p>
         }
       }

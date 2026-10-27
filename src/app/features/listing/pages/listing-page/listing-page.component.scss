@@ -13,3 +13,18 @@ summary {
   color: var(--primary);
   font-weight: 600;
 }
+
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  font-size: 0.85rem;
+}
+.status-filter select {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-sm) var(--space-md);
+}

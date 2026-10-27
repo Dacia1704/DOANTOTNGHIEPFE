@@ -4,7 +4,8 @@
     <div class="header-left">
       <h1 id="room-types-heading" class="headline-lg">Quản lý loại phòng</h1>
       <p class="body-md text-secondary">
-        Định nghĩa và phân cấp các thể loại phòng (Studio, Chung cư mini, Nhà nguyên căn, Ký túc xá...).
+        Định nghĩa và phân cấp các thể loại phòng (Studio, Chung cư mini, Nhà nguyên căn, Ký túc
+        xá...).
       </p>
     </div>
     <div class="header-right">
@@ -23,362 +24,49 @@
     </div>
   }
 
-  <!-- View Mode Switcher -->
-  <div class="view-tabs">
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="activeTab() === 'list'"
-      (click)="setTab('list')"
-    >
-      <span class="material-symbols-outlined">table_view</span>
-      <span>Danh sách loại phòng</span>
-    </button>
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="activeTab() === 'categories'"
-      (click)="setTab('categories')"
-    >
-      <span class="material-symbols-outlined">category</span>
-      <span>Xem theo danh mục & phòng</span>
-    </button>
-  </div>
-
-  @if (activeTab() === 'list') {
-    <!-- Toolbar: Search & Summary -->
-    <div class="toolbar card-flat">
-      <div class="search-box">
-        <span class="material-symbols-outlined search-icon">search</span>
-        <input
-          type="search"
-          class="input input-search"
-          [formControl]="searchControl"
-          placeholder="Tìm theo tên hoặc mô tả loại phòng..."
-          aria-label="Tìm kiếm loại phòng"
-        />
-      </div>
-
-      @if (result(); as data) {
-        <div class="summary-badge">
-          <span class="badge badge-info">{{ data.total }} loại phòng</span>
-        </div>
-      }
+  <!-- Toolbar: Search & Summary -->
+  <div class="toolbar card-flat">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input
+        type="search"
+        class="input input-search"
+        [formControl]="searchControl"
+        placeholder="Tìm theo tên hoặc mô tả loại phòng..."
+        aria-label="Tìm kiếm loại phòng"
+      />
     </div>
 
-    <!-- Loading State -->
-    @if (loading()) {
-      <div class="state-container">
-        <div class="spinner"></div>
-        <p class="body-md text-secondary">Đang tải danh sách loại phòng...</p>
-      </div>
-    } @else if (error()) {
-      <div class="state-container error-state">
-        <span class="material-symbols-outlined state-icon error">error</span>
-        <p class="body-md text-secondary">{{ error() }}</p>
-        <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
-      </div>
-    } @else if (result(); as data) {
-      <!-- Data Table -->
-      <div class="table-container card-flat">
-        <table class="table" aria-label="Danh sách loại phòng">
-          <thead>
-            <tr>
-              <th scope="col">Tên loại phòng</th>
-              <th scope="col">Loại phòng cha</th>
-              <th scope="col">Mô tả</th>
-              <th scope="col">Ngày tạo</th>
-              <th scope="col" class="th-actions">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of filteredItems(); track item.id) {
-              <tr>
-                <td>
-                  <div class="type-name-cell">
-                    <span class="material-symbols-outlined type-icon">meeting_room</span>
-                    <strong class="type-name">{{ item.name }}</strong>
-                  </div>
-                </td>
-
-                <td>
-                  @if (item.parentName) {
-                    <span class="badge badge-secondary">{{ item.parentName }}</span>
-                  } @else {
-                    <span class="body-sm text-secondary">Gốc (Không có)</span>
-                  }
-                </td>
-
-                <td>
-                  <span class="body-sm text-secondary desc-text">
-                    {{ item.description || 'Chưa có mô tả' }}
-                  </span>
-                </td>
-
-                <td>
-                  <span class="body-sm text-secondary">
-                    {{ item.createdAt ? textUtils.formatDate(item.createdAt, 'dd/MM/yyyy') : '—' }}
-                  </span>
-                </td>
-
-                <td class="td-actions">
-                  <div class="row-actions">
-                    <button
-                      type="button"
-                      class="btn-secondary btn-sm"
-                      (click)="openEdit(item)"
-                      [attr.aria-label]="'Chỉnh sửa loại phòng ' + item.name"
-                    >
-                      <span class="material-symbols-outlined">edit</span>
-                      <span>Sửa</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      class="btn-danger btn-sm"
-                      (click)="openDelete(item)"
-                      [attr.aria-label]="'Xóa loại phòng ' + item.name"
-                    >
-                      <span class="material-symbols-outlined">delete</span>
-                      <span>Xóa</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="empty-cell">
-                  <div class="empty-state">
-                    <span class="material-symbols-outlined">folder_off</span>
-                    <p>Không tìm thấy loại phòng nào phù hợp.</p>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      @if (data.totalPages > 1) {
-        <nav class="pagination-bar" aria-label="Phân trang loại phòng">
-          <button
-            type="button"
-            class="btn-secondary"
-            [disabled]="data.page === 0"
-            (click)="load(data.page - 1)"
-          >
-            <span class="material-symbols-outlined">chevron_left</span>
-            <span>Trang trước</span>
-          </button>
-
-          <span class="page-indicator">Trang {{ data.page + 1 }} / {{ data.totalPages }}</span>
-
-          <button
-            type="button"
-            class="btn-secondary"
-            [disabled]="data.page + 1 >= data.totalPages"
-            (click)="load(data.page + 1)"
-          >
-            <span>Trang sau</span>
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </nav>
-      }
-    }
-  } @else {
-    <!-- Categories & Rooms View -->
-    @if (loading()) {
-      <div class="state-container">
-        <div class="spinner"></div>
-        <p class="body-md text-secondary">Đang tải danh mục và phòng...</p>
-      </div>
-    } @else if (error()) {
-      <div class="state-container error-state">
-        <span class="material-symbols-outlined state-icon error">error</span>
-        <p class="body-md text-secondary">{{ error() }}</p>
-        <button type="button" class="btn-secondary" (click)="loadCategories()">Thử lại</button>
-      </div>
-    } @else if (categories().length === 0) {
-      <div class="empty-state catalog-empty">
-        <span class="material-symbols-outlined">category</span>
-        <p>Chưa có danh mục loại phòng nào.</p>
-      </div>
-    } @else {
-      <div class="catalog">
-        <div class="catalog-kpis">
-          <article class="catalog-kpi">
-            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">category</span></span>
-            <div>
-              <p class="catalog-kpi__label">Loại phòng</p>
-              <p class="catalog-kpi__value">{{ categoryOverview().types }}</p>
-            </div>
-          </article>
-          <article class="catalog-kpi">
-            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">meeting_room</span></span>
-            <div>
-              <p class="catalog-kpi__label">Tổng phòng</p>
-              <p class="catalog-kpi__value">{{ categoryOverview().rooms }}</p>
-            </div>
-          </article>
-          <article class="catalog-kpi catalog-kpi--success">
-            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">check_circle</span></span>
-            <div>
-              <p class="catalog-kpi__label">Còn phòng</p>
-              <p class="catalog-kpi__value">{{ categoryOverview().available }}</p>
-            </div>
-          </article>
-          <article class="catalog-kpi catalog-kpi--muted">
-            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">key</span></span>
-            <div>
-              <p class="catalog-kpi__label">Đã thuê</p>
-              <p class="catalog-kpi__value">{{ categoryOverview().rented }}</p>
-            </div>
-          </article>
-          <article class="catalog-kpi catalog-kpi--warning">
-            <span class="catalog-kpi__icon"><span class="material-symbols-outlined">build</span></span>
-            <div>
-              <p class="catalog-kpi__label">Bảo trì</p>
-              <p class="catalog-kpi__value">{{ categoryOverview().maintenance }}</p>
-            </div>
-          </article>
-        </div>
-
-        <div class="catalog-toolbar">
-          <div class="search-box">
-            <span class="material-symbols-outlined search-icon">search</span>
-            <input
-              type="search"
-              class="input input-search"
-              [value]="categorySearch()"
-              (input)="onCategorySearch($event)"
-              placeholder="Tìm loại phòng theo tên hoặc mô tả..."
-              aria-label="Tìm loại phòng trong danh mục"
-            />
-          </div>
-          <div class="catalog-filters" role="group" aria-label="Lọc trạng thái thuê">
-            @for (filter of statusFilters; track filter.id) {
-              <button
-                type="button"
-                class="catalog-chip"
-                [class.is-active]="statusFilter() === filter.id"
-                (click)="setStatusFilter(filter.id)"
-              >
-                {{ filter.label }}
-              </button>
-            }
-          </div>
-        </div>
-
-        <div class="catalog-nav" role="tablist" aria-label="Chọn loại phòng">
-          <button
-            type="button"
-            class="catalog-nav__item"
-            [class.is-active]="selectedCategoryId() === 'all'"
-            (click)="selectCategory('all')"
-          >
-            <span class="catalog-nav__icon"><span class="material-symbols-outlined">grid_view</span></span>
-            <span class="catalog-nav__name">Tất cả loại phòng</span>
-            <span class="catalog-nav__count">{{ categoryOverview().rooms }} phòng</span>
-          </button>
-          @for (cat of categories(); track cat.id) {
-            <button
-              type="button"
-              class="catalog-nav__item"
-              [class.is-active]="selectedCategoryId() === cat.id"
-              (click)="selectCategory(cat.id)"
-            >
-              <span class="catalog-nav__icon">
-                <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
-              </span>
-              <span class="catalog-nav__name">{{ cat.name }}</span>
-              <span class="catalog-nav__count">{{ cat.rooms.length }} phòng</span>
-            </button>
-          }
-        </div>
-
-        <div class="catalog-boards">
-          @for (cat of visibleCategories(); track cat.id) {
-            <section class="catalog-board" [attr.aria-labelledby]="'cat-' + cat.id">
-              <header class="catalog-board__header">
-                <div class="catalog-board__identity">
-                  <span class="catalog-board__mark">
-                    <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
-                  </span>
-                  <div>
-                    @if (parentName(cat); as parent) {
-                      <p class="catalog-board__parent">Thuộc {{ parent }}</p>
-                    } @else {
-                      <p class="catalog-board__parent">Danh mục gốc</p>
-                    }
-                    <h2 [id]="'cat-' + cat.id" class="catalog-board__title">{{ cat.name }}</h2>
-                    <p class="catalog-board__desc">{{ cat.description || 'Chưa có mô tả cho loại phòng này.' }}</p>
-                  </div>
-                </div>
-                <div class="catalog-board__stats">
-                  <span class="catalog-stat">{{ cat.rooms.length }} phòng</span>
-                  <span class="catalog-stat catalog-stat--success">{{ statusCount(cat, rentalStatuses.AVAILABLE) }} còn</span>
-                  <span class="catalog-stat">{{ statusCount(cat, rentalStatuses.RENTED) }} thuê</span>
-                  <span class="catalog-stat catalog-stat--warning">{{ statusCount(cat, rentalStatuses.MAINTENANCE) }} bảo trì</span>
-                </div>
-              </header>
-
-              @if (filteredRooms(cat).length > 0) {
-                <div class="catalog-rooms">
-                  @for (room of filteredRooms(cat); track room.id) {
-                    <article class="catalog-room" [attr.data-status]="roomStatus(room)">
-                      <div class="catalog-room__hero">
-                        <span class="catalog-room__hero-icon">
-                          <span class="material-symbols-outlined">{{ categoryIcon(cat.name) }}</span>
-                        </span>
-                        <span class="badge" [class]="roomUtils.getStatusBadgeClass(roomStatus(room))">
-                          {{ roomUtils.getStatusLabel(roomStatus(room)) }}
-                        </span>
-                      </div>
-                      <div class="catalog-room__body">
-                        <p class="catalog-room__price">{{ roomUtils.formatPrice(room.price) }}</p>
-                        <h3 class="catalog-room__street">{{ room.addressLine || 'Chưa có địa chỉ chi tiết' }}</h3>
-                        @if (locationLabel(room)) {
-                          <p class="catalog-room__place">
-                            <span class="material-symbols-outlined">location_on</span>
-                            <span>{{ locationLabel(room) }}</span>
-                          </p>
-                        }
-                        <div class="catalog-room__meta">
-                          <span>
-                            <span class="material-symbols-outlined">square_foot</span>
-                            {{ roomUtils.formatArea(room.areaM2) }}
-                          </span>
-                          <span>
-                            <span class="material-symbols-outlined">group</span>
-                            Tối đa {{ room.maxOccupants }} người
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  }
-                </div>
-              } @else {
-                <div class="catalog-board__empty">
-                  <span class="material-symbols-outlined">home_work</span>
-                  <p>
-                    @if (statusFilter() === 'all') {
-                      Chưa có phòng nào thuộc loại {{ cat.name }}.
-                    } @else {
-                      Không có phòng với trạng thái "{{ statusFilterLabel() }}" trong loại {{ cat.name }}.
-                    }
-                  </p>
-                </div>
-              }
-            </section>
-          } @empty {
-            <div class="empty-state catalog-empty">
-              <span class="material-symbols-outlined">search_off</span>
-              <p>Không tìm thấy loại phòng phù hợp bộ lọc.</p>
-            </div>
-          }
-        </div>
+    @if (result(); as data) {
+      <div class="summary-badge">
+        <span class="badge badge-info">{{ data.total }} loại phòng</span>
       </div>
     }
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p class="body-md text-secondary">Đang tải danh sách loại phòng...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-container error-state">
+      <span class="material-symbols-outlined state-icon error">error</span>
+      <p class="body-md text-secondary">{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (result(); as data) {
+    <p class="body-sm text-secondary">
+      Mở hoặc thu gọn từng nhánh. Bấm “Thêm con” để tạo loại phòng ngay dưới loại đang chọn.
+    </p>
+    <app-room-type-tree
+      [types]="data.items"
+      [query]="searchControl.value"
+      [editable]="true"
+      (addChild)="openCreate($event)"
+      (editType)="openEdit($event)"
+      (deleteType)="openDelete($event)"
+    />
   }
 </section>

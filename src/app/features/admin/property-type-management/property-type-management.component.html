@@ -1,0 +1,167 @@
+<section class="catalog-page">
+  <header>
+    <p class="eyebrow">DANH MỤC BẤT ĐỘNG SẢN</p>
+    <h1>Loại cơ sở cho thuê</h1>
+    <p class="muted">
+      Nhà trọ, chung cư mini, căn hộ… Phân loại cơ sở độc lập với loại phòng bên trong.
+    </p>
+  </header>
+  @if (success()) {
+    <p class="success" role="status">{{ success() }}</p>
+  }
+  <div class="catalog-layout">
+    <section class="list-panel">
+      <div class="list-title">
+        <h2>Danh sách loại cơ sở</h2>
+        <span>{{ result()?.total ?? 0 }} loại</span>
+      </div>
+      @if (loading()) {
+        <p class="state" role="status">Đang tải danh mục…</p>
+      } @else if (error()) {
+        <div class="state" role="alert">
+          <p>{{ error() }}</p>
+          <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Tên loại cơ sở</th>
+                <th>Mô tả</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (type of result()?.items; track type.id) {
+                <tr>
+                  <td>
+                    <strong>{{ type.name }}</strong>
+                  </td>
+                  <td class="description">{{ type.description || 'Chưa có mô tả' }}</td>
+                  <td>
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        [disabled]="busy()"
+                        [attr.aria-label]="'Sửa ' + type.name"
+                        (click)="edit(type)"
+                      >
+                        <span aria-hidden="true" class="material-symbols-outlined"
+                          >edit</span
+                        ></button
+                      ><button
+                        type="button"
+                        class="btn-icon danger"
+                        [disabled]="busy()"
+                        [attr.aria-label]="'Xóa ' + type.name"
+                        (click)="deleting.set(type); actionError.set('')"
+                      >
+                        <span aria-hidden="true" class="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="state">
+                    Chưa có loại cơ sở. Tạo loại đầu tiên ở bên cạnh.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (result(); as data) {
+          @if (data.totalPages > 1) {
+            <nav class="pagination" aria-label="Phân trang loại cơ sở">
+              <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="data.page === 0 || busy()"
+                (click)="load(data.page - 1)"
+              >
+                Trước</button
+              ><span>{{ data.page + 1 }} / {{ data.totalPages }}</span
+              ><button
+                type="button"
+                class="btn-secondary"
+                [disabled]="data.page + 1 >= data.totalPages || busy()"
+                (click)="load(data.page + 1)"
+              >
+                Sau
+              </button>
+            </nav>
+          }
+        }
+      }
+    </section>
+    <aside class="editor-panel">
+      @if (deleting(); as type) {
+        <h2>Xóa loại cơ sở?</h2>
+        <p>
+          Bạn đang xóa <strong>{{ type.name }}</strong
+          >. Loại đã được gắn với cơ sở sẽ không thể xóa.
+        </p>
+        @if (actionError()) {
+          <p class="error" role="alert">{{ actionError() }}</p>
+        }
+        <div class="actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="busy()"
+            (click)="deleting.set(null); actionError.set('')"
+          >
+            Hủy</button
+          ><button
+            type="button"
+            class="btn-primary delete-button"
+            [disabled]="busy()"
+            (click)="remove()"
+          >
+            {{ busy() ? 'Đang xóa…' : 'Xác nhận xóa' }}
+          </button>
+        </div>
+      } @else {
+        <h2>{{ editing() ? 'Chỉnh sửa loại cơ sở' : 'Thêm loại cơ sở' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <label for="property-type-name"
+            >Tên loại cơ sở *<input
+              id="property-type-name"
+              class="input"
+              formControlName="name"
+              maxlength="100"
+              placeholder="Ví dụ: Chung cư mini"
+          /></label>
+          @if (form.controls.name.touched && form.controls.name.invalid) {
+            <p class="error">Tên bắt buộc, tối đa 100 ký tự.</p>
+          }
+          <label for="property-type-description"
+            >Mô tả<textarea
+              id="property-type-description"
+              class="input"
+              rows="4"
+              formControlName="description"
+              placeholder="Mô tả ngắn về loại cơ sở"
+            ></textarea>
+          </label>
+          @if (actionError()) {
+            <p class="error" role="alert">{{ actionError() }}</p>
+          }
+          <div class="actions">
+            @if (editing()) {
+              <button type="button" class="btn-secondary" [disabled]="busy()" (click)="reset()">
+                Hủy sửa
+              </button>
+            }
+            <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
+              {{ busy() ? 'Đang lưu…' : 'Lưu loại cơ sở' }}
+            </button>
+          </div>
+        </form>
+      }
+    </aside>
+  </div>
+</section>

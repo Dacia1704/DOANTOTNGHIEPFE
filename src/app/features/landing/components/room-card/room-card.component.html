@@ -1,4 +1,9 @@
-<article class="room-card" (click)="!isApiRoom && onClick()" (keydown.enter)="!isApiRoom && onClick()" [attr.tabindex]="isApiRoom ? null : 0">
+<article
+  class="room-card"
+  (click)="!isApiRoom && onClick()"
+  (keydown.enter)="!isApiRoom && onClick()"
+  [attr.tabindex]="isApiRoom ? null : 0"
+>
   <div class="room-card__media">
     <img
       class="room-card__image"
@@ -54,7 +59,9 @@
           <span class="material-symbols-outlined">{{ categoryIcon }}</span>
           {{ categoryLabel }}
         </span>
-        @if (isApiRoom) { <span class="room-card__status">{{ statusLabel }}</span> }
+        @if (isApiRoom) {
+          <span class="room-card__status">{{ statusLabel }}</span>
+        }
         @if (!isApiRoom) {
           <span class="room-card__rating">
             <span class="material-symbols-outlined">star</span>
@@ -80,22 +87,26 @@
     <div class="room-card__footer">
       <div class="room-card__price-row">
         <div>
-          <span class="room-card__price">{{ formatPrice(room.price) }} đ</span>
+          <span class="room-card__price">{{ pricePrefix }}{{ formatPrice(room.price) }} đ</span>
           <span class="room-card__price-unit">{{ priceUnit }}</span>
         </div>
-        <span class="room-card__extra"
-              [class.is-area]="isApiRoom || (!isApiRoom && isArea)">{{ extraLabel }}</span>
+        <span class="room-card__extra" [class.is-area]="isApiRoom || (!isApiRoom && isArea)">{{
+          extraLabel
+        }}</span>
       </div>
       <div class="room-card__host">
         <div class="room-card__avatar">{{ hostInitials }}</div>
         <span class="room-card__host-name">{{ hostName }}</span>
       </div>
       @if (isApiRoom) {
-        <button type="button" class="room-card__details" (click)="$event.stopPropagation(); onClick()">
+        <button
+          type="button"
+          class="room-card__details"
+          (click)="$event.stopPropagation(); onClick()"
+        >
           Xem chi ti&#x1EBF;t <span class="material-symbols-outlined">arrow_forward</span>
         </button>
       }
     </div>
   </div>
 </article>
-
