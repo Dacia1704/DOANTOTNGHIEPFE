@@ -1,0 +1,131 @@
+const assert = require('node:assert/strict');
+const { chromium } = require('C:/Users/Admin/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+(async () => {
+ const browser = await chromium.launch({ channel: 'msedge', headless: true });
+ try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
+  const calls = [], errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/listings') calls.push(new URL(request.url())); });
+  const isSearch = response => new URL(response.url()).pathname === '/api/listings';
+  async function searchClick(button) {
+   const pending = page.waitForResponse(isSearch);
+   await button.click();
+   const response = await pending;
+   assert.equal(response.status(), 200);
+   await page.locator('.capsule__cta').waitFor({ state: 'visible' });
+   await page.waitForFunction(() => !document.querySelector('.capsule__cta').disabled);
+   return new URL(response.url()).searchParams;
+  }
+  await page.goto('http://127.0.0.1:4207/');
+  await page.locator('app-room-card').first().waitFor();
+  assert.equal(await page.locator('app-room-card').count(), 2);
+  assert.equal(await page.locator('app-search-capsule app-category-bar').count(), 1);
+  assert.equal(await page.locator('.category-chip, app-quick-filter-bar').count(), 0);
+  assert.equal(await page.locator('#search-amenities').count(), 0);
+  const trigger = page.locator('.category-picker');
+  await trigger.click();
+  const picker = page.getByRole('dialog', {name:'Bạn tìm loại phòng nào?',exact:true});
+  await picker.waitFor();
+  await picker.getByRole('searchbox').fill('khép');
+  await picker.getByRole('button',{name:'Phòng khép kín',exact:true}).waitFor();
+  assert.equal(await picker.getByRole('button',{name:'Phòng trọ',exact:true}).count(), 1);
+  assert.equal(await picker.getByRole('button',{name:'Nhà nguyên căn',exact:true}).count(), 0);
+  const beforeDraft = calls.length;
+  await picker.getByRole('button',{name:'Phòng khép kín',exact:true}).click();
+  await picker.waitFor({state:'hidden'});
+  assert((await trigger.textContent()).includes('Phòng khép kín'));
+  await page.locator('select[name="province"]').selectOption('p');
+  await page.locator('select[name="ward"] option[value="w"]').waitFor({state:'attached'});
+  await page.locator('select[name="ward"]').selectOption('w');
+  await page.locator('select[name="price"]').selectOption('3to5');
+  await page.getByRole('button',{name:'Tiện ích',exact:true}).click();
+  await page.getByRole('checkbox',{name:'Điều hòa',exact:true}).check();
+  await page.locator('.capsule__more').click();
+  await page.getByRole('button',{name:'Bỏ tiện ích Điều hòa',exact:true}).waitFor();
+  assert.equal(calls.length, beforeDraft, 'Draft selections must wait for Find rooms.');
+  let params = await searchClick(page.getByRole('button',{name:'Tìm phòng',exact:true}));
+  assert.equal(params.get('provinceId'),'p');
+  assert.equal(params.get('wardId'),'w');
+  assert.equal(params.get('roomTypeName'),'Phòng khép kín');
+  assert.equal(params.get('minPrice'),'3000000');
+  assert.equal(params.get('maxPrice'),'5000000');
+  assert.deepEqual(params.getAll('amenityNames'),['Điều hòa']);
+  assert.equal(params.get('rentalStatus'),'AVAILABLE');
+  await page.getByRole('button',{name:'Bỏ lọc Hà Nội',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Bỏ lọc Phường Bạch Mai',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Bỏ lọc Phòng khép kín',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Bỏ lọc 3 – 5 triệu',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Bỏ lọc Điều hòa',exact:true}).waitFor();
+  assert.equal(await page.locator('app-room-card').count(),1);
+  await page.screenshot({path:'.angular/search-redesign-applied.png'});
+  params = await searchClick(page.getByRole('button',{name:'Bỏ lọc 3 – 5 triệu',exact:true}));
+  assert.equal(params.has('minPrice'),false);
+  assert.equal(params.has('maxPrice'),false);
+  assert.equal(params.get('roomTypeName'),'Phòng khép kín');
+  assert.equal(await page.locator('select[name="price"]').inputValue(),'all');
+  params = await searchClick(page.getByRole('button',{name:'Bỏ lọc Hà Nội',exact:true}));
+  assert.equal(params.has('provinceId'),false);
+  assert.equal(params.has('wardId'),false);
+  assert.equal(params.get('roomTypeName'),'Phòng khép kín');
+  assert.equal(await page.locator('select[name="province"]').inputValue(),'');
+  assert.equal(await page.locator('select[name="ward"]').count(),0);
+  params = await searchClick(page.getByRole('button',{name:'Xóa tất cả',exact:true}));
+  assert.deepEqual(Array.from(params.keys()).sort(), ['page','rentalStatus','size']);
+  assert.equal(await page.locator('.applied-filters').count(),0);
+  assert.equal(await page.locator('app-room-card').count(),2);
+  await page.locator('select[name="price"]').selectOption('over5');
+  await searchClick(page.getByRole('button',{name:'Đặt lại',exact:true}));
+  assert.equal(await page.locator('select[name="price"]').inputValue(),'all');
+  assert.equal(await page.locator('.capsule__selected').count(),0);
+  assert((await trigger.textContent()).includes('Tất cả loại phòng'));
+  await trigger.click(); await picker.waitFor(); await page.keyboard.press('Escape'); await picker.waitFor({state:'hidden'});
+  await trigger.click(); await picker.waitFor(); await page.locator('.cdk-overlay-backdrop').click({position:{x:5,y:5}}); await picker.waitFor({state:'hidden'});
+  for(const width of [320,390,600,768,1024,1200,1440]) {
+   await page.setViewportSize({width,height:1000});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Search overflow at '+width);
+   if(width===390) {
+    await page.screenshot({path:'.angular/search-redesign-mobile.png',fullPage:true});
+    await trigger.click(); await picker.waitFor();
+    const bounds = await picker.boundingBox();
+    assert(bounds.x>=0 && bounds.x+bounds.width<=width, 'Mobile picker outside viewport');
+    await page.screenshot({path:'.angular/search-redesign-mobile-tree.png'});
+    await picker.getByRole('button',{name:'Tất cả loại phòng',exact:true}).click();
+    await picker.waitFor({state:'hidden'});
+   }
+  }
+  await page.setViewportSize({width:1440,height:1050});
+  await page.locator('.hero').screenshot({path:'.angular/search-redesign-final.png'});
+  console.log('PASS: one hierarchy picker, deferred draft filters, actual combined HTTP query/result, applied chips, independent removal, reset, Escape/backdrop dismissal, mobile overlay, seven viewport sizes.');
+  await page.goto('http://127.0.0.1:4207/login');
+  await page.locator('#login-email').waitFor();
+  const loginRequests=[];
+  page.on('request',r=>{if(new URL(r.url()).pathname==='/api/auth/login')loginRequests.push(r.url());});
+  await page.locator('.submit-btn').click();
+  await page.locator('#login-email-error').waitFor();
+  await page.locator('#login-password-error').waitFor();
+  assert.equal(await page.locator('#login-email').getAttribute('aria-invalid'),'true');
+  await page.locator('#login-email').fill('not-an-email');
+  await page.locator('#login-password').fill('123');
+  await page.locator('.submit-btn').click();
+  assert((await page.locator('#login-email-error').textContent()).includes('định dạng'));
+  assert((await page.locator('#login-password-error').textContent()).includes('6 ký tự'));
+  await page.getByRole('button',{name:'Hiện mật khẩu',exact:true}).click();await page.getByRole('button',{name:'Ẩn mật khẩu',exact:true}).waitFor();
+  assert.equal(await page.locator('#login-password').getAttribute('type'),'text');
+  await page.getByRole('button',{name:'Ẩn mật khẩu',exact:true}).click();await page.getByRole('button',{name:'Hiện mật khẩu',exact:true}).waitFor();
+  assert.equal(await page.locator('#login-password').getAttribute('type'),'password');
+  assert.equal(await page.getByRole('link',{name:'Quên mật khẩu?',exact:true}).getAttribute('href'),'/forgot-password');
+  assert.equal(await page.getByRole('link',{name:'Đăng ký miễn phí',exact:true}).getAttribute('href'),'/register');
+  assert.equal(await page.getByRole('link',{name:'khám phá phòng',exact:true}).getAttribute('href'),'/');
+  assert.equal(loginRequests.length,0, 'Invalid form must not call login API');
+  await page.reload(); await page.locator('#login-email').waitFor();
+  for(const width of [320,390,600,768,1024,1200,1440]) {
+   await page.setViewportSize({width,height:1000});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Login overflow at '+width);
+   if(width===390) await page.screenshot({path:'.angular/login-redesign-mobile.png'});
+  }
+  await page.screenshot({path:'.angular/login-redesign-desktop.png'});assert.deepEqual(errors,[]);
+  console.log('PASS: login required/email/password-length validation, accessible password reveal, recovery/register/guest links, invalid-submit guard, no overflow across seven viewport sizes, no runtime errors.');
+ } finally { await browser.close(); }
+})().catch(e=>{console.error(e);process.exitCode=1;});
+

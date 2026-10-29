@@ -1,8 +1,6 @@
-import { RoomTypeUtils } from '@shared/utils/room-type-utils';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   EventEmitter,
   Input,
   OnInit,
@@ -12,31 +10,29 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AmenityService } from '@core/services/amenity.service';
-import { RoomTypeService } from '@core/services/room-type.service';
 import { AddressService } from '@core/services/address.service';
 import { Amenity } from '@model/amenity/amenity.model';
-import { RoomType } from '@model/room-type/room-type.model';
 import { Province } from '@model/address/province.model';
 import { Ward } from '@model/address/ward.model';
 import { RoomQueryParams } from '@model/room/request/room-query-params';
 import { RoomRentalStatus } from '@model/room/room.model';
+import { CategoryBarComponent } from '../category-bar/category-bar.component';
 
 @Component({
   selector: 'app-search-capsule',
-  imports: [FormsModule],
+  imports: [FormsModule, CategoryBarComponent],
   templateUrl: './search-capsule.component.html',
   styleUrl: './search-capsule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchCapsuleComponent implements OnInit {
   private readonly amenityService = inject(AmenityService);
-  private readonly roomTypeService = inject(RoomTypeService);
   private readonly addressService = inject(AddressService);
   @Output() readonly search = new EventEmitter<RoomQueryParams>();
+  @Output() readonly locationLabels = new EventEmitter<{ province: string; ward: string }>();
+  @Input() searching = false;
 
   readonly amenities = signal<Amenity[]>([]);
-  readonly roomTypes = signal<RoomType[]>([]);
-  readonly typeOptions = computed(() => RoomTypeUtils.options(this.roomTypes()));
   readonly provinces = signal<Province[]>([]);
   readonly wards = signal<Ward[]>([]);
   readonly location = signal('');
@@ -45,6 +41,7 @@ export class SearchCapsuleComponent implements OnInit {
   readonly priceRange = signal('all');
   readonly roomTypeName = signal('');
   readonly selectedAmenityNames = signal<string[]>([]);
+  readonly showAmenities = signal(false);
   readonly rentalStatus = signal<RoomRentalStatus | ''>(RoomRentalStatus.AVAILABLE);
   @Input() set appliedFilters(query: RoomQueryParams) {
     this.provinceId.set(query.provinceId ?? '');
@@ -56,24 +53,14 @@ export class SearchCapsuleComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.amenityService
-      .getAllAmenities()
-      .subscribe({
-        next: (values) => this.amenities.set(values),
-        error: () => this.amenities.set([]),
-      });
-    this.roomTypeService
-      .getAllRoomTypes()
-      .subscribe({
-        next: (values) => this.roomTypes.set(values),
-        error: () => this.roomTypes.set([]),
-      });
-    this.addressService
-      .getProvinces()
-      .subscribe({
-        next: (values) => this.provinces.set(values),
-        error: () => this.provinces.set([]),
-      });
+    this.amenityService.getAllAmenities().subscribe({
+      next: (values) => this.amenities.set(values),
+      error: () => this.amenities.set([]),
+    });
+    this.addressService.getProvinces().subscribe({
+      next: (values) => this.provinces.set(values),
+      error: () => this.provinces.set([]),
+    });
   }
 
   toggleAmenity(name: string, checked: boolean): void {
@@ -96,6 +83,26 @@ export class SearchCapsuleComponent implements OnInit {
 
   onSubmit(event: Event): void {
     event.preventDefault();
+    this.emitSearch();
+  }
+
+  resetFilters(): void {
+    this.location.set('');
+    this.provinceId.set('');
+    this.wardId.set('');
+    this.wards.set([]);
+    this.priceRange.set('all');
+    this.roomTypeName.set('');
+    this.selectedAmenityNames.set([]);
+    this.rentalStatus.set(RoomRentalStatus.AVAILABLE);
+    this.emitSearch();
+  }
+
+  private emitSearch(): void {
+    this.locationLabels.emit({
+      province: this.provinces().find((province) => province.id === this.provinceId())?.name ?? '',
+      ward: this.wards().find((ward) => ward.id === this.wardId())?.name ?? '',
+    });
     const [minPrice, maxPrice] = this.priceBounds();
     const provinceId = this.provinceId() || this.findProvinceByName(this.location());
     this.search.emit({

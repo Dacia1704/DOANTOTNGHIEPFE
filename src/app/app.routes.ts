@@ -10,6 +10,15 @@ export const routes: Routes = [
       import('./layouts/tenant-layout/tenant-layout.component').then(m => m.TenantLayoutComponent),
     children: [
       {
+        path: 'tro/:id',
+        loadComponent: () => import('./features/listing/pages/listing-detail-page/listing-detail-page.component').then(m => m.ListingDetailPageComponent),
+      },
+      {
+        path: 'tin-nhan',
+        canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])],
+        loadComponent: () => import('./features/chat/pages/chat-page/chat-page.component').then(m => m.ChatPageComponent),
+      },
+      {
         path: 'goi-dich-vu', canActivate: [roleGuard([RoleCode.LANDLORD])],
         loadComponent: () => import('./features/service-package/pages/service-package-page/service-package-page.component').then(m => m.ServicePackagePageComponent),
       },

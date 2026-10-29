@@ -1,0 +1,23 @@
+purpose:
+  stands_in_for: Local synthetic Rental Property API; see rental-property-ui.context.md for prior evidence.
+  unblocks: Angular search and hierarchy picker verification without changing the production API target.
+assumptions:
+  - id: consolidated-search-query
+    status: supported
+    claim: In the 2026-10-29 synthetic run, the consolidated search submitted provinceId, wardId, roomTypeName, minPrice, maxPrice, rentalStatus and amenityNames together after clicking Find rooms.
+    reason: The production Angular build generated the expected HTTP query, displayed the fixture result and kept applied filter labels synchronized after individual removal and reset.
+    verification: Local headless Edge check in .angular/search-login-redesign-check.cjs passed against the simulation on 4907 and production preview on 4207. Request events in .angular/search-redesign-sim.ndjson confirmed catalog, ward and listing calls. Draft selection made no listing request; removing a province also removed its ward. Nine existing unit tests and the public picker smoke passed.
+    source: src/app/features/landing/components/search-capsule/; src/app/features/landing/pages/landing-page/; postman/mocks/rental-property/default.js; postman/simulations/rental-room-type-picker.smoke.cjs
+    updated_at: "2026-10-29"
+  - id: real-provider-filter-semantics
+    status: unknown
+    claim: Real backend search results match every combination of amenities and hierarchical room types shown by the new search form.
+    reason: The UI change preserves the existing API contract. The synthetic handler checks room names, areas, prices and availability but does not model all amenity or ancestor-selection semantics.
+    verification: Confirmed outgoing parameter names against PublicListingService and ListingSearchRequest. No live backend or database run was performed; simulation results establish caller wiring only.
+    source: src/app/core/services/public-listing.service.ts; ../DOANTOTNGHIEPBE/src/main/java/com/tamdaptit/rentalmanagement/listing/dto/request/ListingSearchRequest.java; postman/mocks/rental-property/default.js
+    updated_at: "2026-10-29"
+fingerprints:
+  - id: search-login-redesign-local
+    date: "2026-10-29"
+    commit: Uncommitted working tree; historical simulation observations remain in rental-property-ui.context.md.
+    cli: Postman CLI 1.74.0

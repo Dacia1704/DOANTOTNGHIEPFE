@@ -1,51 +1,23 @@
-<nav class="category-bar" aria-label="Lọc theo loại phòng">
-  <div class="category-bar__inner">
-    <span class="category-bar__label">Loại phòng</span>
-    <div class="category-bar__shortcuts">
-      <button
-        type="button"
-        class="category-chip"
-        [class.is-active]="!selectedName()"
-        [attr.aria-pressed]="!selectedName()"
-        (click)="select('')"
-      >
-        Tất cả
-      </button>
-      @for (type of quickTypes(); track type.id) {
-        <button
-          type="button"
-          class="category-chip"
-          [class.is-active]="selectedName() === type.name"
-          [attr.aria-pressed]="selectedName() === type.name"
-          (click)="select(type.name)"
-          [title]="type.name"
-        >
-          {{ type.name }}
-        </button>
-      }
-    </div>
-    <button
-      type="button"
-      class="category-picker"
-      cdkOverlayOrigin
-      #origin="cdkOverlayOrigin"
-      [class.has-selection]="!!selectedName()"
-      [attr.aria-expanded]="expanded()"
-      aria-haspopup="dialog"
-      aria-controls="public-type-picker"
-      (click)="expanded() ? closePicker() : expanded.set(true)"
-    >
-      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-      <span class="category-picker__name">{{ selectedName() || 'Xem tất cả loại' }}</span>
-      <span
-        class="material-symbols-outlined chevron"
-        [class.is-open]="expanded()"
-        aria-hidden="true"
-        >expand_more</span
-      >
-    </button>
-  </div>
-</nav>
+<button
+  type="button"
+  class="category-picker"
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  [class.has-selection]="!!selectedName()"
+  [attr.aria-expanded]="expanded()"
+  aria-haspopup="dialog"
+  aria-controls="public-type-picker"
+  (click)="expanded() ? closePicker() : expanded.set(true)"
+>
+  <span class="category-picker__icon material-symbols-outlined" aria-hidden="true">roofing</span>
+  <span class="category-picker__field">
+    <span class="category-picker__label">Loại phòng</span>
+    <span class="category-picker__name">{{ selectedName() || 'Tất cả loại phòng' }}</span>
+  </span>
+  <span class="material-symbols-outlined chevron" [class.is-open]="expanded()" aria-hidden="true"
+    >expand_more</span
+  >
+</button>
 <ng-template
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="origin"
@@ -54,6 +26,7 @@
   [cdkConnectedOverlayHasBackdrop]="true"
   cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
   [cdkConnectedOverlayViewportMargin]="16"
+  [cdkConnectedOverlayPush]="true"
   (backdropClick)="closePicker()"
   (overlayKeydown)="onOverlayKeydown($event)"
 >
@@ -109,7 +82,7 @@
     </div>
     <footer class="type-picker__footer">
       <span>{{ roomTypes().length }} loại phòng</span
-      ><button type="button" class="reset-button" (click)="select('')">Xem tất cả tin</button>
+      ><button type="button" class="reset-button" (click)="select('')">Tất cả loại phòng</button>
     </footer>
   </section>
 </ng-template>

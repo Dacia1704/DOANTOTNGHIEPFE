@@ -2,6 +2,7 @@
   display: block;
   background: var(--background);
 }
+.support-launcher { position: fixed; bottom: var(--space-lg); right: var(--space-lg); z-index: 100; display: inline-flex; align-items: center; gap: var(--space-sm); padding: 12px 18px; border-radius: var(--radius-full); background: var(--primary); color: var(--on-primary-container); text-decoration: none; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-floating); &:hover { background: var(--primary-hover); } &:focus-visible { outline: 3px solid var(--primary-focus); outline-offset: 3px; } @media (max-width: 767px) { bottom: 94px; right: var(--space-md); padding: 12px; font-size: 12px; } }
 
 .tenant-layout {
   display: flex;

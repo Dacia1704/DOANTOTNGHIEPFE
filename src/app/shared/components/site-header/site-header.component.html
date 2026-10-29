@@ -40,6 +40,8 @@
         <span class="site-header__dot"></span>
       </button>
 
+      <a class="site-header__icon-btn" routerLink="/tin-nhan" title="Tin nhắn" aria-label="Tin nhắn"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble_outline</span></a>
+
       @if (isLoggedIn()) {
         <button type="button" class="site-header__avatar-trigger" aria-label="Menu tài khoản" [matMenuTriggerFor]="userMenu">
           <img [src]="userAvatar" [alt]="displayName" />
@@ -51,6 +53,8 @@
             <span class="material-symbols-outlined mi">person</span>
             Hồ sơ cá nhân
           </a>
+          <a mat-menu-item routerLink="/tin-nhan"><span class="material-symbols-outlined mi" aria-hidden="true">forum</span>Tin nhắn</a>
+          @if (!isAdmin) { <a mat-menu-item routerLink="/tin-nhan" [queryParams]="{ support: '1' }"><span class="material-symbols-outlined mi" aria-hidden="true">support_agent</span>Chat hỗ trợ</a> }
           @if (isAdmin) {
             <a mat-menu-item routerLink="/admin/users">
               <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>

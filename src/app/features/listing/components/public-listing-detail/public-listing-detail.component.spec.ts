@@ -1,5 +1,6 @@
 import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { vi } from 'vitest';
 import { PublicListingDetailComponent } from './public-listing-detail.component';
@@ -75,6 +76,7 @@ function listing(mode: 'WHOLE' | 'BY_ROOM') {
 
 describe('One listing per property with room-level details', () => {
   it('renders one public card for a property containing multiple rooms', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const fixture = TestBed.createComponent(RoomGridComponent);
     const post = listing('BY_ROOM');
     fixture.componentInstance.result = { items: [post], page: 0, total: 1, totalPages: 1 };

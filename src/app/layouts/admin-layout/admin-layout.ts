@@ -24,6 +24,7 @@ export class AdminLayout {
   readonly collapsed = signal(false);
   readonly pageLabel = signal('Quản trị');
   readonly menu: NavItem[] = [
+    { icon: 'forum', label: 'Tin nhắn & hỗ trợ', route: '/tin-nhan' },
     { icon: 'inventory_2', label: 'Gói dịch vụ', route: '/admin/service-packages' },
     { icon: 'bolt', label: 'Gói suất Boost', route: '/admin/boost-packages' },
     { icon: 'published_with_changes', label: 'Đơn đổi gói cũ', route: '/admin/subscription-orders' },

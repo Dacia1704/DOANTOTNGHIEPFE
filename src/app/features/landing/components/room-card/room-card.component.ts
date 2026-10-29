@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { TextUtils } from '@shared/utils/text-utils';
 import { RoomCard } from '../../data/landing.mock';
@@ -17,7 +18,7 @@ export type RoomCardData = RoomCard | PublicListing;
  */
 @Component({
   selector: 'app-room-card',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './room-card.component.html',
   styleUrl: './room-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -104,6 +105,9 @@ export class RoomCardComponent {
   }
   get isApiRoom(): boolean {
     return 'listingId' in this.room;
+  }
+  get listingLink(): string[] {
+    return ['/tro', String(this.room.id)];
   }
   get statusLabel(): string {
     return 'listingId' in this.room

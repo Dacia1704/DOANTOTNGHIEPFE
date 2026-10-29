@@ -16,6 +16,28 @@ const page = (items, query) => {const currentPage=Number(query.page||0),pageSize
 http.createServer(async (req,res) => {
  const url=new URL(req.url,'http://local'), path=url.pathname, query=req.query||Object.fromEntries(url.searchParams);
  const send=(data,code=200,message='Thành công')=>{res.writeHead(code,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify({code,message,data}));};
+ // REST chat fixture from the existing BE ChatController/response DTOs. No booking API.
+ if(path.startsWith('/chat/')) {
+   if(!req.headers.authorization) return send(null,401,'Vui lòng đăng nhập');
+   const owner={id:'owner',fullName:'Nguyễn An',avatarUrl:null,roles:['LANDLORD']};
+   const admin={id:'admin',fullName:'Hỗ trợ Trọ Tốt',avatarUrl:null,roles:['ADMIN']};
+   let conversations=await pm.state.get('rental-property.chats')||[];
+   if(path==='/chat/conversations' && req.method==='GET') return send(conversations);
+   if(req.method==='POST' && (path==='/chat/conversations/support'||path.startsWith('/chat/conversations/listing/'))) {
+     const support=path.endsWith('/support'), listingId=path.split('/').pop();
+     if(!support && !['post-0','post-whole'].includes(listingId)) return send(null,404,'Tin đăng không tồn tại');
+     let item=conversations.find(c=>support?!c.listing:c.listing?.id===listingId);
+     if(!item) {item={id:support?'support-chat':'listing-chat-'+listingId,otherUser:support?admin:owner,listing:support?null:{id:listingId,title:listingId==='post-whole'?'Nhà nguyên căn Vườn Xanh':'Phòng sáng thoáng gần Đại học Bách Khoa'},lastMessage:null,lastMessageAt:null,unreadCount:0};conversations.push(item);await pm.state.set('rental-property.chats',conversations);}
+     return send(item);
+   }
+   const match=path.match(/^\/chat\/conversations\/([^/]+)\/(messages|read)$/);
+   if(match) {
+     if(!conversations.some(c=>c.id===match[1])) return send(null,404,'Cuộc trò chuyện không tồn tại');
+     if(match[2]==='read' && req.method==='PUT') {conversations=conversations.map(c=>c.id===match[1]?{...c,unreadCount:0}:c);await pm.state.set('rental-property.chats',conversations);return send(null);}
+     if(match[2]==='messages' && req.method==='GET') return send({currentPage:Number(query.page||0),pageSize:Number(query.size||30),totalPages:1,totalElements:1,data:[{id:'greeting-'+match[1],conversationId:match[1],sender:match[1]==='support-chat'?admin:owner,content:match[1]==='support-chat'?'Trọ Tốt có thể hỗ trợ gì cho bạn?':'Chào bạn, bạn muốn hỏi về phòng nào?',messageType:'TEXT',createdAt:stamp}]});
+   }
+   return send(null,501,'Đường dẫn chat chưa được mô phỏng');
+ }
  let properties=await pm.state.get('rental-property.properties');if(!properties){properties=seed();await pm.state.set('rental-property.properties',properties);}
  let catalog=await pm.state.get('rental-property.types')||types;
  if(path==='/test/reset' && req.method==='POST'){await pm.state.set('rental-property.properties',seed());await pm.state.set('rental-property.types',types);return send(null);}

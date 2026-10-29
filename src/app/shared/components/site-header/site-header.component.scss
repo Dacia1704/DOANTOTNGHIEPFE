@@ -20,7 +20,7 @@
 
 .site-header__inner {
   height: 100%;
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 var(--gutter);
   display: flex;
@@ -49,24 +49,27 @@
 // ─── Nav pills (desktop only) ───────────────────────────────────────
 .site-header__nav {
   display: none;
+  flex-shrink: 0;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   padding: 4px;
   background: var(--surface-container-low);
   border-radius: var(--radius-full);
 
-  @media (min-width: 768px) {
+  @media (min-width: 1200px) {
     display: flex;
   }
 }
 
 .site-header__nav-link {
-  padding: 8px 20px;
+  flex-shrink: 0;
+  padding: 8px 12px;
   border-radius: var(--radius-full);
   font-size: 14px;
   font-weight: 600;
   color: var(--on-surface-variant);
   text-decoration: none;
+  white-space: nowrap;
   transition: all var(--transition-fast);
 
   &:hover {
@@ -82,8 +85,14 @@
 // ─── Right cluster ──────────────────────────────────────────────────
 .site-header__actions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--space-sm);
+  white-space: nowrap;
+
+  > * { flex-shrink: 0; }
+
+  button { font-family: inherit; }
 }
 
 .site-header__cta {
@@ -94,7 +103,7 @@
   color: #fff;
   border: none;
   border-radius: var(--radius-full);
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -105,7 +114,7 @@
 
   &:hover { background: var(--primary-hover); }
 
-  @media (min-width: 640px) { display: inline-flex; }
+  @media (min-width: 768px) { display: inline-flex; }
 }
 
 .site-header__currency {
@@ -126,7 +135,7 @@
 
   &:hover { background: var(--surface-container); color: var(--on-surface); }
 
-  @media (min-width: 1024px) { display: inline-flex; }
+  @media (min-width: 1360px) { display: inline-flex; }
 }
 
 .site-header__icon-btn {
@@ -157,10 +166,11 @@
   border-radius: 50%;
   background: var(--secondary-container);
 }
+a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
 
 // ─── Guest buttons ──────────────────────────────────────────────────
 .site-header__login-btn {
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: var(--radius-full);
   color: var(--on-surface-variant);
   text-decoration: none;
@@ -172,7 +182,7 @@
 }
 
 .site-header__register-btn {
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: var(--radius-full);
   background: var(--primary);
   color: #fff;
@@ -227,6 +237,22 @@
   .mi { color: var(--error) !important; }
 }
 
-@media (min-width: 768px) and (max-width: 1199px) {
-  .site-header__nav { display: none; }
+@media (max-width: 639px) {
+  .site-header__inner {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .site-header__logo { max-width: 112px; }
+
+  .site-header__actions { gap: 4px; }
+
+  // Messaging remains available in the mobile bottom navigation.
+  .site-header__icon-btn { display: none; }
+
+  .site-header__login-btn,
+  .site-header__register-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }

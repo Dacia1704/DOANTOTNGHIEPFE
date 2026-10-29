@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 import { SiteFooterComponent } from '@shared/components/site-footer/site-footer.component';
 import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/mobile-bottom-nav.component';
@@ -15,6 +15,7 @@ import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/m
   selector: 'app-tenant-layout',
   imports: [
     RouterOutlet,
+    RouterLink,
     SiteHeaderComponent,
     SiteFooterComponent,
     MobileBottomNavComponent,
@@ -23,4 +24,6 @@ import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/m
   styleUrl: './tenant-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TenantLayoutComponent {}
+export class TenantLayoutComponent {
+  readonly router = inject(Router);
+}

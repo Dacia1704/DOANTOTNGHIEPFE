@@ -69,7 +69,7 @@
           </span>
         }
       </div>
-      <h3 class="room-card__title">{{ title }}</h3>
+      <h3 class="room-card__title">@if (isApiRoom) { <a [routerLink]="listingLink">{{ title }}</a> } @else { {{ title }} }</h3>
       <p class="room-card__address">
         <span class="material-symbols-outlined">near_me</span>
         {{ subtitle }}
@@ -99,13 +99,10 @@
         <span class="room-card__host-name">{{ hostName }}</span>
       </div>
       @if (isApiRoom) {
-        <button
-          type="button"
-          class="room-card__details"
-          (click)="$event.stopPropagation(); onClick()"
-        >
-          Xem chi ti&#x1EBF;t <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
+        <div class="room-card__actions">
+          <a class="room-card__details" [routerLink]="listingLink">Xem chi tiết <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+          <a class="room-card__book" [routerLink]="listingLink" fragment="dat-phong">Đặt phòng</a>
+        </div>
       }
     </div>
   </div>

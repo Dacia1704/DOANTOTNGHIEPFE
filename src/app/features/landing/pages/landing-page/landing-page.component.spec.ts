@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { LandingPageComponent } from './landing-page.component';
@@ -12,15 +12,15 @@ describe('Landing published posts', () => {
       search: vi.fn(() => of({ items: [], page: 0, total: 0, totalPages: 0 } as PublicListingList)),
       getById: vi.fn(),
     };
-    const dialog = { open: vi.fn() };
+    const router = { navigate: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         { provide: PublicListingService, useValue: api },
-        { provide: MatDialog, useValue: dialog },
+        { provide: Router, useValue: router },
       ],
     });
     const component = TestBed.createComponent(LandingPageComponent).componentInstance;
-    return { component, api, dialog };
+    return { component, api, router };
   }
   it('starts with published API results and never falls back to raw rooms or mock cards', () => {
     const { component, api } = setup();
@@ -46,12 +46,9 @@ describe('Landing published posts', () => {
     });
     expect(component.rooms()?.items).toEqual([]);
   });
-  it('rechecks a listing before opening details and keeps hidden or expired posts closed', () => {
-    const { component, api, dialog } = setup();
-    api.getById.mockReturnValue(throwError(() => ({ status: 404 })));
-    component.openRoom({ listingId: 'hidden' } as PublicListing);
-    expect(api.getById).toHaveBeenCalledWith('hidden');
-    expect(dialog.open).not.toHaveBeenCalled();
-    expect(component.searchError()).toContain('không còn hiệu lực');
+  it('opens the public detail route where listing visibility is rechecked', () => {
+    const { component, router } = setup();
+    component.openRoom({ listingId: 'post-1' } as PublicListing);
+    expect(router.navigate).toHaveBeenCalledWith(['/tro', 'post-1']);
   });
 });

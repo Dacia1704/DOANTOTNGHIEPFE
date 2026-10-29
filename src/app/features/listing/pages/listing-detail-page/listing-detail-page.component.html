@@ -1,0 +1,51 @@
+<div class="detail-page">
+  <nav class="breadcrumbs" aria-label="Đường dẫn"><a routerLink="/">Trang chủ</a><span aria-hidden="true">/</span><span>Chi tiết trọ</span></nav>
+  @if (loading()) {
+    <div class="loading-state" role="status"><span class="material-symbols-outlined" aria-hidden="true">home_work</span><h1>Đang mở cửa căn phòng của bạn…</h1><div class="skeleton"></div></div>
+  } @else if (error()) {
+    <div class="state-card" role="alert"><span class="material-symbols-outlined" aria-hidden="true">house</span><h1>Chưa thể xem tin đăng</h1><p>{{ error() }}</p><div><button type="button" class="btn-primary" (click)="reload()">Thử lại</button><a class="btn-secondary" routerLink="/">Về trang chủ</a></div></div>
+  } @else if (listing(); as post) {
+    <header class="listing-heading"><div class="heading-badges"><span class="category-badge">{{ post.categoryLabel }}</span>@if (post.priorityLevel > 0) { <span class="priority-badge"><span class="material-symbols-outlined" aria-hidden="true">bolt</span>Tin ưu tiên</span> }<span class="listing-code">Mã tin: {{ post.id.slice(0, 8) }}</span></div><h1>{{ post.listingTitle }}</h1><p class="address"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>{{ post.fullAddress }}</p><div class="listing-meta"><span><span class="material-symbols-outlined" aria-hidden="true">schedule</span>Đăng {{ post.publishedAt | date:'dd/MM/yyyy':'+0700' }}</span><span><span class="material-symbols-outlined" aria-hidden="true">person</span>{{ post.landlordName }}</span><span><span class="material-symbols-outlined" aria-hidden="true">door_open</span>{{ post.property.availableCount }} {{ post.rentalMode === 'WHOLE' ? 'căn còn trống' : 'phòng còn trống' }}</span></div></header>
+    <div class="detail-layout">
+      <div class="detail-content">
+        <section class="gallery" aria-label="Hình ảnh trọ">
+          <div class="gallery-main">
+            @if (gallery().length) {
+              <img [src]="images.toImageSrc(gallery()[activeImage()].url)" [alt]="post.propertyName + ' - ảnh ' + (activeImage() + 1)" />
+              <span class="photo-count"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>{{ activeImage() + 1 }} / {{ gallery().length }}</span>
+              @if (gallery().length > 1) { <button type="button" class="photo-arrow previous" aria-label="Ảnh trước" (click)="changeImage(-1)"><span class="material-symbols-outlined">chevron_left</span></button><button type="button" class="photo-arrow next" aria-label="Ảnh tiếp theo" (click)="changeImage(1)"><span class="material-symbols-outlined">chevron_right</span></button> }
+            } @else { <div class="no-photo"><span class="material-symbols-outlined" aria-hidden="true">home_work</span><strong>{{ post.propertyName }}</strong><span>Chủ trọ chưa cập nhật hình ảnh.</span></div> }
+          </div>
+          @if (gallery().length > 1) { <div class="gallery-thumbs">@for (image of gallery(); track image.url; let i = $index) { <button type="button" [class.active]="activeImage() === i" [attr.aria-pressed]="activeImage() === i" [attr.aria-label]="'Xem ảnh ' + (i + 1)" (click)="activeImage.set(i)"><img [src]="images.toImageSrc(image.url)" alt="" loading="lazy" /></button> }</div> }
+        </section>
+        <section class="detail-section description"><span class="section-eyebrow">KHÔNG GIAN SỐNG CỦA BẠN</span><h2>Về {{ post.propertyName }}</h2><p>{{ post.listingDescription || 'Chủ trọ chưa bổ sung mô tả. Bạn có thể nhắn tin để hỏi thêm thông tin.' }}</p></section>
+        <section class="detail-section" aria-labelledby="rooms-title">
+          <div class="section-heading"><div><h2 id="rooms-title">{{ post.rentalMode === 'WHOLE' ? 'Thông tin căn nhà' : 'Chọn phòng phù hợp' }}</h2><p>{{ post.rentalMode === 'WHOLE' ? 'Thuê toàn bộ căn nhà với thông tin và chi phí bên dưới.' : 'Mỗi phòng có giá thuê, tiện ích và trạng thái riêng.' }}</p></div><span class="count-badge">{{ post.property.rooms.length }} {{ post.rentalMode === 'WHOLE' ? 'căn' : 'phòng' }}</span></div>
+          <div class="room-options">@for (room of post.property.rooms; track room.id) {
+            <button type="button" class="room-option" [class.selected]="selectedRoom()?.id === room.id" [attr.aria-pressed]="selectedRoom()?.id === room.id" (click)="selectRoom(room)">
+              <span class="room-option-top"><strong>{{ post.rentalMode === 'WHOLE' ? post.propertyName : room.displayName }}</strong><span class="badge" [class]="'badge ' + utils.getStatusBadgeClass(room.rentalStatus)">{{ utils.getStatusLabel(room.rentalStatus) }}</span></span>
+              <span class="room-option-meta">{{ room.roomTypeName }} · {{ utils.formatArea(room.areaM2) }} · {{ room.maxOccupants }} người</span><span class="room-option-price">{{ utils.formatPrice(room.price) }}<span class="material-symbols-outlined" aria-hidden="true">{{ selectedRoom()?.id === room.id ? 'check_circle' : 'arrow_forward' }}</span></span>
+            </button>
+          } @empty { <p class="empty-note">Chủ trọ chưa cập nhật phòng cho thuê.</p> }</div>
+          @if (selectedRoom(); as room) {
+            <div class="room-facts"><div><span class="material-symbols-outlined" aria-hidden="true">square_foot</span><span>Diện tích<strong>{{ utils.formatArea(room.areaM2) }}</strong></span></div><div><span class="material-symbols-outlined" aria-hidden="true">group</span><span>Số người tối đa<strong>{{ room.maxOccupants }} người</strong></span></div><div><span class="material-symbols-outlined" aria-hidden="true">stairs</span><span>Tầng<strong>{{ room.floorNumber === null ? 'Chưa khai báo' : room.floorNumber === 0 ? 'Tầng trệt' : 'Tầng ' + room.floorNumber }}</strong></span></div><div><span class="material-symbols-outlined" aria-hidden="true">category</span><span>Loại phòng<strong>{{ room.roomTypeName }}</strong></span></div></div>
+            <h3>Chi phí thuê {{ post.rentalMode === 'WHOLE' ? 'căn nhà' : 'phòng ' + room.roomNumber }}</h3><dl class="costs"><div><dt>Giá thuê</dt><dd>{{ utils.formatPrice(room.price) }}</dd></div><div><dt>Tiền cọc</dt><dd>{{ utils.formatFee(room.defaultDeposit) }}</dd></div><div><dt>Giá điện</dt><dd>{{ utils.formatFee(room.electricityPrice) }}{{ room.electricityPrice !== null && room.electricityPrice > 0 ? ' / kWh' : '' }}</dd></div><div><dt>Giá nước</dt><dd>{{ utils.formatFee(room.waterPrice) }}</dd></div><div><dt>Phí dịch vụ</dt><dd>{{ utils.formatFee(room.serviceFee) }}</dd></div></dl><p class="fee-note">Trao đổi với chủ trọ để xác nhận cách tính tiền nước, phí dịch vụ và các chi phí khác trước khi thuê.</p>
+          }
+        </section>
+        <section class="detail-section"><h2>Tiện ích tại trọ</h2><h3>{{ post.rentalMode === 'WHOLE' ? 'Tiện ích căn nhà' : 'Tiện ích chung' }}</h3><div class="amenity-grid">@for (amenity of post.amenities; track amenity.id) { <span><span class="material-symbols-outlined" aria-hidden="true">{{ amenity.icon || 'check_circle' }}</span>{{ amenity.name }}</span> } @empty { <p class="empty-note">Chưa cập nhật tiện ích chung.</p> }</div>@if (selectedRoom(); as room) { <h3>Tiện ích riêng {{ post.rentalMode === 'WHOLE' ? '' : 'phòng ' + room.roomNumber }}</h3><div class="amenity-grid">@for (amenity of room.amenities; track amenity.id) { <span><span class="material-symbols-outlined" aria-hidden="true">{{ amenity.icon || 'check_circle' }}</span>{{ amenity.name }}</span> } @empty { <p class="empty-note">Chưa cập nhật tiện ích riêng.</p> }</div> }</section>
+      </div>
+      <aside class="booking-sidebar" id="dat-phong" aria-label="Đặt phòng và liên hệ">
+        <div class="booking-card"><div class="booking-label"><span class="material-symbols-outlined" aria-hidden="true">key</span>CHỐN Ở TIẾP THEO CỦA BẠN</div>
+          @if (selectedRoom(); as room) {
+            <p class="booking-room">{{ post.rentalMode === 'WHOLE' ? post.propertyName : room.displayName }}</p><p class="booking-price">{{ room.price.toLocaleString('vi-VN') }} <span>đ / tháng</span></p><div class="booking-room-meta"><span>{{ utils.formatArea(room.areaM2) }}</span><span>{{ room.maxOccupants }} người</span><span class="availability" [class.unavailable]="room.rentalStatus !== available">{{ utils.getStatusLabel(room.rentalStatus) }}</span></div><div class="deposit-row"><span>Tiền cọc</span><strong>{{ utils.formatFee(room.defaultDeposit) }}</strong></div>
+            <button type="button" class="btn-primary booking-button" [disabled]="room.rentalStatus !== available || ownListing()" (click)="book()"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>{{ room.rentalStatus === available ? 'Đặt phòng' : 'Phòng chưa sẵn sàng' }}</button>
+          } @else { <p>Chưa có phòng để đặt.</p> }
+          <button type="button" class="btn-secondary chat-button" [disabled]="ownListing()" (click)="chatWithLandlord()"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span>Chat với chủ trọ</button>
+          <p class="booking-note">{{ ownListing() ? 'Đây là bài đăng của bạn.' : 'Trao đổi trực tiếp với chủ trọ để xác nhận phòng và lịch xem.' }}</p><div class="landlord"><span class="landlord-avatar"><span class="material-symbols-outlined" aria-hidden="true">person</span></span><div><small>NGƯỜI ĐĂNG TIN</small><strong>{{ post.landlordName }}</strong></div></div>
+        </div>
+        <div class="help-card"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span><div><h3>Cần Trọ Tốt hỗ trợ?</h3><p>Hỏi về tài khoản, bài đăng hoặc vấn đề khi thuê trọ.</p><a routerLink="/tin-nhan" [queryParams]="{ support: '1' }">Chat với quản trị viên <span aria-hidden="true">↗</span></a></div></div>
+        <p class="safety-note"><span class="material-symbols-outlined" aria-hidden="true">shield</span>Nên xem phòng và xác minh thông tin chủ trọ trước khi đặt cọc.</p>
+      </aside>
+    </div>
+  }
+</div>
