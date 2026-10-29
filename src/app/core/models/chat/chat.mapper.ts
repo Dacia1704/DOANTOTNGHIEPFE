@@ -17,7 +17,9 @@ export class ChatMapper {
     };
   }
 
-  private static date(value: string): Date {
-    return new Date(/(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}+07:00`);
+  private static date(value: string | null): Date | null {
+    if (typeof value !== 'string' || !value) return null;
+    const parsed = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}+07:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 }

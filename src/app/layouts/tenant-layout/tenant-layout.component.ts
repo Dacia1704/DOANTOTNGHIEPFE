@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
+import { ChatWidgetService } from '@services/chat-widget.service';
+import { AuthService } from '@services/auth.service';
+import { RoleCode } from '@model/auth/auth.model';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 import { SiteFooterComponent } from '@shared/components/site-footer/site-footer.component';
 import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/mobile-bottom-nav.component';
@@ -13,17 +16,16 @@ import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/m
  */
 @Component({
   selector: 'app-tenant-layout',
-  imports: [
-    RouterOutlet,
-    RouterLink,
-    SiteHeaderComponent,
-    SiteFooterComponent,
-    MobileBottomNavComponent,
-  ],
+  imports: [RouterOutlet, SiteHeaderComponent, SiteFooterComponent, MobileBottomNavComponent],
   templateUrl: './tenant-layout.component.html',
   styleUrl: './tenant-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TenantLayoutComponent {
   readonly router = inject(Router);
+  readonly chatWidget = inject(ChatWidgetService);
+  private readonly auth = inject(AuthService);
+  get canContactSupport(): boolean {
+    return !this.auth.isLoggedIn() || this.auth.hasAnyRole([RoleCode.TENANT, RoleCode.LANDLORD]);
+  }
 }

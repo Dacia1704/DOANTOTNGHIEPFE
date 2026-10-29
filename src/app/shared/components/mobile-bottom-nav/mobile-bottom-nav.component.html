@@ -1,15 +1,31 @@
 <nav class="mobile-bottom-nav">
   @for (item of items; track item.route) {
-    <a
-      class="mobile-bottom-nav__item"
-      [routerLink]="item.route"
-      routerLinkActive="is-active"
-      [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-    >
-      <span class="material-symbols-outlined mobile-bottom-nav__icon">
-        {{ item.icon }}
-      </span>
-      <span class="mobile-bottom-nav__label">{{ item.label }}</span>
-    </a>
+    @if (item.route === '/tin-nhan') {
+      <button
+        type="button"
+        class="mobile-bottom-nav__item"
+        [class.is-active]="chatWidget.opened()"
+        (click)="chatWidget.openInbox()"
+        aria-haspopup="dialog"
+        aria-controls="chat-widget"
+      >
+        <span class="material-symbols-outlined mobile-bottom-nav__icon" aria-hidden="true">{{
+          item.icon
+        }}</span>
+        <span class="mobile-bottom-nav__label">{{ item.label }}</span>
+      </button>
+    } @else {
+      <a
+        class="mobile-bottom-nav__item"
+        [routerLink]="item.route"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+      >
+        <span class="material-symbols-outlined mobile-bottom-nav__icon">
+          {{ item.icon }}
+        </span>
+        <span class="mobile-bottom-nav__label">{{ item.label }}</span>
+      </a>
+    }
   }
 </nav>

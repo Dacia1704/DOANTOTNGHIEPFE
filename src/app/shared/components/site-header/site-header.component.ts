@@ -3,6 +3,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@services/auth.service';
+import { ChatWidgetService } from '@services/chat-widget.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoleCode } from '@model/auth/auth.model';
 
@@ -27,11 +28,18 @@ interface NavLink {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SiteHeaderComponent {
+  readonly chatWidget = inject(ChatWidgetService);
   @Input() adminMode = false;
 
-  get isAdmin(): boolean { return this.auth.primaryRole() === RoleCode.ADMIN; }
-  get isLandlord(): boolean { return this.auth.primaryRole() === RoleCode.LANDLORD; }
-  get isTenant(): boolean { return this.auth.primaryRole() === RoleCode.TENANT; }
+  get isAdmin(): boolean {
+    return this.auth.primaryRole() === RoleCode.ADMIN;
+  }
+  get isLandlord(): boolean {
+    return this.auth.primaryRole() === RoleCode.LANDLORD;
+  }
+  get isTenant(): boolean {
+    return this.auth.primaryRole() === RoleCode.TENANT;
+  }
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -61,10 +69,14 @@ export class SiteHeaderComponent {
   /** Trả về role hiển thị tiếng Việt cho menu user. */
   roleLabel(): string {
     switch (this.auth.primaryRole()) {
-      case RoleCode.ADMIN: return 'Quản trị viên';
-      case RoleCode.LANDLORD: return 'Chủ trọ';
-      case RoleCode.TENANT: return 'Người thuê';
-      default: return 'Thành viên';
+      case RoleCode.ADMIN:
+        return 'Quản trị viên';
+      case RoleCode.LANDLORD:
+        return 'Chủ trọ';
+      case RoleCode.TENANT:
+        return 'Người thuê';
+      default:
+        return 'Thành viên';
     }
   }
 

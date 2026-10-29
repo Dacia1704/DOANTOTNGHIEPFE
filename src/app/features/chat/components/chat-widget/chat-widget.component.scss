@@ -1,0 +1,219 @@
+:host {
+  position: relative;
+  z-index: 1050;
+}
+.chat-widget {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  width: 392px;
+  height: min(620px, calc(100dvh - 120px));
+  max-width: calc(100vw - 32px);
+  border: 1px solid #d8e5df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow:
+    0 20px 64px -16px #153d3650,
+    0 2px 10px #153d3610;
+  overflow: hidden;
+  &.is-minimized {
+    height: auto;
+  }
+}
+.widget-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 66px;
+  padding: 12px 10px 12px 16px;
+  background: var(--primary);
+  color: #fff;
+}
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+  strong {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  small {
+    font-size: 9px;
+    color: #d2ebe4;
+    line-height: 1.5;
+  }
+}
+.widget-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #ffffff18;
+  font-size: 20px;
+}
+.widget-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  a,
+  button {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+    &:hover {
+      background: #ffffff20;
+    }
+  }
+  .material-symbols-outlined {
+    font-size: 17px;
+  }
+}
+button {
+  font-family: inherit;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.widget-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  &[hidden] {
+    display: none;
+  }
+  app-chat-page {
+    width: 100%;
+    min-height: 0;
+  }
+}
+.widget-guest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  padding: 32px;
+  text-align: center;
+  > .material-symbols-outlined {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--primary-subtle);
+    color: var(--primary);
+    font-size: 32px;
+  }
+  h2 {
+    margin: 4px 0 0;
+    font-size: 20px;
+    line-height: 1.4;
+  }
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+  }
+  a:focus-visible {
+    outline-color: var(--primary);
+  }
+}
+@media (max-width: 600px) {
+  .chat-widget {
+    right: 10px;
+    bottom: 78px;
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: min(580px, calc(100dvh - 174px));
+    border-radius: 16px;
+  }
+  .widget-heading {
+    padding-left: 12px;
+  }
+}
+.widget-tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+  button {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    &.is-active {
+      background: #edf7f2;
+      color: var(--primary);
+    }
+  }
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
