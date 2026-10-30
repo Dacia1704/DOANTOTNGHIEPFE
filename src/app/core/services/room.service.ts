@@ -15,28 +15,8 @@ export class RoomService {
   private readonly http = inject(HttpClient);
   private readonly api = `${environment.apiUrl}/rooms`;
 
-  getRooms(query: RoomQueryParams = {}): Observable<RoomListResult> {
-    const params: Record<string, string | number> = {
-      page: query.page ?? 0,
-      size: query.size ?? 10,
-    };
-    if (query.roomTypeId) params['roomTypeId'] = query.roomTypeId;
-    if (query.provinceId) params['provinceId'] = query.provinceId;
-    if (query.wardId) params['wardId'] = query.wardId;
-    if (query.rentalStatus) params['rentalStatus'] = query.rentalStatus;
-    if (query.minPrice != null && query.minPrice > 0) params['minPrice'] = query.minPrice;
-    if (query.maxPrice != null && query.maxPrice > 0) params['maxPrice'] = query.maxPrice;
-    const httpParams = query.amenityIds?.length
-      ? query.amenityIds.reduce((current, id) => current.append('amenityIds', id), new HttpParams({ fromObject: params }))
-      : new HttpParams({ fromObject: params });
-    return this.http
-      .get<ApiResponse<PageResponse<RoomResponse>>>(this.api, { params: httpParams })
-      .pipe(
-        map(res => this.toRoomList(res.data)),
-      );
-  }
-
-  filterRooms(query: RoomQueryParams = {}): Observable<RoomListResult> {
+  /** Lọc phòng của chủ trọ đang đăng nhập (LANDLORD only). */
+  filterMyRooms(query: RoomQueryParams = {}): Observable<RoomListResult> {
     const params: Record<string, string | number> = { page: query.page ?? 0, size: query.size ?? 12 };
     if (query.roomTypeName) params['roomTypeName'] = query.roomTypeName;
     if (query.provinceId) params['provinceId'] = query.provinceId;
@@ -47,8 +27,18 @@ export class RoomService {
     const httpParams = query.amenityNames?.length
       ? query.amenityNames.reduce((current, name) => current.append('amenityNames', name), new HttpParams({ fromObject: params }))
       : new HttpParams({ fromObject: params });
-    return this.http.get<ApiResponse<PageResponse<RoomResponse>>>(`${this.api}/filter`, { params: httpParams })
+    return this.http.get<ApiResponse<PageResponse<RoomResponse>>>(`${this.api}/mine/filter`, { params: httpParams })
       .pipe(map(res => this.toRoomList(res.data)));
+  }
+
+  /** Alias cho filterMyRooms. */
+  filterRooms(query: RoomQueryParams = {}): Observable<RoomListResult> {
+    return this.filterMyRooms(query);
+  }
+
+  /** Alias cho getMyRooms. */
+  getRooms(page = 0, size = 10): Observable<RoomListResult> {
+    return this.getMyRooms(page, size);
   }
 
   private toRoomList(page: PageResponse<RoomResponse>): RoomListResult {

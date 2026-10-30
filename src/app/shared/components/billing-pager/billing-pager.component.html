@@ -1,0 +1,19 @@
+@if (totalPages() > 1) {
+  <nav aria-label="Phân trang" class="pager">
+    <button
+      type="button"
+      [disabled]="disabled() || page() === 0"
+      (click)="changePage.emit(page() - 1)"
+    >
+      Trước
+    </button>
+    <span>Trang {{ page() + 1 }} / {{ totalPages() }}</span>
+    <button
+      type="button"
+      [disabled]="disabled() || page() + 1 >= totalPages()"
+      (click)="changePage.emit(page() + 1)"
+    >
+      Sau
+    </button>
+  </nav>
+}

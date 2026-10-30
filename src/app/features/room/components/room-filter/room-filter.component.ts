@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { RoomTypeUtils } from '@shared/utils/room-type-utils';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RoomTypeService } from '@services/room-type.service';
@@ -26,13 +38,14 @@ export class RoomFilterComponent implements OnInit {
   @Output() filterChange = new EventEmitter<RoomQueryParams>();
 
   readonly roomTypes = signal<RoomType[]>([]);
+  readonly typeOptions = computed(() => RoomTypeUtils.options(this.roomTypes()));
   readonly provinces = signal<Province[]>([]);
   readonly wards = signal<Ward[]>([]);
   readonly statusLabels = ROOM_STATUS_LABELS;
   readonly statuses = Object.values(RoomRentalStatus);
 
   readonly form = this.fb.nonNullable.group({
-    roomTypeId: [''],
+    roomTypeName: [''],
     provinceId: [''],
     wardId: [''],
     rentalStatus: ['' as RoomRentalStatus | ''],
@@ -43,7 +56,7 @@ export class RoomFilterComponent implements OnInit {
   ngOnInit(): void {
     if (this.initialParams) {
       this.form.patchValue({
-        roomTypeId: this.initialParams.roomTypeId || '',
+        roomTypeName: this.initialParams.roomTypeName || '',
         provinceId: this.initialParams.provinceId || '',
         wardId: this.initialParams.wardId || '',
         rentalStatus: this.initialParams.rentalStatus || '',
@@ -53,33 +66,44 @@ export class RoomFilterComponent implements OnInit {
     }
 
     // Load room types
-    this.roomTypeService.getAllRoomTypes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(types => {
-      this.roomTypes.set(types);
-    });
+    this.roomTypeService
+      .getAllRoomTypes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((types) => {
+        this.roomTypes.set(types);
+      });
 
     // Load provinces
-    this.addressService.getProvinces().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(provinces => {
-      this.provinces.set(provinces);
-    });
+    this.addressService
+      .getProvinces()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((provinces) => {
+        this.provinces.set(provinces);
+      });
 
     // Listen to province change to cascade load wards
-    this.form.controls.provinceId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(provId => {
-      this.form.controls.wardId.setValue('');
-      if (provId) {
-        this.addressService.getWards(provId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
-          this.wards.set(res.items);
-        });
-      } else {
-        this.wards.set([]);
-      }
-    });
+    this.form.controls.provinceId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((provId) => {
+        this.form.controls.wardId.setValue('');
+        if (provId) {
+          this.addressService
+            .getWards(provId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((res) => {
+              this.wards.set(res.items);
+            });
+        } else {
+          this.wards.set([]);
+        }
+      });
   }
 
   submitFilter(): void {
     const raw = this.form.getRawValue();
     const query: RoomQueryParams = {
       page: 0,
-      roomTypeId: raw.roomTypeId || undefined,
+      roomTypeName: raw.roomTypeName || undefined,
       provinceId: raw.provinceId || undefined,
       wardId: raw.wardId || undefined,
       rentalStatus: raw.rentalStatus || undefined,
@@ -91,7 +115,7 @@ export class RoomFilterComponent implements OnInit {
 
   resetFilter(): void {
     this.form.reset({
-      roomTypeId: '',
+      roomTypeName: '',
       provinceId: '',
       wardId: '',
       rentalStatus: '',

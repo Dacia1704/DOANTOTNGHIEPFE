@@ -2,9 +2,15 @@
   <div class="dialog-header">
     <h2 mat-dialog-title>
       @switch (data.action) {
-        @case ('create') { Thêm loại phòng mới }
-        @case ('edit') { Chỉnh sửa loại phòng }
-        @case ('delete') { Xác nhận xóa loại phòng }
+        @case ('create') {
+          Thêm loại phòng mới
+        }
+        @case ('edit') {
+          Chỉnh sửa loại phòng
+        }
+        @case ('delete') {
+          Xác nhận xóa loại phòng
+        }
       }
     </h2>
     <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
@@ -25,7 +31,7 @@
         Bạn có chắc chắn muốn xóa loại phòng <strong>{{ data.roomType?.name }}</strong> không?
       </p>
       <p class="body-sm text-secondary">
-        Lưu ý: Không thể xóa loại phòng nếu đã có phòng trọ đang thuộc danh mục này.
+        Lưu ý: Không thể xóa loại phòng đang có loại con hoặc đang được phòng trọ sử dụng.
       </p>
     </div>
 
@@ -39,7 +45,9 @@
     <form [formGroup]="form" (ngSubmit)="submit()" class="dialog-body">
       <!-- Tên loại phòng -->
       <div class="form-group">
-        <label for="type-name" class="label-md">Tên loại phòng <span class="required">*</span></label>
+        <label for="type-name" class="label-md"
+          >Tên loại phòng <span class="required">*</span></label
+        >
         <input
           id="type-name"
           type="text"
@@ -58,10 +66,12 @@
         <select id="type-parent" class="input" formControlName="parentId">
           <option value="">Không có (Loại phòng gốc)</option>
           @for (parent of parentOptions; track parent.id) {
-            <option [value]="parent.id">{{ parent.name }}</option>
+            <option [value]="parent.id">{{ parent.label }}</option>
           }
         </select>
-        <span class="body-xs text-secondary">Chọn phân cấp nếu loại phòng này là nhóm con của loại phòng khác.</span>
+        <span class="body-xs text-secondary"
+          >Chọn phân cấp nếu loại phòng này là nhóm con của loại phòng khác.</span
+        >
       </div>
 
       <!-- Mô tả -->
@@ -77,9 +87,11 @@
       </div>
 
       <div class="dialog-actions">
-        <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
+        <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">
+          Hủy
+        </button>
         <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
-          {{ busy() ? 'Đang lưu...' : (data.action === 'create' ? 'Tạo loại phòng' : 'Cập nhật') }}
+          {{ busy() ? 'Đang lưu...' : data.action === 'create' ? 'Tạo loại phòng' : 'Cập nhật' }}
         </button>
       </div>
     </form>

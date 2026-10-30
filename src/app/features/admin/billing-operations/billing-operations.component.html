@@ -1,0 +1,87 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Quản trị giao dịch</p>
+      <h1>{{ review ? 'Khoản thu cần đối soát' : 'Xác nhận đơn đổi gói cũ' }}</h1>
+      <p class="description">
+        {{
+          review
+            ? 'Xem lý do đối soát, kết quả thanh toán và hóa đơn.'
+            : 'Chỉ xử lý đơn cũ đang chờ admin. Đơn mới tự nâng gói hoặc xếp lịch sau thanh toán.'
+        }}
+      </p>
+    </div>
+    <button (click)="load()" [disabled]="loading() || busy()">Cập nhật</button>
+  </header>
+  @if (success()) {
+    <p class="notice success" role="status">{{ success() }}</p>
+  }
+  @if (error()) {
+    <p class="notice error" role="alert">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p class="loading" role="status">Đang tải danh sách…</p>
+  } @else {
+    <div class="list">
+      @if (review) {
+        @for (payment of items(); track payment.id) {
+          <article class="list-item">
+            <div>
+              <h3>
+                {{ ui.label(payment.type) }} ·
+                {{ payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}
+              </h3>
+              <p class="mono">{{ payment.merchantOrderId }}</p>
+              <p>{{ payment.reviewReason }}</p>
+              <app-billing-status status="REQUIRES_REVIEW" />
+            </div>
+            <a class="button" [routerLink]="['/admin/payments', payment.id]"
+              >Chi tiết / kiểm tra VNPay</a
+            >
+          </article>
+        } @empty {
+          <p class="empty">Không có khoản thu cần đối soát.</p>
+        }
+      } @else {
+        @for (order of orders(); track order.id) {
+          <article class="panel">
+            <div class="row">
+              <div>
+                <h3>{{ order.rights.packageName }} · {{ order.durationMonths }} tháng</h3>
+                <p>{{ order.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</p>
+                <app-billing-status [status]="order.status" />
+              </div>
+              <button class="primary" [disabled]="busy()" (click)="confirm(order)">
+                Xác nhận đổi gói
+              </button>
+            </div>
+            <p class="mono">
+              Đơn: {{ order.id }}<br />Chủ trọ: {{ order.landlordId }}<br />Subscription cũ:
+              {{ order.previousSubscriptionId }}
+            </p>
+            <p class="muted">Ngày tạo: {{ ui.date(order.createdAt) }}</p>
+            <details>
+              <summary>Quyền lợi đã mua</summary>
+              <p>
+                {{
+                  order.rights.maxListings === null ? 'Không giới hạn' : order.rights.maxListings
+                }}
+                tin · {{ order.rights.highPrioritySlots }} suất cao ·
+                {{ order.rights.lowPrioritySlots }} suất thấp ·
+                {{ order.rights.hasStats ? 'Có thống kê' : 'Không thống kê' }}
+              </p>
+            </details>
+          </article>
+        } @empty {
+          <p class="empty">Không có đơn đổi gói đang chờ xác nhận.</p>
+        }
+      }
+    </div>
+    <app-billing-pager
+      [page]="page()"
+      [totalPages]="totalPages()"
+      [disabled]="busy()"
+      (changePage)="load($event)"
+    />
+  }
+</section>

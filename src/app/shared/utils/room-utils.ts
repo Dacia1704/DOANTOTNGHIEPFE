@@ -1,6 +1,19 @@
-import { RoomRentalStatus, ROOM_STATUS_LABELS, ROOM_STATUS_BADGE_CLASSES } from '@model/room/room.model';
+import {
+  RoomRentalStatus,
+  ROOM_STATUS_LABELS,
+  ROOM_STATUS_BADGE_CLASSES,
+} from '@model/room/room.model';
 
 export class RoomUtils {
+  /** Distinguish an unspecified fee from an explicitly free service. */
+  static formatFee(value: number | null): string {
+    return value === null
+      ? 'Chưa khai báo'
+      : value === 0
+        ? 'Miễn phí'
+        : `${value.toLocaleString('vi-VN')} đ`;
+  }
+
   /**
    * Format price display theo chuẩn Việt Nam
    * @param price Giá tiền (VNĐ)

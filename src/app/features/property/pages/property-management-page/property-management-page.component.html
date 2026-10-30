@@ -1,0 +1,202 @@
+<section class="property-page" [attr.aria-busy]="loading()">
+  <header class="page-heading">
+    <div>
+      @if (selectedId()) {
+        <button type="button" class="back-link" (click)="backToList()">
+          <span aria-hidden="true" class="material-symbols-outlined">arrow_back</span> Danh sách cơ
+          sở
+        </button>
+      } @else {
+        <a routerLink="/" class="back-link"
+          ><span aria-hidden="true" class="material-symbols-outlined">arrow_back</span> Trang chủ</a
+        >
+      }
+      <p class="eyebrow">KHÔNG GIAN CHO THUÊ CỦA BẠN</p>
+      <h1>{{ selectedId() ? selected()?.name || 'Chi tiết cơ sở' : 'Cơ sở cho thuê của tôi' }}</h1>
+      <p class="muted">
+        {{
+          selectedId()
+            ? selected()?.rentalMode === 'WHOLE'
+              ? 'Thông tin và chi phí thuê toàn bộ căn nhà.'
+              : 'Thông tin cơ sở và các phòng cho thuê riêng bên trong.'
+            : 'Chọn một cơ sở để xem chi tiết và quản lý cho thuê.'
+        }}
+      </p>
+    </div>
+    <a class="btn-secondary" routerLink="/tin-cua-toi">Quản lý bài đăng cho thuê</a>
+    @if (!selectedId()) {
+      <div class="heading-actions">
+        <button class="btn-primary" type="button" (click)="openCreate()">
+          <span aria-hidden="true" class="material-symbols-outlined">add</span> Tạo cơ sở mới
+        </button>
+      </div>
+    }
+  </header>
+  @if (success()) {
+    <div class="notice success" role="status">
+      <span aria-hidden="true" class="material-symbols-outlined">check_circle</span>{{ success()
+      }}<button class="btn-icon" aria-label="Đóng thông báo" (click)="success.set('')">
+        <span aria-hidden="true" class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  }
+  @if (loading()) {
+    <div class="state-panel" role="status">
+      <div class="spinner"></div>
+      <p>Đang tải cơ sở và phòng của bạn…</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-panel" role="alert">
+      <span aria-hidden="true" class="material-symbols-outlined">cloud_off</span>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else {
+    @if (!selectedId()) {
+      @if (result(); as data) {
+        <div class="section-heading">
+          <h2>
+            Cơ sở của bạn <span class="count">{{ data.total }}</span>
+          </h2>
+          <span class="muted">Chọn một cơ sở để quản lý phòng</span>
+        </div>
+        <div class="property-list">
+          @for (property of data.items; track property.id) {
+            <button
+              type="button"
+              class="property-choice"
+              [class.selected]="property.id === selectedId()"
+              [attr.aria-pressed]="property.id === selectedId()"
+              (click)="select(property)"
+            >
+              <div class="choice-top">
+                <span class="building-icon material-symbols-outlined">{{
+                  property.rentalMode === 'WHOLE' ? 'home_work' : 'apartment'
+                }}</span
+                ><span class="mode-label">{{ property.rentalModeLabel }}</span
+                ><span aria-hidden="true" class="material-symbols-outlined selected-mark">{{
+                  property.id === selectedId() ? 'check_circle' : 'chevron_right'
+                }}</span>
+              </div>
+              <h3>{{ property.name }}</h3>
+              <p class="choice-address">{{ property.fullAddress }}</p>
+              <div class="choice-bottom">
+                <span>{{
+                  property.rentalMode === 'WHOLE'
+                    ? 'Nguyên căn'
+                    : property.rooms.length + ' phòng cho thuê riêng'
+                }}</span
+                ><span class="available-dot">{{
+                  property.rentalMode === 'WHOLE'
+                    ? property.availableCount
+                      ? 'Còn trống'
+                      : 'Chưa sẵn sàng'
+                    : property.availableCount + ' phòng trống'
+                }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="state-panel empty">
+              <span aria-hidden="true" class="material-symbols-outlined">holiday_village</span>
+              <h2>Bắt đầu từ cơ sở đầu tiên</h2>
+              <p>Thêm địa chỉ một lần, nhập giá mặc định và tạo các phòng của bạn.</p>
+              <button type="button" class="btn-primary" (click)="openCreate()">
+                Tạo cơ sở cho thuê
+              </button>
+            </div>
+          }
+        </div>
+        @if (data.totalPages > 1) {
+          <nav class="pagination" aria-label="Phân trang cơ sở">
+            <button
+              type="button"
+              class="btn-secondary"
+              [disabled]="data.page === 0"
+              (click)="load(data.page - 1)"
+            >
+              Trang trước</button
+            ><span>Trang {{ data.page + 1 }} / {{ data.totalPages }}</span
+            ><button
+              type="button"
+              class="btn-secondary"
+              [disabled]="data.page + 1 >= data.totalPages"
+              (click)="load(data.page + 1)"
+            >
+              Trang sau
+            </button>
+          </nav>
+        }
+      }
+    }
+    @if (selected(); as property) {
+      <section class="property-detail" aria-label="Chi tiết cơ sở đã chọn">
+        <header class="detail-heading">
+          <div>
+            <span class="eyebrow">CƠ SỞ ĐANG QUẢN LÝ</span>
+            <h2>Thông tin chung</h2>
+            <p class="address">
+              <span aria-hidden="true" class="material-symbols-outlined">location_on</span
+              >{{ property.fullAddress }}
+            </p>
+          </div>
+          <div class="detail-tags">
+            <span class="badge badge-primary">{{ property.propertyTypeName }}</span
+            ><span class="badge">{{ property.rentalModeLabel }}</span>
+            @if (property.totalFloors !== null) {
+              <span class="badge">{{ property.totalFloors }} tầng</span>
+            }
+          </div>
+        </header>
+        @if (property.rentalMode === 'BY_ROOM') {
+          <div class="overview-stats">
+            <div>
+              <span>Tổng số phòng</span><strong>{{ property.rooms.length }}</strong>
+            </div>
+            <div>
+              <span>Còn trống</span><strong class="available">{{ property.availableCount }}</strong>
+            </div>
+            <div>
+              <span>Đã cho thuê</span><strong>{{ property.rentedCount }}</strong>
+            </div>
+            <div>
+              <span>Đang bảo trì</span><strong>{{ property.maintenanceCount }}</strong>
+            </div>
+          </div>
+        }
+        <div class="shared-amenities">
+          <span class="muted">{{
+            property.rentalMode === 'WHOLE' ? 'Tiện ích căn nhà' : 'Tiện ích chung'
+          }}</span>
+          @for (amenity of property.amenities; track amenity.id) {
+            <span class="amenity-chip"
+              ><span aria-hidden="true" class="material-symbols-outlined">{{ amenity.icon }}</span
+              >{{ amenity.name }}</span
+            >
+          } @empty {
+            <span class="muted">Chưa khai báo tiện ích</span>
+          }
+        </div>
+        @if (property.images.length) {
+          <div class="shared-images" aria-label="Ảnh chung của cơ sở">
+            @for (image of property.images; track image.id) {
+              <a [href]="image.url" target="_blank" rel="noopener"
+                ><img
+                  [src]="imageUtils.toImageSrc(image.url)"
+                  [alt]="'Ảnh chung ' + property.name"
+                  loading="lazy"
+              /></a>
+            }
+          </div>
+        }
+      </section>
+      <app-property-rooms
+        [property]="property"
+        (addRoom)="openAddRoom()"
+        (editRoom)="edit($event)"
+        (viewRoom)="detail($event)"
+        (manageImages)="images($event)"
+        (deleteRoom)="remove($event)"
+      />
+    }
+  }
+</section>

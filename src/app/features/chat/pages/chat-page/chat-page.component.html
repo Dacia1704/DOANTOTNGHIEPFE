@@ -1,0 +1,63 @@
+<div class="chat-page">
+  <div class="page-heading">
+    <div><span class="eyebrow">KẾT NỐI DỄ DÀNG HƠN</span><h1>Tin nhắn của bạn</h1><p>Trao đổi với chủ trọ và nhận hỗ trợ từ Trọ Tốt.</p></div>
+    <a class="btn-secondary" routerLink="/tin-nhan" [queryParams]="{ support: '1' }"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span>Chat hỗ trợ</a>
+  </div>
+  @if (error()) { <div class="error-banner" role="alert">{{ error() }} <button type="button" class="text-button" (click)="reloadConversations()">Thử lại</button></div> }
+  <div class="inbox" [class.has-selected]="showConversation()">
+    <aside class="conversation-list" aria-label="Danh sách cuộc trò chuyện">
+      <div class="list-heading"><h2>Cuộc trò chuyện</h2><span>{{ conversations().length }}</span></div>
+      <label class="search"><span class="material-symbols-outlined" aria-hidden="true">search</span><input [formControl]="search" placeholder="Tìm người hoặc bài đăng" aria-label="Tìm cuộc trò chuyện" /></label>
+      <div class="conversation-items">
+        @if (loading()) { <p class="empty-note" role="status">Đang tải cuộc trò chuyện…</p> }
+        @for (item of filteredConversations; track item.id) {
+          <button type="button" class="conversation" [class.active]="selected()?.id === item.id" [attr.aria-current]="selected()?.id === item.id ? 'true' : null" (click)="selectConversation(item)">
+            <span class="avatar" [class.support]="!item.listing">
+              @if (item.otherUser?.avatarUrl) { <img [src]="images.toImageSrc(item.otherUser?.avatarUrl)" alt="" /> }
+              @else { <span class="material-symbols-outlined" aria-hidden="true">{{ item.listing ? 'person' : 'support_agent' }}</span> }
+            </span>
+            <span class="conversation-copy"><span class="conversation-name">{{ item.otherUser?.fullName || 'Hỗ trợ Trọ Tốt' }} <time>{{ item.lastMessageAt | date:'HH:mm':'+0700' }}</time></span><span class="conversation-context">{{ item.listing?.title || 'Hỗ trợ từ quản trị viên' }}</span><span class="last-message">{{ item.lastMessage?.messageType === 'IMAGE' ? 'Hình ảnh' : item.lastMessage?.content || 'Bắt đầu cuộc trò chuyện' }}</span></span>
+            @if (item.unreadCount) { <span class="unread" [attr.aria-label]="item.unreadCount + ' tin chưa đọc'">{{ item.unreadCount > 99 ? '99+' : item.unreadCount }}</span> }
+          </button>
+        } @empty {
+          @if (!loading()) { <div class="empty-note"><span class="material-symbols-outlined">forum</span><p>{{ search.value ? 'Không tìm thấy cuộc trò chuyện.' : 'Bạn chưa có cuộc trò chuyện nào.' }}</p><a routerLink="/">Khám phá phòng trọ</a></div> }
+        }
+      </div>
+    </aside>
+    <section class="conversation-panel" aria-label="Nội dung trò chuyện">
+      @if (selected(); as current) {
+        <header class="chat-heading">
+          <button type="button" class="btn-icon mobile-back" aria-label="Về danh sách trò chuyện" (click)="showConversation.set(false)"><span class="material-symbols-outlined">arrow_back</span></button>
+          <span class="avatar" [class.support]="!current.listing"><span class="material-symbols-outlined" aria-hidden="true">{{ current.listing ? 'person' : 'support_agent' }}</span></span>
+          <div><h2>{{ current.otherUser?.fullName || 'Hỗ trợ Trọ Tốt' }}</h2><p><span class="connection-dot" [class.connected]="chat.connection() === 'connected'"></span>{{ chat.connection() === 'connected' ? 'Đã kết nối trò chuyện' : chat.connection() === 'connecting' ? 'Đang kết nối…' : 'Mất kết nối · đang thử lại' }}</p></div>
+        </header>
+        @if (current.listing; as listing) {
+          <a class="listing-context" [routerLink]="['/tro', listing.id]"><span class="material-symbols-outlined" aria-hidden="true">home_work</span><span><small>BẠN ĐANG TRAO ĐỔI VỀ</small><strong>{{ listing.title }}</strong></span><span class="material-symbols-outlined" aria-hidden="true">arrow_outward</span></a>
+        } @else { <div class="support-context"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span>Hãy mô tả vấn đề bạn cần hỗ trợ. Quản trị viên sẽ phản hồi trong cuộc trò chuyện này.</div> }
+        <div #messageList class="messages" role="log" aria-label="Tin nhắn" aria-live="polite" [attr.aria-busy]="loadingMessages()">
+          @if (loadingMessages()) { <p class="empty-note" role="status">Đang tải tin nhắn…</p> }
+          @if (historyPage() + 1 < totalPages()) { <button type="button" class="older-button" [disabled]="loadingOlder()" (click)="loadOlder()">{{ loadingOlder() ? 'Đang tải…' : 'Xem tin nhắn trước' }}</button> }
+          @if (messageError()) { <p class="error-banner" role="alert">{{ messageError() }} <button type="button" class="text-button" (click)="retryMessages()">Thử lại</button></p> }
+          @for (message of messages(); track message.id) {
+            <div class="message" [class.mine]="message.sender.id === auth.session()?.id" [class.system]="message.messageType === 'SYSTEM'">
+              <div class="message-bubble">
+                @if (message.messageType === 'IMAGE') { <img class="message-image" [src]="images.toImageSrc(message.content)" alt="Hình ảnh được gửi trong cuộc trò chuyện" loading="lazy" /> }
+                @else { <p>{{ message.content }}</p> }
+              </div><time [attr.datetime]="message.createdAt.toISOString()">{{ message.createdAt | date:'dd/MM HH:mm':'+0700' }}</time>
+            </div>
+          } @empty {
+            @if (!loadingMessages() && !messageError()) { <div class="first-message"><span class="material-symbols-outlined" aria-hidden="true">waving_hand</span><h3>Bắt đầu bằng một lời chào</h3><p>{{ current.listing ? 'Hỏi chủ trọ về phòng, lịch xem hoặc thời gian chuyển vào ở.' : 'Đội ngũ Trọ Tốt sẵn sàng lắng nghe vấn đề của bạn.' }}</p></div> }
+          }
+        </div>
+        @if (chat.realtimeError()) { <p class="connection-warning" role="alert">{{ chat.realtimeError() }}</p> }
+        <form class="composer" (ngSubmit)="send()">
+          <textarea [formControl]="draft" rows="2" aria-label="Nội dung tin nhắn" placeholder="Nhập tin nhắn của bạn…"></textarea>
+          <button type="submit" class="btn-primary" [disabled]="!draft.value.trim() || sending() || loadingMessages() || !!messageError() || chat.connection() !== 'connected'" aria-label="Gửi tin nhắn"><span class="material-symbols-outlined" aria-hidden="true">send</span><span>{{ sending() ? 'Đang gửi…' : 'Gửi' }}</span></button>
+        </form>
+        <p class="composer-note">Chỉ chia sẻ thông tin cần thiết. Tin nhắn được gửi khi bạn nhấn Gửi.</p>
+      } @else {
+        <div class="inbox-empty"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span><h2>Mọi kết nối bắt đầu từ đây</h2><p>Chọn một cuộc trò chuyện hoặc nhắn cho đội ngũ hỗ trợ.</p><a class="btn-primary" routerLink="/tin-nhan" [queryParams]="{ support: '1' }">Chat với hỗ trợ</a></div>
+      }
+    </section>
+  </div>
+</div>

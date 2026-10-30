@@ -1,0 +1,16 @@
+<header class="dialog-heading"><div><span class="eyebrow">TÌM ĐƯỢC CHỐN Ở ƯNG Ý</span><h2 mat-dialog-title>Trao đổi đặt phòng</h2></div><button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng đặt phòng"><span class="material-symbols-outlined">close</span></button></header>
+<form [formGroup]="form" (ngSubmit)="continueToChat()">
+  <mat-dialog-content>
+    <p class="property-name">{{ data.listing.propertyName }}</p><p class="address">{{ data.listing.fullAddress }}</p>
+    <label for="booking-room">{{ data.listing.rentalMode === 'WHOLE' ? 'Căn nhà muốn thuê' : 'Phòng muốn thuê' }}</label>
+    <select id="booking-room" class="input" formControlName="roomId">@for (room of rooms; track room.id) { <option [value]="room.id">{{ data.listing.rentalMode === 'WHOLE' ? data.listing.propertyName : room.displayName }} · {{ utils.formatPrice(room.price) }}</option> }</select>
+    @if (selectedRoom; as room) { <div class="booking-summary"><span>Giá thuê mỗi tháng<strong>{{ utils.formatPrice(room.price) }}</strong></span><span>Tiền cọc dự kiến<strong>{{ utils.formatFee(room.defaultDeposit) }}</strong></span></div> }
+    <label for="booking-date">Ngày dự kiến vào ở <span aria-hidden="true">*</span></label>
+    <input id="booking-date" class="input" type="date" [min]="today" formControlName="moveInDate" [attr.aria-invalid]="form.controls.moveInDate.touched && form.controls.moveInDate.invalid" aria-describedby="booking-date-error" />
+    @if (form.controls.moveInDate.touched && form.controls.moveInDate.invalid) { <p id="booking-date-error" class="field-error" role="alert">Vui lòng chọn ngày từ hôm nay trở đi.</p> }
+    <label for="booking-note">Lời nhắn cho chủ trọ <small>(không bắt buộc)</small></label>
+    <textarea id="booking-note" class="input" rows="3" maxlength="1500" placeholder="Số người ở, lịch xem phòng hoặc điều bạn muốn hỏi…" formControlName="message"></textarea>
+    <p class="notice"><span class="material-symbols-outlined" aria-hidden="true">info</span>Thông tin sẽ được điền vào khung chat để bạn xem lại và gửi cho chủ trọ. Phòng chưa được giữ chỗ và chưa phát sinh thanh toán.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end"><button type="button" class="btn-secondary" mat-dialog-close>Để sau</button><button type="submit" class="btn-primary"><span class="material-symbols-outlined" aria-hidden="true">chat</span>Tiếp tục với chủ trọ</button></mat-dialog-actions>
+</form>

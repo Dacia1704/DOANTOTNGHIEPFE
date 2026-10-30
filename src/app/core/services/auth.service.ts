@@ -142,9 +142,10 @@ export class AuthService {
   }
 
   clearSession(redirect = true): void {
+    const returnUrl = this.router.url;
     this._session.set(null);
     localStorage.removeItem(KEY);
-    if (redirect) this.router.navigateByUrl('/login');
+    if (redirect) this.router.navigate(['/login'], { queryParams: { redirect: returnUrl } });
   }
 
   /** Đồng bộ hồ sơ, giữ nguyên token và quyền của phiên hiện tại. */

@@ -1,0 +1,218 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Giao dịch VNPay</p>
+      <h1>{{ title() }}</h1>
+    </div>
+    <a class="button" [routerLink]="admin ? '/admin/payment-review' : '/lich-su-thanh-toan'">{{
+      admin ? 'Về đối soát' : 'Lịch sử thanh toán'
+    }}</a>
+  </header>
+  @if (missing) {
+    <div class="notice warning">
+      Chưa tìm được mã thanh toán trong trình duyệt này. Mở lịch sử thanh toán để chọn đúng giao
+      dịch. Kết quả trên URL không xác nhận việc thu tiền.
+    </div>
+  }
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }} <button (click)="load()" [disabled]="loading() || checking()">Tải lại</button>
+    </div>
+  }
+  @if (loading()) {
+    <p class="loading" role="status">Đang lấy kết quả từ máy chủ…</p>
+  }
+  @if (payment(); as payment) {
+    <div class="two-columns">
+      <div class="stack">
+        <section class="panel">
+          <div class="row">
+            <h2>Thanh toán</h2>
+            <app-billing-status [status]="payment.status" />
+          </div>
+          <div aria-live="polite">
+            @if (payment.requiresReview) {
+              <div class="notice warning">
+                Khoản thanh toán cần đối soát. Chưa xác nhận cấp quyền cho khoản thu này.
+                <p>{{ payment.reviewReason }}</p>
+              </div>
+            } @else if (payment.status === 'PENDING') {
+              <p class="notice">
+                @if (verifying()) {
+                  Đang tự xác minh thanh toán với VNPay. Hệ thống sẽ cập nhật kết quả, hóa đơn và
+                  quyền sử dụng khi có xác nhận. Bạn không cần bấm kiểm tra.
+                } @else {
+                  Chưa nhận được xác nhận thanh toán. Hệ thống đã kết thúc lượt kiểm tra tự động;
+                  bạn có thể kiểm tra lại hoặc mở giao dịch này sau.
+                }
+              </p>
+            } @else if (payment.status === 'FAILED' || payment.status === 'EXPIRED') {
+              <p class="notice warning">
+                Giao dịch chưa được ghi nhận thành công. Vẫn có thể kiểm tra lại với VNPay để phát
+                hiện khoản thu đến muộn.
+              </p>
+            }
+          </div>
+          <dl class="details">
+            <div>
+              <dt>Mã giao dịch</dt>
+              <dd class="mono">{{ payment.merchantOrderId }}</dd>
+            </div>
+            <div>
+              <dt>Loại</dt>
+              <dd>{{ ui.label(payment.type) }}</dd>
+            </div>
+            <div>
+              <dt>Số tiền</dt>
+              <dd>
+                <strong>{{ payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong>
+              </dd>
+            </div>
+            <div>
+              <dt>Thời điểm thanh toán</dt>
+              <dd>{{ ui.date(payment.paidAt) }}</dd>
+            </div>
+            <div>
+              <dt>Hạn thanh toán</dt>
+              <dd>{{ ui.date(payment.expiresAt) }}</dd>
+            </div>
+            <div>
+              <dt>Cập nhật lúc</dt>
+              <dd>{{ ui.date(updatedAt()) }}</dd>
+            </div>
+          </dl>
+          <div class="actions result-actions">
+            <button (click)="copy()">{{ copied() ? 'Đã sao chép' : 'Sao chép mã' }}</button
+            ><button
+              class="primary"
+              [disabled]="verifying() || checking() || coolingDown() || loading()"
+              (click)="check()"
+            >
+              {{
+                verifying()
+                  ? 'Đang tự xác minh với VNPay…'
+                  : checking()
+                    ? 'Đang kiểm tra…'
+                    : coolingDown()
+                      ? 'Vui lòng chờ để kiểm tra lại'
+                      : 'Kiểm tra lại với VNPay'
+              }}
+            </button>
+          </div>
+          @if (checkMessage()) {
+            <p class="notice" role="status">{{ checkMessage() }}</p>
+          }
+        </section>
+        @if (!admin) {
+          <section class="panel">
+            <h2>Quyền sử dụng</h2>
+            @if (rightsError()) {
+              <p class="notice error">
+                {{ rightsError() }} <button (click)="loadRights()">Tải lại quyền</button>
+              </p>
+            }
+            @if (order(); as order) {
+              <h3>{{ order.rights.packageName }} · {{ ui.orderLabel(order) }}</h3>
+              <p class="muted">
+                {{ order.immediateUpgrade ? 'Bảng giá tham chiếu: ' : 'Thời hạn mua: '
+                }}{{ order.durationMonths }} tháng
+              </p>
+              <app-billing-status [status]="order.status" />
+              @if (order.status === 'AWAITING_ADMIN_CONFIRMATION') {
+                <p class="notice warning">
+                  Đơn đổi gói cũ đã thanh toán, đang chờ admin xác nhận. Quyền mới chưa áp dụng.
+                </p>
+              } @else if (order.status === 'SCHEDULED') {
+                <p class="notice">
+                  Lịch đổi gói: {{ ui.date(order.effectiveAt) }} – {{ ui.date(order.endAt) }}.
+                </p>
+              } @else if (order.status === 'APPLIED' || order.appliedAt) {
+                <p>Đã áp dụng lúc {{ ui.date(order.appliedAt) }}.</p>
+                @if (order.immediateUpgrade) {
+                  <p class="notice success">
+                    Đã nâng gói, giữ nguyên hạn tổng đã mua: {{ ui.date(order.endAt) }}. Quota không
+                    reset; tin và Boost giữ nguyên thời hạn.
+                  </p>
+                }
+              } @else {
+                <p class="muted">Chưa có xác nhận áp dụng từ đơn đăng ký.</p>
+              }
+              @if (current(); as current) {
+                <p class="muted">
+                  Quyền hiện tại: {{ current.rights.packageName || 'Gói hết hạn' }} ·
+                  {{ current.canSubmitListings ? 'Còn quyền đăng tin' : 'Hết quyền đăng tin' }}
+                </p>
+              }
+              <a class="button" routerLink="/goi-dich-vu">Theo dõi gói và đơn đăng ký</a>
+            }
+            @if (boost(); as boost) {
+              <h3>{{ boost.packageNameSnapshot }}</h3>
+              <app-billing-status [status]="boost.status" />
+              <p>
+                {{ boost.highPrioritySlotsSnapshot }} suất cao ·
+                {{ boost.lowPrioritySlotsSnapshot }} suất thấp
+              </p>
+              <p>Hiệu lực: {{ ui.date(boost.startAt) }} – {{ ui.date(boost.endAt) }}</p>
+              @if (boost.status === 'ACTIVE' && ui.future(boost.endAt)) {
+                <p class="notice">
+                  Gói đã kích hoạt. Bạn cần phân bổ suất cho tin; việc mua gói chưa tự nâng ưu tiên
+                  tin nào.
+                </p>
+              }
+              <a class="button primary" routerLink="/boost">Quản lý và phân bổ Boost</a>
+            }
+            @if (
+              !payment.requiresReview &&
+              ['PENDING', 'FAILED', 'EXPIRED'].includes(payment.status) &&
+              ((order()?.status === 'PENDING_PAYMENT' && ui.future(order()?.expiresAt)) ||
+                (boost()?.status === 'PENDING_PAYMENT' && ui.future(boost()?.paymentExpiresAt)))
+            ) {
+              <p>
+                <a
+                  class="button"
+                  [routerLink]="['/thanh-toan/xac-nhan', payment.type, payment.targetId]"
+                  >Tiếp tục thanh toán yêu cầu này</a
+                >
+              </p>
+            }
+          </section>
+        }
+      </div>
+      <aside class="panel">
+        <h2>Hóa đơn</h2>
+        @if (invoiceState() === 'loading') {
+          <p role="status" class="muted">Đang tải hóa đơn…</p>
+        } @else if (invoiceState() === 'missing') {
+          <p class="muted">Chưa có hóa đơn.</p>
+        } @else if (invoiceState() === 'error') {
+          <p class="notice error">{{ invoiceError() }}</p>
+          <button (click)="loadInvoice()">Thử lại</button>
+        }
+        @if (invoice(); as invoice) {
+          <dl class="details">
+            <div>
+              <dt>Số hóa đơn</dt>
+              <dd class="mono">{{ invoice.invoiceNo }}</dd>
+            </div>
+            <div>
+              <dt>Người mua</dt>
+              <dd>{{ invoice.buyerName }}</dd>
+            </div>
+            <div>
+              <dt>Thuế</dt>
+              <dd>{{ invoice.taxAmount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</dd>
+            </div>
+            <div>
+              <dt>Tổng tiền</dt>
+              <dd>{{ invoice.totalAmount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</dd>
+            </div>
+            <div>
+              <dt>Phát hành</dt>
+              <dd>{{ ui.date(invoice.issuedAt) }}</dd>
+            </div>
+          </dl>
+        }
+      </aside>
+    </div>
+  }
+</section>

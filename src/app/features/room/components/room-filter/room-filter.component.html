@@ -3,10 +3,10 @@
     <!-- Loại phòng -->
     <div class="filter-item">
       <label for="filter-room-type" class="filter-label">Loại phòng</label>
-      <select id="filter-room-type" class="input filter-select" formControlName="roomTypeId">
+      <select id="filter-room-type" class="input filter-select" formControlName="roomTypeName">
         <option value="">Tất cả loại phòng</option>
-        @for (type of roomTypes(); track type.id) {
-          <option [value]="type.id">{{ type.name }}</option>
+        @for (type of typeOptions(); track type.id) {
+          <option [value]="type.name">{{ type.label }}</option>
         }
       </select>
     </div>
@@ -31,7 +31,9 @@
         formControlName="wardId"
         [disabled]="wards().length === 0"
       >
-        <option value="">{{ wards().length > 0 ? 'Tất cả phường / xã' : 'Chọn tỉnh trước' }}</option>
+        <option value="">
+          {{ wards().length > 0 ? 'Tất cả phường / xã' : 'Chọn tỉnh trước' }}
+        </option>
         @for (ward of wards(); track ward.id) {
           <option [value]="ward.id">{{ ward.name }}</option>
         }

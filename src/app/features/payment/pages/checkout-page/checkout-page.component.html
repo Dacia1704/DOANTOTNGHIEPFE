@@ -1,0 +1,168 @@
+<section class="billing-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Thanh toán an toàn</p>
+      <h1>Xác nhận thanh toán</h1>
+      <p class="description">Kiểm tra đơn trước khi chuyển đến VNPay.</p>
+    </div>
+    <a class="button" routerLink="/lich-su-thanh-toan">Lịch sử giao dịch</a>
+  </header>
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }}
+      @if (!order() && !boost()) {
+        <button (click)="load()" [disabled]="loading()">Thử lại</button>
+      }
+    </div>
+  }
+  @if (loading()) {
+    <div class="loading" role="status">Đang đọc thông tin đơn từ máy chủ…</div>
+  } @else if (order() || boost()) {
+    <div class="two-columns">
+      <div class="stack">
+        <section class="panel">
+          <p class="step-label">
+            {{
+              order()?.status === 'APPLIED'
+                ? 'Đơn đã áp dụng → Quyền sử dụng đã cập nhật'
+                : 'Xác nhận đơn → VNPay → Kết quả'
+            }}
+          </p>
+          <h2>{{ order()?.rights?.packageName ?? boost()?.packageNameSnapshot }}</h2>
+          <app-billing-status [status]="order()?.status ?? boost()!.status" />
+          <dl class="details order-details">
+            <div>
+              <dt>Loại giao dịch</dt>
+              <dd>{{ order() ? ui.orderLabel(order()!) : 'Boost tin đăng' }}</dd>
+            </div>
+            <div>
+              <dt>
+                {{ order()?.immediateUpgrade ? 'Thời hạn bảng giá tham chiếu' : 'Thời hạn mua' }}
+              </dt>
+              <dd>{{ order()?.durationMonths ?? boost()?.durationMonthsSnapshot }} tháng</dd>
+            </div>
+            <div>
+              <dt>Mã yêu cầu</dt>
+              <dd class="mono">{{ targetId }}</dd>
+            </div>
+            <div>
+              <dt>Hạn thanh toán</dt>
+              <dd>{{ ui.date(expiresAt()) }}</dd>
+            </div>
+          </dl>
+          @if (order(); as order) {
+            <ul class="benefits">
+              <li>
+                {{
+                  order.rights.maxListings === null
+                    ? 'Không giới hạn tin'
+                    : order.rights.maxListings + ' tin đồng thời'
+                }}
+              </li>
+              <li>
+                {{ order.rights.highPrioritySlots }} suất cao ·
+                {{ order.rights.lowPrioritySlots }} suất thấp
+              </li>
+            </ul>
+            @if (order.status === 'AWAITING_ADMIN_CONFIRMATION') {
+              <div class="notice warning">
+                Đơn đổi gói cũ đã thanh toán, đang chờ admin xác nhận.
+              </div>
+            } @else if (order.type === 'CHANGE' && order.immediateUpgrade === true) {
+              <div class="notice">
+                Phí nâng gói là khoản chênh lệch cho thời gian còn lại do máy chủ tính từ các kỳ đã
+                mua. Nâng gói áp dụng ngay sau khi thanh toán được xác nhận, giữ nguyên hạn tổng, kể
+                cả kỳ gia hạn trả trước. Thời hạn bảng giá tham chiếu không phải thời gian được cộng
+                thêm. Quota và hạn tin/Boost không reset.
+              </div>
+              @if (order.endAt) {
+                <p class="muted">Hạn tổng được giữ: {{ ui.date(order.endAt) }}</p>
+              }
+            } @else if (order.type === 'CHANGE' && order.immediateUpgrade === false) {
+              <div class="notice">
+                Hạ hoặc đổi ngang: thanh toán đủ giá kỳ mới, sau đó hệ thống tự xếp lịch tại hạn
+                tổng gói hiện tại, không cần admin. Quyền cũ được giữ đến hạn; nếu gói cũ đã hết hạn
+                lúc áp dụng, gói mới bắt đầu khi cấp quyền.
+              </div>
+            } @else if (order.type === 'CHANGE') {
+              <div class="notice warning">
+                Đơn đổi gói cũ giữ nguyên báo giá đã lưu và có thể cần admin xác nhận. Không tự
+                chuyển đơn này thành báo giá nâng gói mới.
+              </div>
+            } @else if (order.type === 'RENEW') {
+              <div class="notice">
+                Gia hạn nối thêm kỳ sau hạn tổng hiện tại. Ngày hiệu lực được máy chủ xác định khi
+                áp dụng.
+              </div>
+            }
+          } @else if (boost(); as boost) {
+            <ul class="benefits">
+              <li>{{ boost.highPrioritySlotsSnapshot }} suất ưu tiên cao</li>
+              <li>{{ boost.lowPrioritySlotsSnapshot }} suất ưu tiên thấp</li>
+            </ul>
+            <div class="notice">
+              Sau khi gói được kích hoạt, bạn phân bổ suất cho các tin đang hiển thị. Có thể dùng
+              nhiều gói đồng thời, mỗi gói có hạn riêng.
+            </div>
+            <div class="notice warning">
+              Boost không kéo dài hạn tin đăng và không tăng số tin được phép đăng.
+            </div>
+          }
+        </section>
+      </div>
+      <aside class="panel">
+        <h2>Tóm tắt thanh toán</h2>
+        <p class="muted">Số tiền theo đơn đã tạo trên máy chủ.</p>
+        <div class="row total">
+          <span>{{
+            order()?.immediateUpgrade ? 'Phí nâng gói cần thanh toán' : 'Tổng thanh toán'
+          }}</span
+          ><strong class="price">{{
+            order()?.price ?? boost()?.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi'
+          }}</strong>
+        </div>
+        @if (order()?.status !== 'APPLIED') {
+          <p>Phương thức: <strong>VNPay Sandbox</strong></p>
+          <p class="muted">Môi trường thử nghiệm</p>
+        }
+        @if (canPay()) {
+          <p class="muted" aria-label="Thời gian còn lại để thanh toán">
+            Còn {{ timer() }} để thanh toán
+          </p>
+          <button class="primary full" [disabled]="busy()" (click)="pay()">
+            {{ busy() ? 'Đang chuyển đến VNPay…' : 'Thanh toán qua VNPay' }}
+          </button>
+        } @else if (order()?.status === 'APPLIED') {
+          <div class="notice success" role="status">
+            Gói đã được áp dụng. Không cần checkout VNPay cho đơn này.
+          </div>
+          @if (order()?.immediateUpgrade && order()?.price === 0) {
+            <p>Phí nâng gói bằng 0. Không phát sinh giao dịch thanh toán.</p>
+          }
+        } @else if (order()?.status === 'SCHEDULED') {
+          <div class="notice">
+            Đã xếp lịch đổi gói: {{ ui.date(order()?.effectiveAt) }} –
+            {{ ui.date(order()?.endAt) }}.
+          </div>
+        } @else if (
+          (order()?.price ?? boost()?.price) === 0 &&
+          (order()?.status ?? boost()?.status) === 'PENDING_PAYMENT'
+        ) {
+          <div class="notice warning">
+            Đơn chưa có khoản tiền hợp lệ để checkout VNPay. Vui lòng tải lại trạng thái đơn.
+          </div>
+          <button (click)="load()" [disabled]="loading() || busy()">Tải lại đơn</button>
+        } @else {
+          <div class="notice warning">
+            Yêu cầu đã hết thời hạn thanh toán hoặc đã được xử lý. Xem lịch sử để kiểm tra kết quả.
+          </div>
+        }
+        <p>
+          <a [routerLink]="type === 'SERVICE_PACKAGE' ? '/goi-dich-vu' : '/boost'"
+            >Quay về {{ type === 'SERVICE_PACKAGE' ? 'gói dịch vụ' : 'Boost' }}</a
+          >
+        </p>
+      </aside>
+    </div>
+  }
+</section>

@@ -1,0 +1,51 @@
+<header class="detail-header">
+  <div>
+    <span class="badge badge-primary">{{ listing.property.rentalModeLabel }}</span>
+    <h2 mat-dialog-title>{{ listing.listingTitle }}</h2>
+    <p>{{ listing.property.fullAddress }}</p>
+  </div>
+  <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng bài đăng">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+<mat-dialog-content>
+  @if (listing.property.images.length) {
+    <div class="shared-gallery">
+      @for (image of listing.property.images; track image.id) {
+        <a [href]="image.url" target="_blank" rel="noopener"
+          ><img [src]="images.toImageSrc(image.url)" [alt]="listing.property.name"
+        /></a>
+      }
+    </div>
+  }
+  <section class="description">
+    <h3>{{ listing.property.name }}</h3>
+    <p>{{ listing.listingDescription || 'Chủ trọ chưa bổ sung mô tả.' }}</p>
+  </section>
+  <section class="amenity-section">
+    <h3>{{ listing.rentalMode === 'WHOLE' ? 'Tiện ích căn nhà' : 'Tiện ích chung' }}</h3>
+    <div class="amenities">
+      @for (amenity of listing.property.amenities; track amenity.id) {
+        <span class="badge"
+          ><span class="material-symbols-outlined" aria-hidden="true">{{ amenity.icon }}</span
+          >{{ amenity.name }}</span
+        >
+      } @empty {
+        <p>Chưa khai báo tiện ích chung.</p>
+      }
+    </div>
+  </section>
+  @if (listing.rentalMode === 'BY_ROOM') {
+    <p class="room-hint">
+      Chọn một phòng để xem ảnh, giá thuê, tiền cọc và tiện ích riêng. Mỗi phòng có thông tin và
+      trạng thái riêng.
+    </p>
+  }
+  <app-property-rooms
+    [property]="listing.property"
+    [readOnly]="true"
+    (viewRoom)="openRoom($event)"
+  /> </mat-dialog-content
+><mat-dialog-actions align="end"
+  ><button type="button" class="btn-secondary" mat-dialog-close>Đóng</button></mat-dialog-actions
+>

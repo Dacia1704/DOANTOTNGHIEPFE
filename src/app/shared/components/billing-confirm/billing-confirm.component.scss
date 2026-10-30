@@ -1,0 +1,19 @@
+p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+button {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+}
+.primary {
+  background: var(--primary);
+  color: var(--on-primary-container);
+  border-color: var(--primary);
+}

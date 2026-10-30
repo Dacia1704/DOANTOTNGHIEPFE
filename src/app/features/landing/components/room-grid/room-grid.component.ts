@@ -1,15 +1,16 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RoomCardComponent, RoomCardData } from '../room-card/room-card.component';
-import { RoomCard } from '../../data/landing.mock';
-import { Room, RoomListResult } from '@model/room/room.model';
+import { PublicListing, PublicListingList } from '@model/public-listing/public-listing.model';
 
-/**
- * Danh sách phòng chính + select sort. Sort hiện chỉ là client-side mock:
- *  - newest | rating: trả nguyên danh sách
- *  - price-asc: sort theo price tăng dần
- *  - distance: giả ngẫu nhiên (sort theo reviewCount làm proxy)
- */
+/** Displays paginated published posts returned by the public Listing API. */
 @Component({
   selector: 'app-room-grid',
   imports: [FormsModule, RoomCardComponent],
@@ -18,23 +19,25 @@ import { Room, RoomListResult } from '@model/room/room.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomGridComponent {
-  @Input() result: RoomListResult | null = null;
+  @Input() result: PublicListingList | null = null;
   @Input() loading = false;
   @Output() loadMore = new EventEmitter<void>();
-  @Output() roomSelected = new EventEmitter<Room>();
+  @Output() roomSelected = new EventEmitter<PublicListing>();
   readonly sortOptions = [
-    { value: 'newest', label: 'Mới nhất' },
+    { value: 'newest', label: 'Ưu tiên & mới nhất' },
     { value: 'price-asc', label: 'Giá thấp đến cao' },
   ];
   readonly sortBy = signal('newest');
 
-  get rooms(): (RoomCard | Room)[] {
+  get rooms(): PublicListing[] {
     const rooms = [...(this.result?.items ?? [])];
     if (this.sortBy() === 'price-asc') return rooms.sort((a, b) => a.price - b.price);
     return rooms;
   }
 
-  get total(): number { return this.result?.total ?? 0; }
+  get total(): number {
+    return this.result?.total ?? 0;
+  }
   get visible(): number {
     return this.rooms.length;
   }

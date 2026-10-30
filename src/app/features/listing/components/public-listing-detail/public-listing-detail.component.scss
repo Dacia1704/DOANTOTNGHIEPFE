@@ -1,0 +1,77 @@
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+.detail-header h2 {
+  padding: 0;
+  margin: var(--space-md) 0 var(--space-sm);
+  font-family: inherit;
+  font-size: 1.35rem;
+}
+.detail-header p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+mat-dialog-content {
+  padding: var(--space-lg);
+  max-height: 68dvh;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+h3 {
+  font-size: 1rem;
+  margin: 0 0 var(--space-sm);
+}
+.description {
+  margin-bottom: var(--space-lg);
+}
+.description p {
+  white-space: pre-wrap;
+  line-height: 1.8;
+  font-size: 0.85rem;
+}
+.shared-gallery {
+  display: flex;
+  overflow-x: auto;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+.shared-gallery img {
+  height: 180px;
+  max-width: 280px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+.amenity-section {
+  margin-bottom: var(--space-lg);
+}
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.amenities .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+.amenities .material-symbols-outlined {
+  font-size: 18px;
+}
+.amenities p,
+.room-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.room-hint {
+  padding: var(--space-md);
+  background: var(--background);
+  border-radius: var(--radius);
+  line-height: 1.7;
+}

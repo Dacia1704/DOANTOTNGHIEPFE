@@ -1,197 +1,165 @@
-<div class="login-page">
+<section class="login-page" aria-labelledby="login-title">
   <div class="login-page__inner">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-      <a routerLink="/">
-        <span class="material-symbols-outlined">home</span>
-        <span>Trang chủ</span>
-      </a>
-      <span class="breadcrumb__sep">/</span>
-      <span class="breadcrumb__current">Đăng nhập tài khoản</span>
-    </nav>
-
+    <a class="login-page__back" routerLink="/"
+      ><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Trở về tìm
+      phòng</a
+    >
     <div class="login-grid">
-      <!-- Left: form -->
       <div class="login-card">
-        <div class="welcome-chip">
-          <span class="welcome-emoji" aria-hidden="true">👋</span>
-          <span>Chào mừng bạn trở lại</span>
-        </div>
-
-        <h1 class="login-card__title">
-          Đăng nhập TroTot<span class="login-card__title-accent">.vn</span>
-        </h1>
-        <p class="login-card__sub">
-          Kết nối trọ sinh viên minh bạch, an toàn và nhanh chóng nhất toàn quốc.
-        </p>
-
+        <span class="welcome-chip"
+          ><span class="material-symbols-outlined" aria-hidden="true">waving_hand</span>Rất vui được
+          gặp lại bạn</span
+        >
+        <h1 id="login-title" class="login-card__title">Đăng nhập</h1>
+        <p class="login-card__sub">Tiếp tục hành trình tìm nơi ở cùng <strong>Trọ Tốt.</strong></p>
         @if (errorMessage(); as msg) {
           <div class="login-card__error" role="alert">
-            <span class="material-symbols-outlined">error</span>
-            <span>{{ msg }}</span>
+            <span class="material-symbols-outlined" aria-hidden="true">error</span
+            ><span>{{ msg }}</span>
           </div>
         }
-
-        <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-          <!-- Email -->
+        <form
+          class="login-form"
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          novalidate
+          [attr.aria-busy]="submitting()"
+        >
           <div class="field">
-            <label class="field__label" for="login-email">Email</label>
-            <div class="field__input-row" [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid">
-              <span class="field__icon material-symbols-outlined">mail</span>
+            <label class="field__label" for="login-email">Địa chỉ email</label>
+            <div
+              class="field__input-row"
+              [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid"
+            >
+              <span class="field__icon material-symbols-outlined" aria-hidden="true">mail</span>
               <input
                 id="login-email"
                 type="email"
                 class="field__input"
-                placeholder="email@domain.com"
+                placeholder="Nhập email của bạn"
                 formControlName="email"
                 autocomplete="username"
+                [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid"
+                [attr.aria-describedby]="
+                  form.controls.email.touched && form.controls.email.invalid
+                    ? 'login-email-error'
+                    : null
+                "
               />
             </div>
             @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
-              <span class="field__error">Email không được để trống.</span>
+              <span class="field__error" id="login-email-error">Vui lòng nhập email của bạn.</span>
             } @else if (form.controls.email.touched && form.controls.email.errors?.['email']) {
-              <span class="field__error">Email không đúng định dạng.</span>
+              <span class="field__error" id="login-email-error">Email chưa đúng định dạng.</span>
             }
           </div>
-
-          <!-- Password -->
           <div class="field">
-            <div class="field__label-row">
-              <label class="field__label" for="login-password">Mật khẩu</label>
-              <a class="field__forgot" routerLink="/forgot-password">Quên mật khẩu?</a>
-            </div>
-            <div class="field__input-row" [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid">
-              <span class="field__icon material-symbols-outlined">lock</span>
+            <label class="field__label" for="login-password">Mật khẩu</label>
+            <div
+              class="field__input-row"
+              [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid"
+            >
+              <span class="field__icon material-symbols-outlined" aria-hidden="true">lock</span>
               <input
                 id="login-password"
                 [type]="showPassword() ? 'text' : 'password'"
                 class="field__input"
-                placeholder="Nhập mật khẩu của bạn"
+                placeholder="Nhập mật khẩu"
                 formControlName="password"
                 autocomplete="current-password"
+                [attr.aria-invalid]="
+                  form.controls.password.touched && form.controls.password.invalid
+                "
+                [attr.aria-describedby]="
+                  form.controls.password.touched && form.controls.password.invalid
+                    ? 'login-password-error'
+                    : null
+                "
               />
               <button
                 type="button"
                 class="field__suffix"
                 (click)="togglePassword()"
-                aria-label="Ẩn hiện mật khẩu"
+                [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                [attr.aria-pressed]="showPassword()"
               >
-                <span class="material-symbols-outlined">
-                  {{ showPassword() ? 'visibility_off' : 'visibility' }}
-                </span>
+                <span class="material-symbols-outlined" aria-hidden="true">{{
+                  showPassword() ? 'visibility_off' : 'visibility'
+                }}</span>
               </button>
             </div>
             @if (form.controls.password.touched && form.controls.password.errors?.['required']) {
-              <span class="field__error">Mật khẩu không được để trống.</span>
+              <span class="field__error" id="login-password-error">Vui lòng nhập mật khẩu.</span>
+            } @else if (
+              form.controls.password.touched && form.controls.password.errors?.['minlength']
+            ) {
+              <span class="field__error" id="login-password-error"
+                >Mật khẩu cần có ít nhất 6 ký tự.</span
+              >
             }
           </div>
-
-          <!-- Remember -->
-          <label class="remember">
-            <input type="checkbox" class="remember__input" formControlName="remember" />
-            <span class="remember__label">Ghi nhớ đăng nhập trên thiết bị này</span>
-          </label>
-
-          <!-- Submit -->
-          <button
-            type="submit"
-            class="submit-btn"
-            [disabled]="submitting()"
-          >
-            <span class="material-symbols-outlined">login</span>
-            <span>{{ submitting() ? 'Đang đăng nhập...' : 'Đăng nhập ngay' }}</span>
-          </button>
-
-          <div class="trust-line">
-            <span class="material-symbols-outlined">verified_user</span>
-            <span>Mã hóa 2 lớp SSL 256-bit bảo vệ tài khoản tuyệt đối</span>
+          <div class="login-form__options">
+            <label class="remember"
+              ><input type="checkbox" formControlName="remember" /><span
+                >Ghi nhớ đăng nhập</span
+              ></label
+            >
+            <a routerLink="/forgot-password">Quên mật khẩu?</a>
           </div>
+          <button type="submit" class="submit-btn" [disabled]="submitting()">
+            {{ submitting() ? 'Đang đăng nhập…' : 'Đăng nhập'
+            }}<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </button>
         </form>
-
-        <div class="login-card__switch">
-          <span>Bạn chưa có tài khoản TroTot?</span>
-          <a routerLink="/register" class="login-card__switch-link">
-            <span>Đăng ký ngay miễn phí</span>
-            <span class="material-symbols-outlined">arrow_forward</span>
-          </a>
+        <p class="login-card__switch">
+          Chưa có tài khoản?
+          <a routerLink="/register"
+            >Đăng ký miễn phí<span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_forward</span
+            ></a
+          >
+        </p>
+        <div class="login-card__guest">
+          <span class="material-symbols-outlined" aria-hidden="true">travel_explore</span>Bạn có thể
+          <a routerLink="/">khám phá phòng</a> trước khi đăng nhập.
         </div>
       </div>
-
-      <!-- Right: brand panel -->
-      <aside class="brand-panel">
-        <div class="brand-panel__chip">
-          <span class="material-symbols-outlined">shield_lock</span>
-          <span>Cam kết độc quyền TroTot</span>
+      <aside class="brand-panel" aria-label="Tiện ích tài khoản Trọ Tốt">
+        <span class="brand-panel__eyebrow">TRỌ TỐT · GẦN HƠN VỚI TỔ ẤM</span>
+        <h2>Một nơi ở mới.<br />Một khởi đầu mới.</h2>
+        <p>Tìm căn phòng bạn thích và kết nối với người cho thuê, tất cả trong một tài khoản.</p>
+        <div class="brand-scene" aria-hidden="true">
+          <div class="scene-window"><i></i><i></i><i></i><i></i></div>
+          <div class="scene-sun"></div>
+          <div class="scene-plant"><i></i><i></i><i></i><b></b></div>
+          <div class="scene-sofa"><i></i><i></i></div>
+          <div class="scene-note">
+            <span class="material-symbols-outlined">home</span>Một góc nhỏ, thật nhiều bình yên.
+          </div>
         </div>
-
-        <h2 class="brand-panel__title">
-          Tìm trọ chuẩn chỉnh,<br />cho thuê an tâm tuyệt đối
-        </h2>
-        <p class="brand-panel__lead">
-          Cộng đồng hơn 120.000 sinh viên, người đi làm và hơn 8.600 chủ trọ văn minh đã tin dùng
-          nền tảng TroTot.vn mỗi ngày.
-        </p>
-
         <ul class="brand-panel__list">
           <li>
-            <span class="brand-panel__list-icon brand-panel__list-icon--1">
-              <span class="material-symbols-outlined">verified</span>
-            </span>
+            <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
             <div>
-              <h3>Bảo vệ tiền cọc 100% qua TroTot Escrow</h3>
-              <p>TroTot giữ cọc an toàn trung gian, hoàn tiền 100% ngay lập tức nếu hiện trạng phòng không đúng video hoặc tin đăng cam kết.</p>
+              <strong>Lưu lại nơi bạn thích</strong><span>Dễ dàng xem lại những tin đã lưu.</span>
             </div>
           </li>
           <li>
-            <span class="brand-panel__list-icon brand-panel__list-icon--2">
-              <span class="material-symbols-outlined">360</span>
-            </span>
+            <span class="material-symbols-outlined" aria-hidden="true">forum</span>
             <div>
-              <h3>100% phòng có video 360° &amp; kiểm duyệt thực địa</h3>
-              <p>Đội ngũ Thanh tra TroTot trực tiếp đo đạc diện tích, kiểm tra đồng hồ điện nước và chụp ảnh thật tại từng căn nhà trọ.</p>
+              <strong>Kết nối ngay trong ứng dụng</strong
+              ><span>Trao đổi với chủ trọ qua tin nhắn.</span>
             </div>
           </li>
           <li>
-            <span class="brand-panel__list-icon brand-panel__list-icon--3">
-              <span class="material-symbols-outlined">history_edu</span>
-            </span>
+            <span class="material-symbols-outlined" aria-hidden="true">manage_accounts</span>
             <div>
-              <h3>Hợp đồng điện tử SmartLease miễn phí</h3>
-              <p>Hợp đồng chuẩn pháp lý, ký kết trực tuyến trên điện thoại, phân định minh bạch quyền lợi và trách nhiệm chủ trọ - người thuê.</p>
+              <strong>Quản lý trong một tài khoản</strong
+              ><span>Theo dõi hồ sơ và hoạt động của bạn.</span>
             </div>
           </li>
         </ul>
-
-        <div class="brand-panel__rating">
-          <div class="brand-panel__rating-left">
-            <div class="brand-panel__rating-score">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-              <span>4.9 / 5.0</span>
-            </div>
-            <span class="brand-panel__rating-hint">Từ hơn 24.000 đánh giá thật</span>
-          </div>
-          <span class="brand-panel__verified-tag">
-            <span class="material-symbols-outlined">verified_user</span>
-            <span>Đã kiểm chứng</span>
-          </span>
-        </div>
       </aside>
     </div>
-
-    <!-- Trust indicators -->
-    <div class="trust-row">
-      <div class="trust-row__item">
-        <span class="material-symbols-outlined">lock_clock</span>
-        <span>Bảo mật phiên đăng nhập 30 ngày an toàn</span>
-      </div>
-      <div class="trust-row__item">
-        <span class="material-symbols-outlined">policy</span>
-        <span>Tuân thủ Luật An ninh Mạng Việt Nam &amp; Nghị định 13/2023/NĐ-CP</span>
-      </div>
-      <div class="trust-row__item">
-        <span class="material-symbols-outlined">handshake</span>
-        <span>Đối tác bảo trợ tiền cọc: Ngân hàng TMCP Quân Đội (MB)</span>
-      </div>
-    </div>
   </div>
-</div>
+</section>

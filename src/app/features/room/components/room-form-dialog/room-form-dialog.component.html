@@ -3,37 +3,114 @@
   <div class="dialog-header">
     <div class="header-title-box">
       <h2 mat-dialog-title>
-        {{ data.action === 'create' ? 'Đăng tin phòng mới' : 'Chỉnh sửa thông tin phòng' }}
+        {{
+          wholeHouse
+            ? 'Chỉnh sửa thông tin căn nhà'
+            : data.action === 'create'
+              ? 'Thêm phòng vào cơ sở'
+              : 'Chỉnh sửa thông tin phòng'
+        }}
       </h2>
       <p class="body-sm text-secondary">
-        Điền đầy đủ thông tin phòng trọ để người thuê dễ dàng tìm kiếm và liên hệ.
+        {{
+          wholeHouse
+            ? 'Cập nhật giá thuê, diện tích và chi phí cho toàn bộ căn nhà.'
+            : 'Thông tin địa chỉ được dùng chung từ cơ sở. Chỉnh thông số và tiện ích riêng của phòng.'
+        }}
       </p>
     </div>
-    <button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng dialog">
-      <span class="material-symbols-outlined">close</span>
+    <button
+      type="button"
+      class="btn-icon"
+      mat-dialog-close
+      aria-label="Đóng dialog"
+      [disabled]="busy()"
+    >
+      <span aria-hidden="true" class="material-symbols-outlined">close</span>
     </button>
   </div>
 
   @if (error()) {
     <div class="error-banner" role="alert">
-      <span class="material-symbols-outlined">error</span>
+      <span aria-hidden="true" class="material-symbols-outlined">error</span>
       <span>{{ error() }}</span>
     </div>
   }
 
+  @if (catalogsLoading()) {
+    <p role="status">Đang tải danh mục…</p>
+  }
+  @if (catalogsError()) {
+    <button type="button" class="btn-secondary" (click)="loadCatalogs()">Tải lại danh mục</button>
+  }
   <!-- Form -->
   <form [formGroup]="form" (ngSubmit)="submit()" class="dialog-body">
+    <fieldset class="form-section">
+      <legend class="section-title">
+        <span aria-hidden="true" class="material-symbols-outlined">apartment</span>
+        {{ wholeHouse ? 'Căn nhà cho thuê' : 'Cơ sở & mã phòng' }}
+      </legend>
+      @if (data.action === 'create' && !data.property) {
+        <div class="form-group">
+          <label for="room-property">Cơ sở cho thuê *</label
+          ><select id="room-property" class="input" formControlName="propertyId">
+            <option value="">Chọn cơ sở cho thuê từng phòng</option>
+            @for (property of properties(); track property.id) {
+              <option [value]="property.id">{{ property.name }}</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <p>{{ data.property?.name || 'Cơ sở hiện tại' }}</p>
+      }
+      <p class="body-sm text-secondary">{{ sharedAddress() }}</p>
+      @if (!wholeHouse) {
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label for="unit-number">Số phòng / mã căn *</label
+            ><input
+              id="unit-number"
+              class="input"
+              formControlName="roomNumber"
+              maxlength="30"
+              placeholder="Ví dụ: A101"
+            />
+          </div>
+          <div class="form-group">
+            <label for="unit-floor">Tầng</label
+            ><input
+              id="unit-floor"
+              class="input"
+              type="number"
+              formControlName="floorNumber"
+              min="0"
+              step="1"
+              placeholder="Chưa xác định"
+            />
+          </div>
+        </div>
+        @if (
+          (form.controls.roomNumber.touched && form.controls.roomNumber.invalid) ||
+          (form.controls.floorNumber.touched && form.controls.floorNumber.invalid)
+        ) {
+          <p class="field-error">Số phòng không được trống; tầng là số nguyên không âm.</p>
+        }
+      }
+    </fieldset>
     <!-- SECTION 1: BASIC INFO -->
     <fieldset class="form-section">
       <legend class="section-title">
-        <span class="material-symbols-outlined section-icon">info</span>
+        <span aria-hidden="true" class="material-symbols-outlined section-icon">info</span>
         <span>Thông tin chung</span>
       </legend>
 
       <div class="form-row form-row-3">
         <!-- Room Type -->
         <div class="form-group">
-          <label for="room-type" class="label-md">Loại phòng <span class="required">*</span></label>
+          <label for="room-type" class="label-md"
+            >{{ wholeHouse ? 'Loại căn cho thuê' : 'Loại phòng' }}
+            <span class="required">*</span></label
+          >
           <select id="room-type" class="input" formControlName="roomTypeId">
             <option value="">Chọn loại phòng</option>
             @for (type of roomTypes(); track type.id) {
@@ -47,7 +124,10 @@
 
         <!-- Rental Status -->
         <div class="form-group">
-          <label for="rental-status" class="label-md">Trạng thái phòng <span class="required">*</span></label>
+          <label for="rental-status" class="label-md"
+            >{{ wholeHouse ? 'Trạng thái cho thuê' : 'Trạng thái phòng' }}
+            <span class="required">*</span></label
+          >
           <select id="rental-status" class="input" formControlName="rentalStatus">
             @for (status of statuses; track status) {
               <option [value]="status">{{ statusLabels[status] }}</option>
@@ -57,7 +137,9 @@
 
         <!-- Max Occupants -->
         <div class="form-group">
-          <label for="max-occupants" class="label-md">Số người ở tối đa <span class="required">*</span></label>
+          <label for="max-occupants" class="label-md"
+            >Số người ở tối đa <span class="required">*</span></label
+          >
           <input
             id="max-occupants"
             type="number"
@@ -66,7 +148,9 @@
             min="1"
             max="20"
           />
-          @if (form.controls.maxOccupants.touched && form.controls.maxOccupants.hasError('required')) {
+          @if (
+            form.controls.maxOccupants.touched && form.controls.maxOccupants.hasError('required')
+          ) {
             <span class="field-error">Số người ở tối thiểu là 1</span>
           }
         </div>
@@ -76,14 +160,16 @@
     <!-- SECTION 2: PRICING & SPECIFICATIONS -->
     <fieldset class="form-section">
       <legend class="section-title">
-        <span class="material-symbols-outlined section-icon">payments</span>
+        <span aria-hidden="true" class="material-symbols-outlined section-icon">payments</span>
         <span>Giá thuê & Chi phí</span>
       </legend>
 
       <div class="form-row form-row-3">
         <!-- Giá thuê tháng -->
         <div class="form-group">
-          <label for="room-price" class="label-md">Giá thuê / tháng (VNĐ) <span class="required">*</span></label>
+          <label for="room-price" class="label-md"
+            >Giá thuê / tháng (VNĐ) <span class="required">*</span></label
+          >
           <input
             id="room-price"
             type="number"
@@ -114,7 +200,9 @@
 
         <!-- Diện tích m2 -->
         <div class="form-group">
-          <label for="room-area" class="label-md">Diện tích (m²) <span class="required">*</span></label>
+          <label for="room-area" class="label-md"
+            >Diện tích (m²) <span class="required">*</span></label
+          >
           <input
             id="room-area"
             type="number"
@@ -170,69 +258,11 @@
       </div>
     </fieldset>
 
-    <!-- SECTION 3: LOCATION -->
-    <fieldset class="form-section">
-      <legend class="section-title">
-        <span class="material-symbols-outlined section-icon">location_on</span>
-        <span>Địa chỉ phòng</span>
-      </legend>
-
-      <div class="form-row form-row-2">
-        <!-- Tỉnh / Thành phố -->
-        <div class="form-group">
-          <label for="room-province" class="label-md">Tỉnh / Thành phố <span class="required">*</span></label>
-          <select id="room-province" class="input" formControlName="provinceId">
-            <option value="">Chọn tỉnh / thành phố</option>
-            @for (prov of provinces(); track prov.id) {
-              <option [value]="prov.id">{{ prov.name }}</option>
-            }
-          </select>
-          @if (form.controls.provinceId.touched && form.controls.provinceId.hasError('required')) {
-            <span class="field-error">Vui lòng chọn tỉnh / thành phố</span>
-          }
-        </div>
-
-        <!-- Phường / Xã -->
-        <div class="form-group">
-          <label for="room-ward" class="label-md">Phường / Xã <span class="required">*</span></label>
-          <select
-            id="room-ward"
-            class="input"
-            formControlName="wardId"
-            [disabled]="wards().length === 0"
-          >
-            <option value="">{{ wards().length > 0 ? 'Chọn phường / xã' : 'Vui lòng chọn tỉnh trước' }}</option>
-            @for (ward of wards(); track ward.id) {
-              <option [value]="ward.id">{{ ward.name }}</option>
-            }
-          </select>
-          @if (form.controls.wardId.touched && form.controls.wardId.hasError('required')) {
-            <span class="field-error">Vui lòng chọn phường / xã</span>
-          }
-        </div>
-      </div>
-
-      <!-- Địa chỉ chi tiết -->
-      <div class="form-group">
-        <label for="room-address-line" class="label-md">Địa chỉ cụ thể (Số nhà, ngõ/ngách, tên đường) <span class="required">*</span></label>
-        <input
-          id="room-address-line"
-          type="text"
-          class="input"
-          formControlName="addressLine"
-          placeholder="Ví dụ: Số 12 ngõ 45 đường Nguyễn Huệ..."
-        />
-        @if (form.controls.addressLine.touched && form.controls.addressLine.hasError('required')) {
-          <span class="field-error">Địa chỉ cụ thể không được để trống</span>
-        }
-      </div>
-    </fieldset>
-
     <!-- SECTION 4: AMENITIES -->
     <fieldset class="form-section">
       <legend class="section-title">
-        <span class="material-symbols-outlined section-icon">checklist</span>
-        <span>Tiện ích phòng có sẵn</span>
+        <span aria-hidden="true" class="material-symbols-outlined section-icon">checklist</span>
+        <span>{{ wholeHouse ? 'Tiện ích bổ sung của căn nhà' : 'Tiện ích phòng có sẵn' }}</span>
       </legend>
 
       <div class="amenities-checklist">
@@ -243,10 +273,12 @@
             [class.selected]="isAmenitySelected(amenity.id)"
             (click)="toggleAmenity(amenity.id)"
           >
-            <span class="material-symbols-outlined pill-icon">{{ amenity.icon }}</span>
+            <span aria-hidden="true" class="material-symbols-outlined pill-icon">{{
+              amenity.icon
+            }}</span>
             <span>{{ amenity.name }}</span>
             @if (isAmenitySelected(amenity.id)) {
-              <span class="material-symbols-outlined check-mark">check</span>
+              <span aria-hidden="true" class="material-symbols-outlined check-mark">check</span>
             }
           </button>
         }
@@ -257,7 +289,9 @@
     @if (data.action === 'create') {
       <fieldset class="form-section">
         <legend class="section-title">
-          <span class="material-symbols-outlined section-icon">photo_library</span>
+          <span aria-hidden="true" class="material-symbols-outlined section-icon"
+            >photo_library</span
+          >
           <span>Hình ảnh phòng (Tối đa 10 ảnh)</span>
         </legend>
 
@@ -271,7 +305,9 @@
             class="file-input-hidden"
           />
           <label for="file-input" class="dropzone-label">
-            <span class="material-symbols-outlined dropzone-icon">cloud_upload</span>
+            <span aria-hidden="true" class="material-symbols-outlined dropzone-icon"
+              >cloud_upload</span
+            >
             <span class="dropzone-text">Nhấn để chọn ảnh hoặc kéo thả vào đây</span>
             <span class="dropzone-hint">Định dạng JPG, PNG (tối đa 5MB/ảnh)</span>
           </label>
@@ -288,7 +324,7 @@
                   (click)="removeFile(i)"
                   title="Xóa ảnh"
                 >
-                  <span class="material-symbols-outlined">close</span>
+                  <span aria-hidden="true" class="material-symbols-outlined">close</span>
                 </button>
               </div>
             }
@@ -300,9 +336,17 @@
     <!-- Dialog Actions -->
     <div class="dialog-actions">
       <button type="button" class="btn-secondary" mat-dialog-close [disabled]="busy()">Hủy</button>
-      <button type="submit" class="btn-primary" [disabled]="busy() || form.invalid">
-        <span class="material-symbols-outlined">{{ data.action === 'create' ? 'publish' : 'save' }}</span>
-        <span>{{ busy() ? 'Đang lưu...' : (data.action === 'create' ? 'Đăng phòng ngay' : 'Lưu thay đổi') }}</span>
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="busy() || catalogsLoading() || catalogsError() || form.invalid"
+      >
+        <span aria-hidden="true" class="material-symbols-outlined">{{
+          data.action === 'create' ? 'publish' : 'save'
+        }}</span>
+        <span>{{
+          busy() ? 'Đang lưu...' : data.action === 'create' ? 'Thêm phòng' : 'Lưu thay đổi'
+        }}</span>
       </button>
     </div>
   </form>

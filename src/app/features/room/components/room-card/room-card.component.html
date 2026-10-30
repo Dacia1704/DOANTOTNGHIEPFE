@@ -22,6 +22,7 @@
 
   <!-- Content -->
   <div class="card-content">
+    <h3>{{ room.displayName }}</h3>
     <!-- Type and Price Header -->
     <div class="type-price-row">
       <span class="badge badge-primary room-type-badge">{{ room.roomTypeName }}</span>
@@ -51,14 +52,14 @@
 
     <!-- Fees Summary -->
     <div class="fees-row">
-      @if (room.electricityPrice > 0) {
-        <span class="fee-chip" title="Giá điện">⚡ {{ room.electricityPrice.toLocaleString('vi-VN') }}đ/kWh</span>
+      @if ((room.electricityPrice ?? 0) > 0) {
+        <span class="fee-chip" title="Giá điện">⚡ {{ room.electricityPrice?.toLocaleString('vi-VN') }}đ/kWh</span>
       }
-      @if (room.waterPrice > 0) {
-        <span class="fee-chip" title="Giá nước">💧 {{ room.waterPrice.toLocaleString('vi-VN') }}đ/khối</span>
+      @if ((room.waterPrice ?? 0) > 0) {
+        <span class="fee-chip" title="Giá nước">💧 {{ room.waterPrice?.toLocaleString('vi-VN') }}đ/khối</span>
       }
-      @if (room.defaultDeposit > 0) {
-        <span class="fee-chip" title="Tiền cọc">🛡️ Cọc: {{ room.defaultDeposit.toLocaleString('vi-VN') }}đ</span>
+      @if ((room.defaultDeposit ?? 0) > 0) {
+        <span class="fee-chip" title="Tiền cọc">🛡️ Cọc: {{ room.defaultDeposit?.toLocaleString('vi-VN') }}đ</span>
       }
     </div>
 

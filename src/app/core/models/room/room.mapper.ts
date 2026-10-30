@@ -3,14 +3,14 @@ import { Room, RoomRentalStatus } from './room.model';
 
 export class RoomMapper {
   static fromResponse(dto: RoomResponse): Room {
-    const images = (dto.images || []).map(img => ({
+    const images = (dto.images || []).map((img) => ({
       id: img.id,
       url: img.url,
       sortOrder: img.sortOrder ?? 0,
       createdAt: img.createdAt ? new Date(img.createdAt) : null,
     }));
 
-    const amenities = (dto.amenities || []).map(a => ({
+    const amenities = (dto.amenities || []).map((a) => ({
       id: a.id,
       name: a.name,
       icon: a.icon || 'check_circle',
@@ -24,14 +24,18 @@ export class RoomMapper {
 
     return {
       id: dto.id,
+      propertyId: dto.propertyId,
+      roomNumber: dto.roomNumber,
+      displayName: dto.roomNumber === 'LEGACY' ? 'Đơn vị cho thuê' : dto.roomNumber,
+      floorNumber: dto.floorNumber ?? null,
       landlordId: dto.landlordId,
       roomTypeId: dto.roomTypeId,
       roomTypeName: dto.roomTypeName,
       price: dto.price,
-      electricityPrice: dto.electricityPrice ?? 0,
-      waterPrice: dto.waterPrice ?? 0,
-      serviceFee: dto.serviceFee ?? 0,
-      defaultDeposit: dto.defaultDeposit ?? 0,
+      electricityPrice: dto.electricityPrice ?? null,
+      waterPrice: dto.waterPrice ?? null,
+      serviceFee: dto.serviceFee ?? null,
+      defaultDeposit: dto.defaultDeposit ?? null,
       areaM2: dto.areaM2,
       maxOccupants: dto.maxOccupants,
       provinceId: dto.provinceId,
@@ -52,6 +56,6 @@ export class RoomMapper {
   }
 
   static fromResponseList(dtos: RoomResponse[]): Room[] {
-    return (dtos || []).map(dto => this.fromResponse(dto));
+    return (dtos || []).map((dto) => this.fromResponse(dto));
   }
 }

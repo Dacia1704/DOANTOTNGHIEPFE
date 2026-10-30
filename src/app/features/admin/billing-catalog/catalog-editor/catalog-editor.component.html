@@ -1,0 +1,80 @@
+<h2 mat-dialog-title>
+  {{ data.item ? 'Cập nhật' : 'Tạo' }} {{ data.kind === 'boost' ? 'gói Boost' : 'gói dịch vụ' }}
+</h2>
+<mat-dialog-content>
+  @if (error()) {
+    <div class="notice error" role="alert">{{ error() }}</div>
+  }
+  @if (free) {
+    <p class="notice">Gói Free chỉ được sửa tên hiển thị. Quyền mặc định được giữ cố định.</p>
+  }
+  <form id="catalog-form" [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+    <label class="field">Mã gói<input formControlName="code" maxlength="50" required /></label
+    ><label class="field">Tên gói<input formControlName="name" maxlength="100" required /></label>
+    @if (data.kind === 'service') {
+      <label class="check span-all"
+        ><input type="checkbox" formControlName="unlimited" /> Không giới hạn số tin</label
+      ><label class="field span-all"
+        >Giới hạn tin<input type="number" formControlName="maxListings" min="0" step="1"
+      /></label>
+    }
+    <label class="field"
+      >Số suất ưu tiên cao<input
+        type="number"
+        formControlName="highPrioritySlots"
+        min="0"
+        step="1"
+        required /></label
+    ><label class="field"
+      >Số suất ưu tiên thấp<input
+        type="number"
+        formControlName="lowPrioritySlots"
+        min="0"
+        step="1"
+        required
+    /></label>
+    @if (data.kind === 'service') {
+      <label class="field span-all"
+        >Mức ưu tiên mặc định<select formControlName="defaultPriorityLevel">
+          <option [ngValue]="0">Thường</option>
+          <option [ngValue]="1">Ưu tiên thấp</option>
+        </select></label
+      ><label class="check"
+        ><input type="checkbox" formControlName="hasStats" /> Quyền thống kê</label
+      >
+    } @else {
+      <label class="field"
+        >Thời hạn<select formControlName="durationMonths">
+          @if (data.item && !$any(data.item).durationMonths) {
+            <option [ngValue]="null">Chọn thời hạn hợp lệ</option>
+          }
+          @for (months of [1, 3, 6]; track months) {
+            <option [ngValue]="months">{{ months }} tháng</option>
+          }
+        </select></label
+      ><label class="field"
+        >Giá cả kỳ (VND)<input
+          type="number"
+          formControlName="price"
+          min="0"
+          max="9999999999.99"
+          step="0.01"
+          required
+      /></label>
+      <p class="notice span-all">
+        Số suất cao và thấp bắt buộc có tổng lớn hơn 0. Chủ trọ mua gói rồi tự phân bổ cho các tin.
+      </p>
+    }
+    <label class="check"><input type="checkbox" formControlName="active" /> Đang bán</label>
+    @if (data.kind === 'service' && !free) {
+      <p class="notice span-all">
+        Gói cần ít nhất một mức giá đang bán để xuất hiện cho chủ trọ. Quản lý giá sau khi lưu gói.
+      </p>
+    }
+  </form> </mat-dialog-content
+><mat-dialog-actions align="end"
+  ><button [mat-dialog-close]="false" [disabled]="busy()">Hủy</button
+  ><button class="primary" type="submit" form="catalog-form" [disabled]="busy()">
+    {{ busy() ? 'Đang lưu…' : 'Lưu gói' }}
+  </button></mat-dialog-actions
+>

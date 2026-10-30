@@ -7,6 +7,7 @@ import { ImageUtils } from '@shared/utils/image-utils';
 
 export interface RoomDetailDialogData {
   room: Room;
+  listing?: { listingTitle: string; listingDescription: string; publishedAt: Date };
 }
 
 @Component({
