@@ -1,0 +1,112 @@
+<section class="rental-page">
+  <a [routerLink]="backLink">Yêu cầu thuê</a>
+  <header>
+    <h1>Hợp đồng thuê phòng</h1>
+    <button class="btn-secondary" [disabled]="loading() || busy()" (click)="load()">Tải lại</button>
+  </header>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p role="status">Đang cập nhật hợp đồng…</p>
+  }
+  @if (agreement(); as a) {
+    <article class="contract">
+      <span class="badge">{{ labels[a.status] || a.status }}</span>
+      <h2>{{ a.agreementCode }}</h2>
+      <p>{{ a.propertyName }} · Phòng {{ a.roomNumber }}</p>
+      <dl>
+        <div>
+          <dt>Chủ trọ</dt>
+          <dd>{{ a.landlordName }}</dd>
+        </div>
+        <div>
+          <dt>Người thuê</dt>
+          <dd>{{ a.tenantName }}</dd>
+        </div>
+        <div>
+          <dt>Giá thuê/tháng</dt>
+          <dd>{{ utils.formatFee(a.price) }}</dd>
+        </div>
+        <div>
+          <dt>Tiền cọc</dt>
+          <dd>{{ utils.formatFee(a.deposit) }}</dd>
+        </div>
+        <div>
+          <dt>Điện</dt>
+          <dd>{{ utils.formatFee(a.electricityPrice) }}</dd>
+        </div>
+        <div>
+          <dt>Nước</dt>
+          <dd>{{ utils.formatFee(a.waterPrice) }}</dd>
+        </div>
+        <div>
+          <dt>Dịch vụ</dt>
+          <dd>{{ utils.formatFee(a.serviceFee) }}</dd>
+        </div>
+        <div>
+          <dt>Thời gian thuê</dt>
+          <dd>{{ a.startDate | date: 'dd/MM/yyyy' }} → {{ a.endDate | date: 'dd/MM/yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>Chủ trọ chấp nhận</dt>
+          <dd>{{ a.landlordConfirmedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+        @if (a.status === 'PENDING_CONFIRMATION') {
+          <div>
+            <dt>Hạn xác nhận</dt>
+            <dd>{{ a.confirmationExpiresAt | date: 'dd/MM/yyyy HH:mm' }} (giờ Việt Nam)</dd>
+          </div>
+        }
+        @if (a.tenantConfirmedAt) {
+          <div>
+            <dt>Người thuê xác nhận</dt>
+            <dd>{{ a.tenantConfirmedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+        }
+      </dl>
+      @if (a.cancelReason) {
+        <p>{{ a.cancelReason }}</p>
+      }
+      @if (a.pdfStatus === 'PENDING' || a.pdfStatus === 'PROCESSING') {
+        <div class="pdf-state" role="status">
+          Đang tạo hợp đồng PDF. Trang tự kiểm tra tối đa 2 phút; bạn có thể bấm Tải lại.
+        </div>
+      }
+      @if (a.pdfStatus === 'FAILED') {
+        <div class="pdf-state">
+          Chưa thể tạo hợp đồng, hệ thống sẽ thử lại có giới hạn. Nếu vẫn lỗi, vui lòng liên hệ hỗ
+          trợ.
+        </div>
+      }
+      @if (pdfLoading()) {
+        <p role="status">Đang tải và kiểm tra phiên bản PDF…</p>
+      }
+      @if (pdfUrl(); as url) {
+        <iframe [src]="url" title="Nội dung hợp đồng thuê phòng PDF"></iframe>
+        <div class="actions">
+          <button class="btn-secondary" (click)="download()">Tải hợp đồng PDF</button>
+        </div>
+      }
+      @if (a.canConfirm) {
+        <label class="consent"
+          ><input type="checkbox" [(ngModel)]="accepted" [disabled]="busy() || !pdfUrl()" />Tôi đã
+          đọc và đồng ý với nội dung hợp đồng số {{ a.agreementCode }}.</label
+        ><button class="btn-primary" [disabled]="!canConfirm" (click)="action('confirm')">
+          {{ busy() ? 'Đang xử lý…' : 'Xác nhận thuê' }}
+        </button>
+      }
+      @if (a.canDecline) {
+        <button class="btn-secondary" [disabled]="busy() || loading()" (click)="action('decline')">
+          Từ chối hợp đồng
+        </button>
+      }
+      @if (a.canCheckout) {
+        <button class="btn-primary" [disabled]="busy() || loading()" (click)="action('checkout')">
+          Xác nhận hoàn tất trả phòng
+        </button>
+      }
+      <p>Thao tác xác nhận ghi nhận đồng ý điện tử trong ứng dụng. PDF giữ nguyên sau phát hành.</p>
+    </article>
+  }
+</section>

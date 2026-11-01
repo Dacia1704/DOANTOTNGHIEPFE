@@ -96,6 +96,9 @@ export class RoomFormDialogComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.data.room?.bookingAvailability === 'HELD' || this.data.room?.bookingAvailability === 'RENTED') {
+      this.form.controls.rentalStatus.disable();
+    }
     // Populate existing amenities if edit
     if (this.data.room?.amenities) {
       const ids = new Set(this.data.room.amenities.map((a) => a.id));

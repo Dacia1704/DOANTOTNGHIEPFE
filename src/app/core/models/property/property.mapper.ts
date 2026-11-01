@@ -29,7 +29,7 @@ export class PropertyMapper {
         createdAt: i.createdAt ? new Date(i.createdAt) : null,
       })),
       rooms,
-      availableCount: rooms.filter((r) => r.rentalStatus === RoomRentalStatus.AVAILABLE).length,
+      availableCount: rooms.filter((r) => r.bookingAvailability === 'AVAILABLE').length,
       rentedCount: rooms.filter((r) => r.rentalStatus === RoomRentalStatus.RENTED).length,
       maintenanceCount: rooms.filter((r) => r.rentalStatus === RoomRentalStatus.MAINTENANCE).length,
       minPrice: prices.length ? Math.min(...prices) : null,

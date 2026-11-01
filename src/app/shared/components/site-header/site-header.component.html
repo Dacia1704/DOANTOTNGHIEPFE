@@ -95,6 +95,7 @@
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
             </a>
           } @else if (isLandlord) {
+            <a mat-menu-item routerLink="/quan-ly-dat-phong"><span class="material-symbols-outlined mi">event_available</span>Yêu cầu đặt phòng & hợp đồng</a>
             <a mat-menu-item routerLink="/goi-dich-vu"
               ><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a
             >
@@ -120,6 +121,7 @@
               Cài đặt
             </a>
           } @else {
+            <a mat-menu-item routerLink="/yeu-cau-thue"><span class="material-symbols-outlined mi">key</span>Yêu cầu thuê & hợp đồng của tôi</a>
             <a mat-menu-item routerLink="/phong-da-luu">
               <span class="material-symbols-outlined mi">favorite</span>
               Tin đã lưu

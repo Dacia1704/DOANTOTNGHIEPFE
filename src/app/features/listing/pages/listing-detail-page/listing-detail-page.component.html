@@ -131,6 +131,7 @@
               {{ post.rentalMode === 'WHOLE' ? 'căn' : 'phòng' }}</span
             >
           </div>
+          @if(wholeMappingInvalid()) { <p role="alert">Cơ sở nguyên căn chưa có một phòng đại diện hợp lệ. Vui lòng liên hệ chủ trọ.</p> }
           <div class="room-options">
             @for (room of post.property.rooms; track room.id) {
               <button
@@ -147,7 +148,7 @@
                   ><span
                     class="badge"
                     [class]="'badge ' + utils.getStatusBadgeClass(room.rentalStatus)"
-                    >{{ utils.getStatusLabel(room.rentalStatus) }}</span
+                    >{{ utils.bookingLabel(room) }}</span
                   ></span
                 >
                 <span class="room-option-meta"
@@ -215,7 +216,7 @@
                 <dd>
                   {{ utils.formatFee(room.electricityPrice)
                   }}{{
-                    room.electricityPrice !== null && room.electricityPrice > 0 ? ' / kWh' : ''
+                    ''
                   }}
                 </dd>
               </div>
@@ -284,8 +285,8 @@
             <div class="booking-room-meta">
               <span>{{ utils.formatArea(room.areaM2) }}</span
               ><span>{{ room.maxOccupants }} người</span
-              ><span class="availability" [class.unavailable]="room.rentalStatus !== available">{{
-                utils.getStatusLabel(room.rentalStatus)
+              ><span class="availability" [class.unavailable]="room.bookingAvailability !== 'AVAILABLE'">{{
+                utils.bookingLabel(room)
               }}</span>
             </div>
             <div class="deposit-row">
@@ -294,11 +295,11 @@
             <button
               type="button"
               class="btn-primary booking-button"
-              [disabled]="room.rentalStatus !== available || ownListing()"
+              [disabled]="room.bookingAvailability !== 'AVAILABLE' || ownListing() || wholeMappingInvalid() || (auth.isLoggedIn() && !auth.hasAnyRole([tenantRole]))"
               (click)="book()"
             >
               <span class="material-symbols-outlined" aria-hidden="true">event_available</span
-              >{{ room.rentalStatus === available ? 'Đặt phòng' : 'Phòng chưa sẵn sàng' }}
+              >{{ room.bookingAvailability === 'AVAILABLE' ? 'Đặt phòng' : 'Phòng chưa sẵn sàng' }}
             </button>
           } @else {
             <p>Chưa có phòng để đặt.</p>

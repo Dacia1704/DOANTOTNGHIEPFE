@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, finalize, switchMap } from 'rxjs';
 import { PublicListing } from '@model/public-listing/public-listing.model';
 import { Room, RoomRentalStatus } from '@model/room/room.model';
@@ -32,15 +32,18 @@ import { BookingDialogComponent } from '../../components/booking-dialog/booking-
 export class ListingDetailPageComponent implements OnInit {
   private readonly service = inject(PublicListingService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly dialogs = inject(MatDialog);
   private readonly destroy = inject(DestroyRef);
   readonly auth = inject(AuthService);
+  readonly tenantRole = RoleCode.TENANT;
   get canContactSupport(): boolean {
     return !this.auth.isLoggedIn() || this.auth.hasAnyRole([RoleCode.TENANT, RoleCode.LANDLORD]);
   }
   readonly chatWidget = inject(ChatWidgetService);
   private readonly requests = new Subject<string>();
   readonly listing = signal<PublicListing | null>(null);
+  readonly wholeMappingInvalid = computed(() => this.listing()?.rentalMode === 'WHOLE' && this.listing()?.property.rooms.length !== 1);
   readonly selectedRoom = signal<Room | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
@@ -88,7 +91,7 @@ export class ListingDetailPageComponent implements OnInit {
         const rooms = listing.property.rooms;
         this.selectRoom(
           rooms.find((room) => room.id === this.route.snapshot.queryParamMap.get('phong')) ??
-            rooms.find((room) => room.rentalStatus === this.available) ??
+            rooms.find((room) => room.bookingAvailability === 'AVAILABLE') ??
             rooms[0] ??
             null,
         );
@@ -119,14 +122,16 @@ export class ListingDetailPageComponent implements OnInit {
   book(): void {
     const listing = this.listing();
     const room = this.selectedRoom();
-    if (!listing || !room || room.rentalStatus !== this.available || this.ownListing()) return;
+    if (!listing || !room || room.bookingAvailability !== 'AVAILABLE' || this.ownListing() || this.wholeMappingInvalid()) return;
+    if (!this.auth.isLoggedIn()) { void this.router.navigate(['/login'], {queryParams:{redirect:this.router.url}}); return; }
+    if (!this.auth.hasAnyRole([RoleCode.TENANT])) return;
     this.dialogs.open(BookingDialogComponent, {
       data: { listing, room },
       width: '560px',
       maxWidth: 'calc(100vw - 24px)',
       maxHeight: '92dvh',
       autoFocus: 'first-tabbable',
-    });
+    }).afterClosed().pipe(takeUntilDestroyed(this.destroy)).subscribe(() => this.reload());
   }
 
   chatWithLandlord(): void {

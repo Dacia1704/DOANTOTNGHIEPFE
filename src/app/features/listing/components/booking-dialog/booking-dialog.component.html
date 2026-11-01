@@ -1,16 +1,130 @@
-<header class="dialog-heading"><div><span class="eyebrow">TÌM ĐƯỢC CHỐN Ở ƯNG Ý</span><h2 mat-dialog-title>Trao đổi đặt phòng</h2></div><button type="button" class="btn-icon" mat-dialog-close aria-label="Đóng đặt phòng"><span class="material-symbols-outlined">close</span></button></header>
-<form [formGroup]="form" (ngSubmit)="continueToChat()">
+<h2 mat-dialog-title>Đăng ký thuê {{ data.room.displayName }}</h2>
+<form [formGroup]="form" (ngSubmit)="submit()">
   <mat-dialog-content>
-    <p class="property-name">{{ data.listing.propertyName }}</p><p class="address">{{ data.listing.fullAddress }}</p>
-    <label for="booking-room">{{ data.listing.rentalMode === 'WHOLE' ? 'Căn nhà muốn thuê' : 'Phòng muốn thuê' }}</label>
-    <select id="booking-room" class="input" formControlName="roomId">@for (room of rooms; track room.id) { <option [value]="room.id">{{ data.listing.rentalMode === 'WHOLE' ? data.listing.propertyName : room.displayName }} · {{ utils.formatPrice(room.price) }}</option> }</select>
-    @if (selectedRoom; as room) { <div class="booking-summary"><span>Giá thuê mỗi tháng<strong>{{ utils.formatPrice(room.price) }}</strong></span><span>Tiền cọc dự kiến<strong>{{ utils.formatFee(room.defaultDeposit) }}</strong></span></div> }
-    <label for="booking-date">Ngày dự kiến vào ở <span aria-hidden="true">*</span></label>
-    <input id="booking-date" class="input" type="date" [min]="today" formControlName="moveInDate" [attr.aria-invalid]="form.controls.moveInDate.touched && form.controls.moveInDate.invalid" aria-describedby="booking-date-error" />
-    @if (form.controls.moveInDate.touched && form.controls.moveInDate.invalid) { <p id="booking-date-error" class="field-error" role="alert">Vui lòng chọn ngày từ hôm nay trở đi.</p> }
-    <label for="booking-note">Lời nhắn cho chủ trọ <small>(không bắt buộc)</small></label>
-    <textarea id="booking-note" class="input" rows="3" maxlength="1500" placeholder="Số người ở, lịch xem phòng hoặc điều bạn muốn hỏi…" formControlName="message"></textarea>
-    <p class="notice"><span class="material-symbols-outlined" aria-hidden="true">info</span>Thông tin sẽ được điền vào khung chat để bạn xem lại và gửi cho chủ trọ. Phòng chưa được giữ chỗ và chưa phát sinh thanh toán.</p>
+    <p class="property-name">{{ data.listing.propertyName }}</p>
+    <p>{{ data.listing.fullAddress }}</p>
+    <div class="booking-summary">
+      <span
+        >Giá thuê<strong>{{ utils.formatPrice(data.room.price) }}</strong></span
+      ><span
+        >Tiền cọc<strong>{{ utils.formatFee(data.room.defaultDeposit) }}</strong></span
+      >
+    </div>
+    <p>
+      Điện: {{ utils.formatFee(data.room.electricityPrice) }} · Nước:
+      {{ utils.formatFee(data.room.waterPrice) }} · Dịch vụ:
+      {{ utils.formatFee(data.room.serviceFee) }}. Đơn vị tính trao đổi với chủ trọ.
+    </p>
+    <label for="tenant-name">Họ tên *</label
+    ><input
+      id="tenant-name"
+      class="input"
+      formControlName="tenantFullName"
+      autocomplete="name"
+      maxlength="100"
+    />
+    <label for="tenant-phone">Số điện thoại *</label
+    ><input
+      id="tenant-phone"
+      class="input"
+      formControlName="tenantPhone"
+      type="tel"
+      autocomplete="tel"
+    />
+    <label for="tenant-email">Email *</label
+    ><input
+      id="tenant-email"
+      class="input"
+      formControlName="tenantEmail"
+      type="email"
+      autocomplete="email"
+    />
+    <label for="tenant-id">CMND/CCCD (9 hoặc 12 chữ số) *</label
+    ><input
+      id="tenant-id"
+      class="input"
+      formControlName="tenantCitizenId"
+      inputmode="numeric"
+      autocomplete="off"
+      maxlength="12"
+    />
+    <label for="tenant-address">Địa chỉ thường trú *</label
+    ><input
+      id="tenant-address"
+      class="input"
+      formControlName="tenantPermanentAddress"
+      autocomplete="off"
+      maxlength="500"
+    />
+    <label for="booking-date">Ngày vào ở *</label
+    ><input
+      id="booking-date"
+      class="input"
+      type="date"
+      [min]="today"
+      formControlName="proposedMoveInDate"
+    />
+    <label for="booking-duration">Thời hạn (1–36 tháng) *</label
+    ><input
+      id="booking-duration"
+      class="input"
+      type="number"
+      min="1"
+      max="36"
+      step="1"
+      formControlName="durationMonths"
+    />
+    <label for="booking-people">Số người (tối đa {{ data.room.maxOccupants }}) *</label
+    ><input
+      id="booking-people"
+      class="input"
+      type="number"
+      min="1"
+      [max]="data.room.maxOccupants"
+      step="1"
+      formControlName="occupantCount"
+    />
+    @if (endDate) {
+      <p>
+        Thời gian thuê:
+        <strong>{{ form.controls.proposedMoveInDate.value }} → {{ endDate }}</strong>
+      </p>
+    }
+    <label for="booking-note">Lời nhắn</label
+    ><textarea
+      id="booking-note"
+      class="input"
+      rows="3"
+      maxlength="2000"
+      formControlName="message"
+    ></textarea>
+    <p class="notice">
+      Thông tin cá nhân dùng để xử lý yêu cầu và lập hợp đồng, chỉ cung cấp cho các bên có quyền
+      truy cập. Gửi yêu cầu chưa giữ phòng và chưa xác nhận hợp đồng.
+    </p>
+    <label
+      ><input type="checkbox" formControlName="acceptedPrivacyNotice" /> Tôi đã đọc thông báo xử lý
+      dữ liệu cá nhân. *</label
+    >
+    @if (form.touched && form.invalid) {
+      <p class="field-error" role="alert">
+        Vui lòng nhập đủ thông tin hợp lệ, ngày từ hôm nay và xác nhận thông báo riêng tư.
+      </p>
+    }
+    @if (error()) {
+      <p class="field-error" role="alert">{{ error() }}</p>
+    }
   </mat-dialog-content>
-  <mat-dialog-actions align="end"><button type="button" class="btn-secondary" mat-dialog-close>Để sau</button><button type="submit" class="btn-primary"><span class="material-symbols-outlined" aria-hidden="true">chat</span>Tiếp tục với chủ trọ</button></mat-dialog-actions>
+  <mat-dialog-actions align="end"
+    ><button
+      type="button"
+      class="btn-secondary"
+      [disabled]="busy()"
+      [mat-dialog-close]="unavailable() ? 'refresh' : null"
+    >
+      Đóng</button
+    ><button type="submit" class="btn-primary" [disabled]="busy() || unavailable()">
+      {{ busy() ? 'Đang gửi…' : 'Gửi yêu cầu thuê' }}
+    </button></mat-dialog-actions
+  >
 </form>

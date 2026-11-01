@@ -34,6 +34,7 @@ function listing(mode: 'WHOLE' | 'BY_ROOM') {
     latitude: null,
     longitude: null,
     rentalStatus: RoomRentalStatus.AVAILABLE,
+    bookingAvailability: 'AVAILABLE' as const,
     amenities: [],
     images: [],
   };

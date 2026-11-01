@@ -2,6 +2,13 @@ purpose:
   stands_in_for: Local synthetic Rental Property API; see rental-property-ui.context.md for prior evidence.
   unblocks: Angular search and hierarchy picker verification without changing the production API target.
 assumptions:
+  - id: booking-availability-response
+    status: supported
+    claim: Room responses now expose bookingAvailability; Angular booking and available counts use that server field.
+    reason: The rental workflow adds HELD without changing rentalStatus. The existing property mock has no rental agreements and only models availability equal to its physical room status.
+    verification: Inspected RoomResponse, RentalAvailabilityService and PropertyMapper on 2026-10-29. Updated the synthetic room factory to include bookingAvailability. This does not establish booking, concurrency or PDF behavior through the simulation; those use separate MySQL and Angular tests.
+    source: postman/mocks/rental-property/default.js; src/app/core/models/property/property.mapper.ts; ../DOANTOTNGHIEPBE/src/main/java/com/tamdaptit/rentalmanagement/rental/service/RentalAvailabilityService.java
+    updated_at: "2026-10-29"
   - id: consolidated-search-query
     status: supported
     claim: In the 2026-10-29 synthetic run, the consolidated search submitted provinceId, wardId, roomTypeName, minPrice, maxPrice, rentalStatus and amenityNames together after clicking Find rooms.

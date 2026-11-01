@@ -29,8 +29,8 @@ export class PropertyRoomsComponent {
   readonly deleteRoom = output<Room>();
   readonly search = signal('');
   readonly status = signal('');
-  readonly statuses = Object.values(RoomRentalStatus);
-  readonly labels = ROOM_STATUS_LABELS;
+  readonly statuses = ['AVAILABLE','HELD','RENTED','MAINTENANCE'];
+  readonly labels: Record<string,string> = {...ROOM_STATUS_LABELS,HELD:'Đang giữ chỗ'};
   readonly utils = RoomUtils;
   constructor() {
     effect(() => {
@@ -43,7 +43,7 @@ export class PropertyRoomsComponent {
     const search = this.search().trim().toLocaleLowerCase('vi');
     return this.property().rooms.filter(
       (room) =>
-        (!this.status() || room.rentalStatus === this.status()) &&
+        (!this.status() || room.bookingAvailability === this.status()) &&
         (!search ||
           `${room.displayName} ${room.roomTypeName}`.toLocaleLowerCase('vi').includes(search)),
     );
