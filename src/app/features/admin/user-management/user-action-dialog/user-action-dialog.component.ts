@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize } from 'rxjs';
-import { UserService } from '@services/user.service';
+import { UserService } from '@services/identity/user.service';
 import { UserProfile } from '@model/user/user.model';
 
 export interface UserActionData {

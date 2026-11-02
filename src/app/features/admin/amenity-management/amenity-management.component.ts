@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { AmenityService } from '@services/amenity.service';
+import { AmenityService } from '@services/room/amenity.service';
 import { Amenity, AmenityList } from '@model/amenity/amenity.model';
 import { TextUtils } from '@shared/utils/text-utils';
 import { AmenityActionDialogComponent } from './amenity-action-dialog/amenity-action-dialog.component';

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '@services/auth.service';
+import { AuthService } from '@services/auth/auth.service';
 
 type Role = 'TENANT' | 'LANDLORD';
 

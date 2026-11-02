@@ -4,8 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
-import { ServicePackageService } from '@services/service-package.service';
-import { BoostService } from '@services/boost.service';
+import { ServicePackageService } from '@services/subscription/service-package.service';
+import { BoostService } from '@services/subscription/boost.service';
 import {
   BoostPackage,
   PriceOption,

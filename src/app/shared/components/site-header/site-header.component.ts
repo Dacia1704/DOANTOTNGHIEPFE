@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from '@services/auth.service';
-import { ChatWidgetService } from '@services/chat-widget.service';
+import { AuthService } from '@services/auth/auth.service';
+import { ChatWidgetService } from '@services/chat/chat-widget.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoleCode } from '@model/auth/auth.model';
 
@@ -30,6 +30,7 @@ interface NavLink {
 export class SiteHeaderComponent {
   readonly chatWidget = inject(ChatWidgetService);
   @Input() adminMode = false;
+  @Input() landlordMode = false;
 
   get isAdmin(): boolean {
     return this.auth.primaryRole() === RoleCode.ADMIN;
@@ -81,7 +82,11 @@ export class SiteHeaderComponent {
   }
 
   get profileUrl(): string {
-    return this.auth.primaryRole() === RoleCode.ADMIN ? '/admin/profile' : '/trang-ca-nhan';
+    switch (this.auth.primaryRole()) {
+      case RoleCode.ADMIN: return '/admin/profile';
+      case RoleCode.LANDLORD: return '/landlord/profile';
+      default: return '/trang-ca-nhan';
+    }
   }
 
   logout(): void {

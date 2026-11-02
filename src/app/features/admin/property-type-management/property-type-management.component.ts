@@ -9,7 +9,7 @@ import {
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { PropertyTypeService } from '@services/property-type.service';
+import { PropertyTypeService } from '@services/property/property-type.service';
 import { PropertyType, PropertyTypeList } from '@model/property-type/property-type.model';
 
 @Component({

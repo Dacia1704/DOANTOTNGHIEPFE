@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { provideHttpClient } from '@angular/common/http';
-import { ChatWidgetService } from './core/services/chat-widget.service';
+import { ChatWidgetService } from './core/services/chat/chat-widget.service';
 
 @Component({ template: '<p data-testid="route-content">Trang đang mở</p>' })
 class RoutedTestPage {}

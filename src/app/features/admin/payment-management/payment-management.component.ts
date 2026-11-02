@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, catchError, distinctUntilChanged, forkJoin, map, of } from 'rxjs';
-import { PaymentService } from '@services/payment.service';
+import { PaymentService } from '@services/payment/payment.service';
 import { Payment } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 import { BillingPagerComponent } from '@shared/components/billing-pager/billing-pager.component';

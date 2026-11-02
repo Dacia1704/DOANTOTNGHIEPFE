@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize } from 'rxjs';
-import { RoomTypeService } from '@services/room-type.service';
+import { RoomTypeService } from '@services/room/room-type.service';
 import { RoomType } from '@model/room-type/room-type.model';
 
 import { RoomTypeUtils } from '@shared/utils/room-type-utils';

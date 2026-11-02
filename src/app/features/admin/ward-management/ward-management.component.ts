@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
-import { AdministrativeUnitService } from '@services/administrative-unit.service';
+import { AdministrativeUnitService } from '@services/address/administrative-unit.service';
 import { Province, Ward } from '@model/administrative-unit.model';
 import { PageResponse } from '@model/api-response';
 import { WardActionDialogComponent } from './ward-action-dialog.component';

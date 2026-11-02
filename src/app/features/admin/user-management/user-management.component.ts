@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { UserService } from '@services/user.service';
+import { UserService } from '@services/identity/user.service';
 import { UserList, ROLE_LABELS, STATUS_LABELS } from '@model/user/user.model';
 import { UserStatus } from '@model/auth/auth.model';
 import { MatDialog } from '@angular/material/dialog';

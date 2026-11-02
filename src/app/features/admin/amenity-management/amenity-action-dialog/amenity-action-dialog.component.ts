@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize } from 'rxjs';
-import { AmenityService } from '@services/amenity.service';
+import { AmenityService } from '@services/room/amenity.service';
 import { Amenity } from '@model/amenity/amenity.model';
 
 export interface AmenityActionData {

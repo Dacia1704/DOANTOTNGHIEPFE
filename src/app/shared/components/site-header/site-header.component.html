@@ -95,6 +95,10 @@
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
             </a>
           } @else if (isLandlord) {
+            <a mat-menu-item [routerLink]="landlordMode ? '/' : '/phong-cua-toi'">
+              <span class="material-symbols-outlined mi" aria-hidden="true">{{ landlordMode ? 'home' : 'dashboard' }}</span>
+              {{ landlordMode ? 'Về website' : 'Quản lý cho thuê' }}
+            </a>
             <a mat-menu-item routerLink="/quan-ly-dat-phong"><span class="material-symbols-outlined mi">event_available</span>Yêu cầu đặt phòng & hợp đồng</a>
             <a mat-menu-item routerLink="/goi-dich-vu"
               ><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a
@@ -116,7 +120,7 @@
               <span class="material-symbols-outlined mi">add_circle</span>
               Đăng tin phòng mới
             </a>
-            <a mat-menu-item routerLink="/cai-dat">
+            <a mat-menu-item routerLink="/landlord/profile">
               <span class="material-symbols-outlined mi">settings</span>
               Cài đặt
             </a>

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { AiService, AiChatEvent } from '@services/ai.service';
-import { AuthService } from '@services/auth.service';
+import { AiService, AiChatEvent } from '@services/ai/ai.service';
+import { AuthService } from '@services/auth/auth.service';
 import { AiListingItem } from '@model/ai/ai.model';
 import { AiListingCardsComponent } from '../ai-listing-cards/ai-listing-cards.component';
 

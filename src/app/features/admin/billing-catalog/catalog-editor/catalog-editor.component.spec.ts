@@ -3,8 +3,8 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject, defer, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { ServicePackageService } from '@services/service-package.service';
-import { BoostService } from '@services/boost.service';
+import { ServicePackageService } from '@services/subscription/service-package.service';
+import { BoostService } from '@services/subscription/boost.service';
 import { PriceOption, ServicePackage } from '@model/billing/billing.model';
 import { SavePackageRequest, SavePriceRequest } from '@model/billing/request/billing-request';
 import { CatalogEditorComponent, CatalogEditorData } from './catalog-editor.component';

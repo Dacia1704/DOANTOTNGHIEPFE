@@ -45,7 +45,7 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'payments/:paymentId',
     loadComponent: () =>
-      import('../payment/pages/payment-result-page/payment-result-page.component').then(
+      import('../landlord/payment/pages/payment-result-page/payment-result-page.component').then(
         (m) => m.PaymentResultPageComponent,
       ),
   },
@@ -53,7 +53,7 @@ export const ADMIN_ROUTES: Routes = [
     path: 'listings',
     data: { admin: true },
     loadComponent: () =>
-      import('../listing/pages/listing-page/listing-page.component').then(
+      import('../landlord/listing/pages/listing-page/listing-page.component').then(
         (m) => m.ListingPageComponent,
       ),
   },
@@ -70,7 +70,7 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'profile',
     loadComponent: () =>
-      import('../profile/pages/profile-page/profile-page.component').then(
+      import('../../shared/pages/profile/pages/profile-page/profile-page.component').then(
         (m) => m.ProfilePageComponent,
       ),
   },

@@ -5,7 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { PaymentService } from '@services/payment.service';
+import { PaymentService } from '@services/payment/payment.service';
 import { Payment, ResultPage } from '@model/billing/billing.model';
 import { PaymentManagementComponent } from './payment-management.component';
 import { ADMIN_ROUTES } from '../admin.routes';
