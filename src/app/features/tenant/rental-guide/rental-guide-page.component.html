@@ -1,0 +1,298 @@
+<div class="guide" id="guide-top">
+  <nav class="guide__breadcrumb" aria-label="Đường dẫn">
+    <a routerLink="/">Trang chủ</a>
+    <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    <span aria-current="page">{{ pageTitle() }}</span>
+  </nav>
+
+  <header class="guide-hero">
+    <div class="guide-hero__copy">
+      <span class="guide-hero__eyebrow"
+        ><span class="material-symbols-outlined" aria-hidden="true">auto_stories</span>GÓC CHIA SẺ ·
+        TRỌ TỐT</span
+      >
+      <h1>{{ pageTitle() }}</h1>
+      <p class="guide-hero__lead">Một chỗ ở tốt bắt đầu từ<br />những lựa chọn rõ ràng.</p>
+      <p class="guide-hero__description">
+        Từ lần đầu đi xem phòng đến ngày nhận chìa khóa, một chút chuẩn bị sẽ giúp bạn tìm được nơi
+        ở phù hợp và bắt đầu cuộc sống mới nhẹ nhàng hơn.
+      </p>
+      <div class="guide-hero__meta">
+        <span
+          ><span class="material-symbols-outlined" aria-hidden="true">schedule</span>Khoảng
+          {{ isLandlord() ? '8' : '6' }} phút đọc</span
+        >
+        <span
+          ><span class="material-symbols-outlined" aria-hidden="true">bookmark</span
+          >{{ isLandlord() ? 'Người thuê & chủ trọ' : 'Dành cho người thuê' }}</span
+        >
+      </div>
+    </div>
+    <div class="guide-hero__visual" aria-hidden="true">
+      <div class="guide-note">
+        <span class="guide-note__tag">MỘT KHỞI ĐẦU MỚI</span>
+        <span class="guide-note__home material-symbols-outlined">cottage</span>
+        <strong>Nơi ở hợp ý.<br />Cuộc sống an tâm.</strong>
+        <span class="guide-note__line"></span>
+        <span class="guide-note__check"
+          ><span class="material-symbols-outlined">check_circle</span>Phù hợp nhu cầu</span
+        >
+        <span class="guide-note__check"
+          ><span class="material-symbols-outlined">check_circle</span>Rõ ràng chi phí</span
+        >
+        <span class="guide-note__check"
+          ><span class="material-symbols-outlined">check_circle</span>Sẵn sàng dọn vào</span
+        >
+      </div>
+      <span class="guide-hero__key material-symbols-outlined">key</span>
+    </div>
+  </header>
+
+  <div class="guide__layout">
+    <aside class="guide-sidebar">
+      <nav class="guide-toc" aria-label="Mục lục bài viết">
+        <span class="guide-toc__eyebrow">TRONG BÀI VIẾT NÀY</span>
+        @for (section of sections(); track section.id; let index = $index) {
+          <a [href]="'cam-nang#' + section.id" (click)="scrollToSection($event, section.id)"
+            ><span>{{ (index + 1).toString().padStart(2, '0') }}</span
+            >{{ section.title }}</a
+          >
+        }
+      </nav>
+      <div class="guide-sidebar__note">
+        <span class="material-symbols-outlined" aria-hidden="true">lightbulb</span>
+        <p>
+          Đừng ngại hỏi thêm. Một câu hỏi rõ ràng hôm nay có thể giúp bạn tránh nhiều băn khoăn về
+          sau.
+        </p>
+      </div>
+    </aside>
+
+    <article class="guide-article" aria-label="Nội dung cẩm nang">
+      <p class="guide-article__intro">
+        Tìm trọ không chỉ là chọn một căn phòng vừa túi tiền. Đó còn là chọn quãng đường đi làm,
+        giấc ngủ mỗi tối và cảm giác khi trở về. Hãy dành thời gian cho những điều nhỏ dưới đây
+        trước khi quyết định gắn bó với một nơi ở mới.
+      </p>
+
+      <section id="nhu-cau" aria-labelledby="needs-title">
+        <span class="guide-article__chapter">01 · CHUẨN BỊ</span>
+        <h2 id="needs-title">Bắt đầu từ nhu cầu của bạn</h2>
+        <p>
+          Trước khi mở hàng chục tin đăng, hãy ghi ra ba điều bạn thật sự cần và những điều có thể
+          linh hoạt. Danh sách ngắn này giúp bạn so sánh phòng dễ hơn, thay vì bị cuốn theo một tấm
+          ảnh đẹp.
+        </p>
+        <ul class="guide-checklist">
+          <li>
+            <strong>Khu vực:</strong> thử tính thời gian di chuyển vào giờ bạn thường đi học hoặc đi
+            làm, cùng các điểm sinh hoạt như chợ và trạm xe.
+          </li>
+          <li>
+            <strong>Ngân sách:</strong> tính cả tiền phòng, điện nước, dịch vụ và chi phí đi lại; để
+            riêng khoản dự phòng cho lúc chuyển nhà.
+          </li>
+          <li>
+            <strong>Nếp sống:</strong> bạn cần ở một mình hay ở ghép, nấu ăn, chỗ để xe, nuôi thú
+            cưng hoặc về muộn?
+          </li>
+        </ul>
+        <blockquote>
+          Chọn nơi phù hợp với cuộc sống hằng ngày của bạn, thay vì cố thay đổi mọi thói quen để vừa
+          với một căn phòng.
+        </blockquote>
+      </section>
+
+      <section id="xem-phong" aria-labelledby="visit-title">
+        <span class="guide-article__chapter">02 · ĐI XEM PHÒNG</span>
+        <h2 id="visit-title">Đi xem phòng, nhìn kỹ hơn</h2>
+        <p>
+          Ảnh giúp bạn chọn nơi muốn đến xem, còn trải nghiệm trực tiếp giúp bạn quyết định. Hãy hẹn
+          trước, xác nhận đúng địa chỉ và dành đủ thời gian để nhìn cả căn phòng lẫn khu vực xung
+          quanh.
+        </p>
+        <h3>Những chi tiết nên kiểm tra</h3>
+        <p>
+          Mở vòi nước, thử công tắc và quan sát tường, trần, cửa sổ. Kiểm tra độ thông thoáng, dấu
+          hiệu ẩm, chất lượng khóa cửa và tình trạng nội thất. Nếu có thể, hỏi thêm về tiếng ồn vào
+          buổi tối và tình trạng ngập khi mưa.
+        </p>
+        <p>
+          Đừng bỏ qua khu vực dùng chung: lối đi, cầu thang, chỗ để xe, nơi phơi đồ và lối ra khi có
+          sự cố. Hỏi rõ ai là người liên hệ khi cần sửa chữa hoặc hỗ trợ.
+        </p>
+        <div class="guide-callout">
+          <span class="material-symbols-outlined" aria-hidden="true">photo_camera</span>
+          <div>
+            <strong>Mang theo một danh sách nhỏ</strong>
+            <p>
+              Ghi chú sau mỗi lần xem và xin phép chụp lại những chi tiết cần nhớ. Khi so sánh nhiều
+              phòng, bạn sẽ không nhầm lẫn giữa cảm nhận và thông tin thực tế.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="chi-phi" aria-labelledby="cost-title">
+        <span class="guide-article__chapter">03 · NGÂN SÁCH</span>
+        <h2 id="cost-title">Làm rõ từng khoản chi phí</h2>
+        <p>
+          Mức giá trên tin đăng có thể chưa bao gồm mọi khoản bạn sẽ trả. Hãy đề nghị người cho thuê
+          liệt kê chi phí và cách tính, rồi tự ước lượng tổng tiền một tháng theo nhu cầu của mình.
+        </p>
+        <div class="guide-table-wrap">
+          <table>
+            <caption>
+              Các khoản nên hỏi trước khi quyết định thuê
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Khoản chi</th>
+                <th scope="col">Điều cần làm rõ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Tiền phòng</th>
+                <td>Mức thuê, ngày thanh toán và thời điểm có thể điều chỉnh.</td>
+              </tr>
+              <tr>
+                <th scope="row">Điện & nước</th>
+                <td>Đơn giá, cách đo, chỉ số ban đầu và cách chia nếu dùng chung.</td>
+              </tr>
+              <tr>
+                <th scope="row">Dịch vụ</th>
+                <td>Internet, giữ xe, vệ sinh và các khoản dùng chung khác.</td>
+              </tr>
+              <tr>
+                <th scope="row">Khoản trả ban đầu</th>
+                <td>
+                  Tiền cọc, tiền thuê trả trước, mục đích từng khoản và cách xác nhận đã nhận tiền.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Đừng chỉ so sánh tiền thuê. Một căn phòng gần nơi làm việc, có sẵn đồ dùng cần thiết có
+          thể phù hợp với tổng ngân sách hơn một lựa chọn có giá thuê thấp nhưng phát sinh nhiều
+          khoản khác.
+        </p>
+      </section>
+
+      <section id="thoa-thuan" aria-labelledby="agreement-title">
+        <span class="guide-article__chapter">04 · TRƯỚC KHI QUYẾT ĐỊNH</span>
+        <h2 id="agreement-title">Thống nhất trước khi dọn vào</h2>
+        <p>
+          Trao đổi trực tiếp với người cho thuê và đọc kỹ nội dung hai bên sẽ ký. Hãy hỏi lại những
+          chỗ chưa rõ, đặc biệt là thời hạn thuê, tiền cọc, cách thanh toán, sửa chữa đồ dùng và
+          việc báo trước khi chuyển đi.
+        </p>
+        <p>
+          Những thỏa thuận về giờ giấc, khách đến chơi, số người ở, thú cưng và khu vực dùng chung
+          cũng nên được ghi lại rõ ràng. Lưu bản thỏa thuận, biên nhận và thông tin liên hệ để dễ
+          đối chiếu khi cần.
+        </p>
+        <div class="guide-callout guide-callout--warm">
+          <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+          <div>
+            <strong>Chậm một chút trước khi chuyển tiền</strong>
+            <p>
+              Xem phòng thực tế, xác nhận người đang làm việc với bạn và thống nhất nội dung thanh
+              toán. Nếu thông tin còn mâu thuẫn hoặc bạn bị thúc ép quyết định ngay, hãy dành thêm
+              thời gian kiểm tra.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ban-giao" aria-labelledby="handover-title">
+        <span class="guide-article__chapter">05 · NGÀY NHẬN PHÒNG</span>
+        <h2 id="handover-title">Một lần bàn giao thật rõ ràng</h2>
+        <p>
+          Trước khi xếp đồ, cùng người cho thuê kiểm tra hiện trạng phòng, ghi lại chỉ số điện nước
+          và danh sách nội thất. Chụp ảnh các vị trí đã hư hỏng, thống nhất việc cần sửa và thời
+          gian xử lý.
+        </p>
+        <ul class="guide-checklist">
+          <li>Nhận đủ chìa khóa, thẻ ra vào và hướng dẫn sử dụng các thiết bị.</li>
+          <li>Lưu số liên hệ của người quản lý và cách báo sự cố.</li>
+          <li>Kiểm tra kết nối mạng, chỗ gửi xe và lịch thu gom rác.</li>
+          <li>Giữ lại thông tin bàn giao và các xác nhận thanh toán.</li>
+        </ul>
+        <p>
+          Một khởi đầu rõ ràng giúp cả người thuê lẫn chủ trọ yên tâm hơn. Khi có vấn đề phát sinh,
+          hãy trao đổi sớm, cụ thể và giữ tinh thần tôn trọng lẫn nhau.
+        </p>
+      </section>
+
+      @if (isLandlord()) {
+        <section id="cho-thue" class="guide-landlord" aria-labelledby="landlord-title">
+          <span class="guide-article__chapter">06 · DÀNH CHO CHỦ TRỌ</span>
+          <h2 id="landlord-title">Cho thuê tốt bắt đầu từ sự minh bạch</h2>
+          <p>
+            Một tin đăng rõ ràng và căn phòng được chuẩn bị chu đáo giúp người thuê hình dung đúng
+            nơi ở, đồng thời giúp bạn tiết kiệm thời gian trao đổi.
+          </p>
+          <h3>Chuẩn bị phòng trước khi đăng tin</h3>
+          <p>
+            Dọn sạch phòng, kiểm tra điện nước, khóa cửa và đồ dùng đi kèm. Chụp ảnh hiện trạng với
+            đủ ánh sáng; thể hiện cả khu vực sinh hoạt và những giới hạn của phòng, thay vì chỉ chọn
+            góc đẹp nhất.
+          </p>
+          <h3>Viết tin đăng đủ thông tin</h3>
+          <p>
+            Nêu rõ diện tích, mức thuê, khoản cọc, các phí dịch vụ, nội thất và thời điểm có thể
+            nhận phòng. Mô tả cụ thể quy định về số người ở, chỗ để xe, giờ giấc và thú cưng để
+            người thuê tự đánh giá mức độ phù hợp.
+          </p>
+          <h3>Giữ trải nghiệm thuê nhất quán</h3>
+          <p>
+            Hẹn xem phòng vào thời gian rõ ràng, cung cấp thông tin đúng với tin đăng và cập nhật
+            khi phòng đã có người thuê. Khi bàn giao, cùng người thuê ghi nhận hiện trạng và thống
+            nhất đầu mối tiếp nhận yêu cầu sửa chữa.
+          </p>
+          <a class="guide-text-link" routerLink="/dang-tin"
+            >Đăng tin cho thuê của bạn<span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_forward</span
+            ></a
+          >
+        </section>
+      }
+
+      <footer class="guide-article__end">
+        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+        <p>
+          Chúc bạn tìm được một nơi ở vừa ý<br /><strong>và những ngày trở về thật dễ chịu.</strong>
+        </p>
+        <a href="cam-nang#guide-top" (click)="scrollToSection($event, 'guide-top')"
+          >Về đầu bài viết<span class="material-symbols-outlined" aria-hidden="true">north</span></a
+        >
+      </footer>
+    </article>
+  </div>
+
+  <section class="guide-next" aria-labelledby="next-title">
+    <div>
+      <span class="guide-next__eyebrow">SẴN SÀNG CHO BƯỚC TIẾP THEO?</span>
+      <h2 id="next-title">
+        {{
+          isLandlord()
+            ? 'Kết nối căn phòng tốt với người thuê phù hợp.'
+            : 'Tìm một nơi để bắt đầu câu chuyện mới.'
+        }}
+      </h2>
+      <p>
+        {{
+          isLandlord()
+            ? 'Chuẩn bị thông tin rõ ràng và giới thiệu căn phòng của bạn trên Trọ Tốt.'
+            : 'Chọn khu vực, ngân sách và những điều bạn cần trên Trọ Tốt.'
+        }}
+      </p>
+    </div>
+    <a [routerLink]="isLandlord() ? '/dang-tin' : '/'"
+      >{{ isLandlord() ? 'Đăng tin cho thuê' : 'Khám phá phòng trọ'
+      }}<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a
+    >
+  </section>
+</div>

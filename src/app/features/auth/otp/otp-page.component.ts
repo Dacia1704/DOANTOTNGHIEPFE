@@ -3,8 +3,8 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, interval } from 'rxjs';
-import { AuthService } from '@services/auth.service';
-import { UserService } from '@services/user.service';
+import { AuthService } from '@services/auth/auth.service';
+import { UserService } from '@services/identity/user.service';
 
 /** Shared OTP presentation; API calls remain separate for each purpose. */
 @Component({
@@ -56,7 +56,7 @@ export class OtpPageComponent {
   }
 
   get email(): string { return this.emailForm.controls.email.value.trim().toLowerCase(); }
-  get profileUrl(): string { return this.auth.primaryRole() === 'ADMIN' ? '/admin/profile' : '/trang-ca-nhan'; }
+  readonly profileUrl = '/trang-ca-nhan';
 
   send(): void {
     this.emailForm.controls.email.setValue(this.email);

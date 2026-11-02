@@ -1,0 +1,67 @@
+<div
+  class="dashboard-layout"
+  [class.dashboard-layout--landlord]="mode === 'landlord'"
+  [class.dashboard-layout--chat]="chatPage()"
+>
+  <app-site-header [adminMode]="mode === 'admin'" [landlordMode]="mode === 'landlord'" />
+  <mat-sidenav-container
+    class="dashboard-layout__container"
+    [class.mobile-expanded]="mobile() && !collapsed()"
+    [hasBackdrop]="mobile() && !collapsed()"
+    (backdropClick)="collapsed.set(true)"
+    autosize
+  >
+    <mat-sidenav
+      id="dashboard-sidebar"
+      class="dashboard-layout__sidebar"
+      [class.is-collapsed]="collapsed()"
+      [mode]="mobile() && !collapsed() ? 'over' : 'side'"
+      [opened]="true"
+      [disableClose]="true"
+      [autoFocus]="false"
+      [fixedInViewport]="true"
+      [fixedTopGap]="80"
+      role="navigation"
+      [attr.aria-label]="heading"
+    >
+      <div
+        [cdkTrapFocus]="mobile() && !collapsed()"
+        [cdkTrapFocusAutoCapture]="false"
+        (keydown.escape)="mobile() && collapsed.set(true)"
+      >
+        <div class="dashboard-layout__sidebar-heading">
+          <button
+            type="button"
+            class="dashboard-layout__sidebar-toggle"
+            [attr.aria-label]="collapsed() ? 'Mở rộng menu' : 'Thu gọn menu'"
+            [attr.title]="collapsed() ? 'Mở rộng menu' : 'Thu gọn menu'"
+            aria-controls="dashboard-sidebar-menu"
+            [attr.aria-expanded]="!collapsed()"
+            (click)="toggleSidebar()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+          </button>
+          @if (!collapsed()) {
+            <span>{{ heading }}</span>
+          }
+        </div>
+        <app-nav-sidebar
+          [label]="heading"
+          id="dashboard-sidebar-menu"
+          [menu]="menu"
+          [collapsed]="collapsed()"
+        />
+      </div>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <main class="dashboard-layout__main">
+        <!-- <nav class="dashboard-layout__breadcrumb" aria-label="Đường dẫn">
+          <a [routerLink]="home">{{ title }}</a>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+          <span aria-current="page">{{ pageLabel() }}</span>
+        </nav> -->
+        <section class="dashboard-layout__content"><router-outlet /></section>
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

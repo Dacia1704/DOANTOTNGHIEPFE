@@ -1,0 +1,106 @@
+<div class="management-table" [attr.aria-busy]="loading()">
+  <div class="table-toolbar"><ng-content select="[tableToolbar]" /></div>
+  @if (loading()) {
+    <div class="table-state" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Đang tải dữ liệu…</p>
+    </div>
+  } @else if (error()) {
+    <div class="table-state" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="retry.emit()">Thử lại</button>
+    </div>
+  } @else {
+    <div class="table-scroll" role="region" [attr.aria-label]="caption()" tabindex="0">
+      <table>
+        <caption>
+          {{
+            caption()
+          }}
+        </caption>
+        <thead>
+          <tr>
+            @for (column of columns(); track column.key) {
+              <th
+                scope="col"
+                [style.text-align]="column.align || 'left'"
+                [style.width]="column.width"
+              >
+                {{ column.label }}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track rowKey()(row); let index = $index) {
+            <tr>
+              @for (column of columns(); track column.key) {
+                <td [style.text-align]="column.align || 'left'">
+                  @if (cellTemplate(column.key); as template) {
+                    <ng-container
+                      [ngTemplateOutlet]="template"
+                      [ngTemplateOutletContext]="{ $implicit: row, index }"
+                    />
+                  } @else {
+                    {{ column.value?.(row) ?? '—' }}
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="columns().length" class="table-state">
+                <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+                <p class="empty-title">{{ emptyMessage() }}</p>
+                @if (emptyDescription()) {
+                  <p>{{ emptyDescription() }}</p>
+                }
+                <ng-content select="[tableEmpty]" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (pagination(); as data) {
+    @if (!error()) {
+      <nav class="table-pagination" [attr.aria-label]="'Phân trang ' + caption()">
+        <span class="total">{{ data.total }} bản ghi</span>
+        <label class="page-size">
+          Số dòng mỗi trang
+          <select
+            #sizeSelect
+            [value]="pageSize()"
+            [disabled]="loading() || disabled()"
+            (change)="changePageSize(sizeSelect.value)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+            }
+          </select>
+        </label>
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="loading() || disabled() || data.page <= 0"
+          (click)="changePage(data.page - 1)"
+        >
+          Trang trước
+        </button>
+        <span aria-live="polite"
+          >Trang {{ data.totalPages ? data.page + 1 : 0 }} / {{ data.totalPages }}</span
+        >
+        <button
+          type="button"
+          class="btn-secondary"
+          [disabled]="loading() || disabled() || data.page + 1 >= data.totalPages"
+          (click)="changePage(data.page + 1)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    }
+  }
+</div>

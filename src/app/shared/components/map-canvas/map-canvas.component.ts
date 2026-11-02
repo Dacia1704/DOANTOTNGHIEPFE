@@ -13,7 +13,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { GoogleMapsService } from '@services/google-maps.service';
+import { GoogleMapsService } from '@services/maps/google-maps.service';
 import {
   Coordinates,
   MapBounds,

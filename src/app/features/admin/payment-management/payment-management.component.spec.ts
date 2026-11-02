@@ -5,7 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { PaymentService } from '@services/payment.service';
+import { PaymentService } from '@services/payment/payment.service';
 import { Payment, ResultPage } from '@model/billing/billing.model';
 import { PaymentManagementComponent } from './payment-management.component';
 import { ADMIN_ROUTES } from '../admin.routes';
@@ -58,7 +58,7 @@ describe('Admin payment management', () => {
 
   it('loads all admin transactions, displays real queue totals and links to details', async () => {
     const { api, root, component } = await setup();
-    expect(api.adminList).toHaveBeenCalledExactlyOnceWith(0);
+    expect(api.adminList).toHaveBeenCalledExactlyOnceWith(0, 10);
     expect(api.review).toHaveBeenCalledExactlyOnceWith(0);
     expect(component.allCount()).toBe(37);
     expect(component.reviewCount()).toBe(24);
@@ -82,7 +82,7 @@ describe('Admin payment management', () => {
       harness.routeNativeElement!.querySelector('a[href="/admin/payments/payment?tab=review"]'),
     ).not.toBeNull();
     component.load(1);
-    expect(api.review).toHaveBeenLastCalledWith(1);
+    expect(api.review).toHaveBeenLastCalledWith(1, 10);
   });
 
   it('redirects the old review URL to the new queue tab', async () => {
@@ -90,7 +90,7 @@ describe('Admin payment management', () => {
     expect(router.url).toBe('/admin/payments?tab=review');
     expect(component.tab()).toBe('review');
     expect(api.adminList).not.toHaveBeenCalled();
-    expect(api.review).toHaveBeenCalledExactlyOnceWith(0);
+    expect(api.review).toHaveBeenCalledExactlyOnceWith(0, 10);
   });
 
   it('cancels a pending list request when tabs change and ignores its late response', async () => {

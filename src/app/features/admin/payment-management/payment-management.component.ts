@@ -1,22 +1,54 @@
+import { computed } from '@angular/core';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, catchError, distinctUntilChanged, forkJoin, map, of } from 'rxjs';
-import { PaymentService } from '@services/payment.service';
+import { PaymentService } from '@services/payment/payment.service';
 import { Payment } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
-import { BillingPagerComponent } from '@shared/components/billing-pager/billing-pager.component';
 import { BillingStatusComponent } from '@shared/components/billing-status/billing-status.component';
 
 @Component({
   selector: 'app-payment-management',
-  imports: [CurrencyPipe, RouterLink, BillingPagerComponent, BillingStatusComponent],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
+    BillingStatusComponent,
+  ],
   templateUrl: './payment-management.component.html',
   styleUrl: './payment-management.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentManagementComponent {
+  readonly pageSize = signal(10);
+  readonly total = signal(0);
+  readonly pagination = computed(() => ({
+    page: this.page(),
+    total: this.total(),
+    totalPages: this.totalPages(),
+  }));
+  readonly rowKey = (payment: Payment) => payment.id;
+  readonly columns: readonly ManagementTableColumn<Payment>[] = [
+    { key: 'order', label: 'Mã giao dịch', value: (payment) => payment.merchantOrderId },
+    { key: 'type', label: 'Loại giao dịch', value: (payment) => this.ui.label(payment.type) },
+    { key: 'amount', label: 'Số tiền', align: 'right' },
+    { key: 'date', label: 'Thời gian' },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'actions', label: 'Thao tác' },
+  ];
+  changePageSize(size: number): void {
+    this.pageSize.set(size);
+    this.load(0);
+  }
+
   private readonly api = inject(PaymentService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
@@ -53,14 +85,17 @@ export class PaymentManagementComponent {
     this.page.set(page);
     const review = this.tab() === 'review';
     const request = review
-      ? this.api.review(page).pipe(map((result) => ({ result, reviewCount: result.total })))
+      ? this.api
+          .review(page, this.pageSize())
+          .pipe(map((result) => ({ result, reviewCount: result.total })))
       : forkJoin({
-          result: this.api.adminList(page),
+          result: this.api.adminList(page, this.pageSize()),
           queue: this.api.review(0).pipe(catchError(() => of(null))),
         }).pipe(map(({ result, queue }) => ({ result, reviewCount: queue?.total ?? null })));
     this.request = request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: ({ result, reviewCount }) => {
         this.items.set(result.items);
+        this.total.set(result.total);
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
         this.reviewCount.set(reviewCount);

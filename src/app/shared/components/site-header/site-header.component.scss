@@ -15,6 +15,51 @@
 .site-header {
   height: 100%;
 }
+
+// Dashboard spans the viewport, matching the sidebar and content edges.
+.site-header--dashboard {
+  .site-header__inner {
+    max-width: none;
+    padding-inline: 24px;
+  }
+
+  .site-header__actions {
+    justify-self: end;
+  }
+
+  @media (min-width: 1200px) {
+    .site-header__inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+
+    .site-header__brand-group {
+      justify-self: start;
+    }
+
+    .site-header__nav {
+      justify-self: center;
+    }
+  }
+
+  @media (min-width: 1200px) and (max-width: 1599px) {
+    .site-header__user-info,
+    .site-header__cta > span:last-child {
+      display: none;
+    }
+
+    .site-header__nav-link {
+      padding-inline: 10px;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .site-header__inner {
+      padding-inline: 12px;
+    }
+  }
+}
 :host button:focus-visible,
 :host a:focus-visible {
   outline: 2px solid var(--primary);
@@ -33,6 +78,30 @@
 }
 
 // ─── Brand ──────────────────────────────────────────────────────────
+.site-header__brand-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-header__mobile-menu {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+  cursor: pointer;
+
+  @media (min-width: 1200px) {
+    display: none;
+  }
+}
+
 .site-header__brand {
   display: flex;
   align-items: center;
@@ -233,8 +302,8 @@ a.site-header__icon-btn {
 .site-header__avatar-trigger {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 6px 6px 12px;
+  gap: 8px;
+  padding: 6px 8px;
   border: none;
   border-radius: var(--radius-full);
   background: var(--surface-container-low);
@@ -242,6 +311,7 @@ a.site-header__icon-btn {
   transition: background var(--transition-fast);
 
   img {
+    flex-shrink: 0;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -258,22 +328,29 @@ a.site-header__icon-btn {
   }
 }
 
-.site-header__user-menu {
-  min-width: 220px;
-
-  .mi {
-    margin-right: 12px;
-    color: var(--on-surface-variant);
-    vertical-align: middle;
-  }
+.site-header__user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  max-width: 120px;
+  text-align: left;
 }
 
-.site-header__logout {
-  color: var(--error) !important;
+.site-header__user-name {
+  overflow: hidden;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-overflow: ellipsis;
+}
 
-  .mi {
-    color: var(--error) !important;
-  }
+.site-header__user-role {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
 }
 
 @media (max-width: 639px) {
@@ -290,6 +367,10 @@ a.site-header__icon-btn {
     gap: 4px;
   }
 
+  .site-header__user-info {
+    max-width: 76px;
+  }
+
   // Messaging remains available in the mobile bottom navigation.
   .site-header__icon-btn {
     display: none;
@@ -299,5 +380,26 @@ a.site-header__icon-btn {
   .site-header__register-btn {
     padding: 8px 10px;
     font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-header__logo {
+    max-width: 84px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1359px) {
+  .site-header__inner {
+    gap: 12px;
+  }
+
+  .site-header__nav-link {
+    padding-inline: 10px;
+    font-size: 13px;
+  }
+
+  .site-header__user-info {
+    max-width: 88px;
   }
 }

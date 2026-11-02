@@ -1,4 +1,4 @@
-<section class="billing-page">
+<section class="billing-page management-page">
   <header class="page-heading">
     <div>
       <p class="eyebrow">Quản trị giao dịch</p>
@@ -10,108 +10,93 @@
     <button (click)="load()" [disabled]="loading()">Cập nhật</button>
   </header>
 
-  <nav class="tabs payment-tabs" aria-label="Danh sách thanh toán">
-    <a
-      class="button"
-      [routerLink]="[]"
-      [queryParams]="{ tab: null }"
-      queryParamsHandling="merge"
-      [attr.aria-current]="tab() === 'all' ? 'page' : null"
-    >
-      Tất cả giao dịch
-      @if (allCount() !== null) {
-        <span class="count">{{ allCount() }}</span>
-      }
-    </a>
-    <a
-      class="button"
-      [routerLink]="[]"
-      [queryParams]="{ tab: 'review' }"
-      queryParamsHandling="merge"
-      [attr.aria-current]="tab() === 'review' ? 'page' : null"
-    >
-      Cần kiểm tra
-      @if (reviewCount() !== null) {
-        <span class="count" [class.attention]="reviewCount()! > 0">{{ reviewCount() }}</span>
-      }
-    </a>
-  </nav>
+  <app-management-table
+    [rows]="items()"
+    [columns]="columns"
+    [rowKey]="rowKey"
+    caption="Danh sách thanh toán"
+    [loading]="loading()"
+    [error]="error()"
+    [pagination]="pagination()"
+    [pageSize]="pageSize()"
+    (pageChange)="load($event)"
+    (pageSizeChange)="changePageSize($event)"
+    (retry)="load()"
+    [emptyMessage]="tab() === 'review' ? 'Không có giao dịch cần kiểm tra' : 'Chưa có giao dịch'"
+  >
+    <div tableToolbar>
+      <nav class="tabs payment-tabs" aria-label="Danh sách thanh toán">
+        <a
+          class="button"
+          [routerLink]="[]"
+          [queryParams]="{ tab: null }"
+          queryParamsHandling="merge"
+          [attr.aria-current]="tab() === 'all' ? 'page' : null"
+        >
+          Tất cả giao dịch
+          @if (allCount() !== null) {
+            <span class="count">{{ allCount() }}</span>
+          }
+        </a>
+        <a
+          class="button"
+          [routerLink]="[]"
+          [queryParams]="{ tab: 'review' }"
+          queryParamsHandling="merge"
+          [attr.aria-current]="tab() === 'review' ? 'page' : null"
+        >
+          Cần kiểm tra
+          @if (reviewCount() !== null) {
+            <span class="count" [class.attention]="reviewCount()! > 0">{{ reviewCount() }}</span>
+          }
+        </a>
+      </nav>
 
-  @if (error()) {
-    <div class="notice error" role="alert">
-      {{ error() }} <button (click)="load()" [disabled]="loading()">Thử lại</button>
+      <form
+        class="management-filters"
+        (submit)="$event.preventDefault()"
+        aria-label="Bộ lọc thanh toán"
+      >
+        <label class="filter-search"
+          >Mã giao dịch<input type="search" name="code" placeholder="Nhập mã giao dịch…"
+        /></label>
+        <label
+          >Loại giao dịch<select name="type">
+            <option value="">Tất cả</option>
+            <option value="SERVICE_PACKAGE">Gói dịch vụ</option>
+            <option value="BOOST_PACKAGE">Boost</option>
+          </select></label
+        >
+        <label>Từ ngày<input type="date" name="from" /></label
+        ><button type="reset">Xóa bộ lọc</button>
+      </form>
     </div>
-  }
-  @if (loading()) {
-    <p class="loading" role="status">Đang tải giao dịch…</p>
-  } @else if (!error()) {
-    <p class="list-description" role="status">
-      @if (tab() === 'review') {
-        {{ reviewCount() }} giao dịch cần kiểm tra. Mở chi tiết để xem lý do, kết quả VNPay và hóa
-        đơn.
-      } @else {
-        {{ allCount() }} giao dịch · Mới nhất trước
+    <ng-template [appTableCell]="items()" column="amount" let-payment
+      ><strong>{{
+        payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi'
+      }}</strong></ng-template
+    >
+    <ng-template [appTableCell]="items()" column="date" let-payment>
+      {{ ui.date(payment.paidAt || payment.expiresAt)
+      }}<span class="cell-subtext">{{ payment.paidAt ? 'Đã thanh toán' : 'Hạn thanh toán' }}</span>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="status" let-payment>
+      <app-billing-status [status]="payment.status" />
+      @if (payment.requiresReview) {
+        <app-billing-status status="REQUIRES_REVIEW" />
+        <p class="review-reason">
+          Cần kiểm tra:
+          {{ ui.label(payment.reviewReason || 'Mở chi tiết để đối chiếu giao dịch.') }}
+        </p>
       }
-    </p>
-    <div class="list">
-      @for (payment of items(); track payment.id) {
-        <article class="list-item" [class.needs-review]="payment.requiresReview">
-          <div class="payment-info">
-            <h3>{{ ui.label(payment.type) }}</h3>
-            <p class="mono">{{ payment.merchantOrderId }}</p>
-            <p class="muted">
-              {{
-                payment.paidAt
-                  ? 'Thanh toán: ' + ui.date(payment.paidAt)
-                  : 'Hạn thanh toán: ' + ui.date(payment.expiresAt)
-              }}
-            </p>
-            @if (payment.requiresReview) {
-              <p class="review-reason">
-                Cần kiểm tra:
-                {{ ui.label(payment.reviewReason || 'Mở chi tiết để đối chiếu giao dịch.') }}
-              </p>
-            }
-          </div>
-          <div class="payment-result">
-            <strong class="payment-amount">{{
-              payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi'
-            }}</strong>
-            <div class="actions">
-              <app-billing-status [status]="payment.status" />
-              @if (payment.requiresReview) {
-                <app-billing-status status="REQUIRES_REVIEW" />
-              }
-            </div>
-            <a
-              class="button"
-              [routerLink]="['/admin/payments', payment.id]"
-              [queryParams]="{ tab: tab() }"
-            >
-              {{ payment.requiresReview ? 'Chi tiết / kiểm tra VNPay' : 'Chi tiết / hóa đơn' }}
-            </a>
-          </div>
-        </article>
-      } @empty {
-        <div class="empty">
-          <h2>
-            {{ tab() === 'review' ? 'Không có giao dịch cần kiểm tra' : 'Chưa có giao dịch' }}
-          </h2>
-          <p>
-            {{
-              tab() === 'review'
-                ? 'Các khoản thu bất thường sẽ xuất hiện tại đây khi cần đối soát.'
-                : 'Giao dịch mua gói dịch vụ và Boost sẽ xuất hiện tại đây.'
-            }}
-          </p>
-        </div>
-      }
-    </div>
-    <app-billing-pager
-      [page]="page()"
-      [totalPages]="totalPages()"
-      [disabled]="loading()"
-      (changePage)="load($event)"
-    />
-  }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="actions" let-payment>
+      <a
+        class="button"
+        [routerLink]="['/admin/payments', payment.id]"
+        [queryParams]="{ tab: tab() }"
+        >{{ payment.requiresReview ? 'Chi tiết / kiểm tra VNPay' : 'Chi tiết / hóa đơn' }}</a
+      >
+    </ng-template>
+  </app-management-table>
 </section>

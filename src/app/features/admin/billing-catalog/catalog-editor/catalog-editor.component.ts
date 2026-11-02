@@ -11,8 +11,8 @@ import {
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, concatMap, defer, from, of, switchMap, tap, toArray } from 'rxjs';
-import { ServicePackageService } from '@services/service-package.service';
-import { BoostService } from '@services/boost.service';
+import { ServicePackageService } from '@services/subscription/service-package.service';
+import { BoostService } from '@services/subscription/boost.service';
 import { BoostPackage, PriceOption, ServicePackage } from '@model/billing/billing.model';
 import { SavePackageRequest, SavePriceRequest } from '@model/billing/request/billing-request';
 import { BillingUtils } from '@shared/utils/billing-utils';

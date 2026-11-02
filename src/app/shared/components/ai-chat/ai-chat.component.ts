@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { AiService, AiChatEvent } from '@services/ai.service';
-import { AuthService } from '@services/auth.service';
+import { AiService, AiChatEvent } from '@services/ai/ai.service';
+import { AuthService } from '@services/auth/auth.service';
 import { AiListingItem } from '@model/ai/ai.model';
 import { AiListingCardsComponent } from '../ai-listing-cards/ai-listing-cards.component';
 
@@ -24,14 +24,21 @@ interface ChatEntry {
   templateUrl: './ai-chat.component.html',
   styleUrl: './ai-chat.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(window:resize)': 'onViewportResize()' },
 })
 export class AiChatComponent {
   readonly auth = inject(AuthService);
   private readonly ai = inject(AiService);
   private readonly destroy = inject(DestroyRef);
   readonly opened = signal(false);
+  readonly minimized = signal(false);
   readonly busy = signal(false);
   readonly entries = signal<ChatEntry[]>([]);
+  readonly dockSide = signal<'left' | 'right'>('left');
+  readonly launcherPosition = signal<{ x: number; y: number } | null>(null);
+  readonly dragging = signal(false);
+  private pointer?: { id: number; x: number; y: number; left: number; top: number; size: number };
+  private dragged = false;
   draft = '';
   private conversationId: string | null = null;
   private request?: Subscription;
@@ -51,6 +58,69 @@ export class AiChatComponent {
         this.opened.set(false);
       }
     });
+  }
+
+  startDrag(event: PointerEvent): void {
+    if (!event.isPrimary || event.button !== 0) return;
+    const button = event.currentTarget as HTMLButtonElement;
+    const rect = button.getBoundingClientRect();
+    this.dragged = false;
+    this.pointer = { id: event.pointerId, x: event.clientX, y: event.clientY,
+      left: rect.left, top: rect.top, size: rect.width };
+    button.setPointerCapture(event.pointerId);
+  }
+
+  moveDrag(event: PointerEvent): void {
+    const pointer = this.pointer;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    if (!this.dragged && Math.hypot(dx, dy) < 6) return;
+    this.dragged = true;
+    this.dragging.set(true);
+    this.launcherPosition.set({
+      x: this.clampPosition(pointer.left + dx, window.innerWidth, pointer.size),
+      y: this.clampPosition(pointer.top + dy, window.innerHeight, pointer.size),
+    });
+  }
+
+  endDrag(event: PointerEvent): void {
+    if (this.pointer?.id !== event.pointerId) return;
+    const size = this.pointer.size;
+    this.pointer = undefined;
+    this.dragging.set(false);
+    const position = this.launcherPosition();
+    if (this.dragged && position) {
+      this.dockSide.set(position.x + size / 2 < window.innerWidth / 2 ? 'left' : 'right');
+      this.snapToEdge(position.y, size);
+    }
+  }
+
+  openChat(event: MouseEvent): void {
+    if (this.dragged && event.detail !== 0) {
+      this.dragged = false;
+      return;
+    }
+    this.minimized.set(false);
+    this.opened.set(true);
+  }
+
+  onViewportResize(): void {
+    const position = this.launcherPosition();
+    if (position && !this.pointer) this.snapToEdge(position.y);
+  }
+
+  private snapToEdge(y: number, size = 72): void {
+    this.launcherPosition.set({
+      x: this.dockSide() === 'left' ? this.clampPosition(12, window.innerWidth, size)
+        : this.clampPosition(window.innerWidth - size - 12, window.innerWidth, size),
+      y: this.clampPosition(y, window.innerHeight, size),
+    });
+  }
+
+  private clampPosition(value: number, viewport: number, size: number): number {
+    const inset = Math.min(12, Math.max(0, (viewport - size) / 2));
+    return Math.min(Math.max(inset, value), Math.max(inset, viewport - size - inset));
   }
 
   send(question = this.draft.trim()): void {

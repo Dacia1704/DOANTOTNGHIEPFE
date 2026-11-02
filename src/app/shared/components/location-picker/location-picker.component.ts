@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { Coordinates, MapPin, MapPlace } from '@model/maps/maps.model';
-import { GeolocationService } from '@services/geolocation.service';
+import { GeolocationService } from '@services/maps/geolocation.service';
 import { LocationUtils } from '@shared/utils/location-utils';
 import { MapCanvasComponent } from '../map-canvas/map-canvas.component';
 import { MapPlaceSearchComponent } from '../map-place-search/map-place-search.component';

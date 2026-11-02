@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '@services/auth.service';
+import { AuthService } from '@services/auth/auth.service';
 
 /**
  * Trang đăng nhập (email + password).

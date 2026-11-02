@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { RoomTypeService } from '@services/room-type.service';
+import { RoomTypeService } from '@services/room/room-type.service';
 import { RoomType, RoomTypeList } from '@model/room-type/room-type.model';
 import { RoomTypeTreeComponent } from '@shared/components/room-type-tree/room-type-tree.component';
 import { RoomTypeActionDialogComponent } from './room-type-action-dialog/room-type-action-dialog.component';

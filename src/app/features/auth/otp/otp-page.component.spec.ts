@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { AuthService } from '@services/auth.service';
-import { UserService } from '@services/user.service';
+import { AuthService } from '@services/auth/auth.service';
+import { UserService } from '@services/identity/user.service';
 import { OtpPageComponent } from './otp-page.component';
 
 describe('OTP flows', () => {

@@ -1,0 +1,172 @@
+@use '../../styles/management';
+:host {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  display: block;
+  background: #f6f8f7;
+  min-height: 65vh;
+}
+.rental-page {
+  max-width: 1120px;
+  margin: auto;
+  padding: 36px 20px;
+  color: #203d37;
+}
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #297764;
+}
+.rental-list-page {
+  max-width: 1440px;
+  padding-inline: var(--gutter);
+}
+h1 {
+  font-size: clamp(26px, 4vw, 38px);
+  margin: 8px 0;
+}
+h2 {
+  font-size: 19px;
+}
+header {
+  margin-bottom: 24px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.cards {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+}
+article,
+.contract {
+  background: white;
+  border: 1px solid #dce6e2;
+  border-radius: 16px;
+  padding: 24px;
+  overflow-wrap: anywhere;
+}
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #e7f2eb;
+  color: #24664b;
+  font-size: 13px;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0;
+}
+label {
+  display: block;
+}
+.input {
+  display: block;
+  max-width: 100%;
+  margin-top: 8px;
+}
+.error {
+  padding: 16px;
+  background: #fff0ee;
+  color: #942c25;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.detail {
+  margin-top: 24px;
+}
+.note {
+  white-space: pre-wrap;
+}
+.pagination {
+  justify-content: center;
+  margin-top: 30px;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+dt {
+  font-size: 13px;
+  color: #658077;
+}
+dd {
+  margin: 5px 0;
+  font-weight: 600;
+}
+iframe {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+.consent {
+  padding: 16px;
+  background: #edf7f0;
+  border-radius: 12px;
+  display: block;
+  margin: 16px 0;
+}
+.consent input {
+  margin-right: 8px;
+}
+.pdf-state {
+  padding: 24px;
+  background: #eef4f1;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 600px) {
+  .rental-page {
+    padding: 24px 12px;
+  }
+  article,
+  .contract {
+    padding: 18px;
+  }
+  .filters > * {
+    width: 100%;
+  }
+  .actions > a,
+  .actions > button {
+    flex: 1;
+    text-align: center;
+  }
+  iframe {
+    height: 55vh;
+  }
+}
+.property-thumbnail {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+@media (max-width: 639px) {
+  .rental-list-page {
+    padding-inline: 12px;
+  }
+}
+
+.rental-list-page.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-page .management-filters {
+  margin: 0 0 16px;
+}

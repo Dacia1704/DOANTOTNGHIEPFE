@@ -1,0 +1,110 @@
+<form
+  class="capsule"
+  (submit)="onSubmit($event)"
+  aria-label="Bộ lọc tìm phòng"
+  [attr.aria-busy]="searching"
+>
+  <div class="capsule__fields" [class.has-ward]="provinceId() && wards().length">
+    <app-filter-select
+      label="Tỉnh / thành phố"
+      icon="location_on"
+      [options]="provinceOptions()"
+      [value]="provinceId()"
+      (valueChange)="onProvinceChange($event)"
+    />
+    @if (provinceId() && wards().length) {
+      <app-filter-select
+        label="Phường / xã"
+        icon="map"
+        [options]="wardOptions()"
+        [value]="wardId()"
+        (valueChange)="wardId.set($event)"
+      />
+    }
+    <app-category-bar
+      [selectedRoomType]="roomTypeName()"
+      (typeSelected)="roomTypeName.set($event)"
+    />
+    <app-filter-select
+      label="Ngân sách / tháng"
+      icon="payments"
+      [options]="priceOptions"
+      [value]="priceRange()"
+      (valueChange)="priceRange.set($event)"
+    />
+    <app-filter-select
+      label="Trạng thái phòng"
+      icon="event_available"
+      [options]="statusOptions"
+      [value]="rentalStatus()"
+      (valueChange)="onRentalStatusChange($event)"
+    />
+  </div>
+  <div class="capsule__toolbar">
+    <button
+      type="button"
+      class="capsule__more"
+      [class.is-active]="showAmenities() || selectedAmenityNames().length"
+      [attr.aria-expanded]="showAmenities()"
+      aria-controls="search-amenities"
+      (click)="showAmenities.set(!showAmenities())"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+      Tiện ích
+      @if (selectedAmenityNames().length) {
+        <span class="capsule__count">{{ selectedAmenityNames().length }}</span>
+      }
+      <span class="material-symbols-outlined" aria-hidden="true">{{
+        showAmenities() ? 'expand_less' : 'expand_more'
+      }}</span>
+    </button>
+    <div class="capsule__actions">
+      <button type="button" class="capsule__reset" (click)="resetFilters()" [disabled]="searching">
+        Đặt lại
+      </button>
+      <button type="submit" class="capsule__cta" [disabled]="searching">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <span>{{ searching ? 'Đang tìm…' : 'Tìm phòng' }}</span>
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+  @if (showAmenities()) {
+    <fieldset class="capsule__amenities" id="search-amenities">
+      <legend>Tiện ích bạn cần</legend>
+      <p>Chọn một hoặc nhiều tiện ích, sau đó nhấn “Tìm phòng”.</p>
+      <div class="capsule__amenity-list">
+        @for (amenity of amenities(); track amenity.id) {
+          <label
+            class="capsule__amenity"
+            [class.is-selected]="selectedAmenityNames().includes(amenity.name)"
+          >
+            <input
+              type="checkbox"
+              [checked]="selectedAmenityNames().includes(amenity.name)"
+              (change)="toggleAmenity(amenity.name, $any($event.target).checked)"
+            />
+            <span>{{ amenity.name }}</span>
+          </label>
+        }
+        @if (!amenities().length) {
+          <span class="capsule__empty"
+            >Chưa tải được danh sách tiện ích. Bạn vẫn có thể tìm theo các điều kiện khác.</span
+          >
+        }
+      </div>
+    </fieldset>
+  } @else if (selectedAmenityNames().length) {
+    <div class="capsule__selected" aria-label="Tiện ích đã chọn">
+      @for (name of selectedAmenityNames(); track name) {
+        <button
+          type="button"
+          (click)="toggleAmenity(name, false)"
+          [attr.aria-label]="'Bỏ tiện ích ' + name"
+        >
+          {{ name }}<span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      }
+    </div>
+  }
+</form>

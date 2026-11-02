@@ -1,3 +1,4 @@
+@use '../../../shared/styles/management';
 @use '../../../shared/styles/billing';
 
 .billing-page {
@@ -58,4 +59,22 @@
     box-sizing: border-box;
     width: 100%;
   }
+}
+
+.billing-page.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-filters {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.tabs a[aria-current='page'] {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary);
 }

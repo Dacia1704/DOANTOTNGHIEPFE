@@ -1,23 +1,75 @@
 @if (auth.hasPermission('ROLE_TENANT')) {
   @if (!opened()) {
-    <button class="launcher" type="button" (click)="opened.set(true)" aria-controls="ai-chat-panel" aria-expanded="false">
-      <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span> Trợ lý tìm phòng
+    <button class="launcher" type="button" [class.dragging]="dragging()"
+      [style.left.px]="launcherPosition()?.x" [style.top.px]="launcherPosition()?.y"
+      (pointerdown)="startDrag($event)" (pointermove)="moveDrag($event)"
+      (pointerup)="endDrag($event)" (pointercancel)="endDrag($event)" (lostpointercapture)="endDrag($event)"
+      (click)="openChat($event)" aria-controls="ai-chat-panel" aria-expanded="false"
+      aria-label="Mở trợ lý AI tìm phòng" title="Trợ lý AI tìm phòng · Kéo để di chuyển">
+      <svg class="robot" viewBox="0 0 80 80" fill="none" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="ai-orbit" x1="10" y1="8" x2="67" y2="76" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#6ee7ff"/><stop offset=".48" stop-color="#1595d9"/><stop offset="1" stop-color="#0756a8"/>
+          </linearGradient>
+          <linearGradient id="ai-shell" x1="25" y1="24" x2="60" y2="61" gradientUnits="userSpaceOnUse">
+            <stop stop-color="white"/><stop offset="1" stop-color="#a6d7fa"/>
+          </linearGradient>
+        </defs>
+        <circle cx="40" cy="42" r="35" fill="#063968" stroke="#6bd5ff" stroke-opacity=".5" stroke-width="2"/>
+        <circle cx="40" cy="42" r="30" fill="url(#ai-orbit)"/>
+        <path d="M11 38a30 30 0 0 1 28-26M43 72a30 30 0 0 0 25-20" stroke="#a5efff" stroke-width="2" stroke-linecap="round"/>
+        <path d="M29 14V5h13v8M29 9h13" stroke="#e8f6ff" stroke-width="3" stroke-linejoin="round"/>
+        <ellipse cx="41" cy="64" rx="16" ry="3" fill="#044a8d" opacity=".45"/>
+        <path d="M31 57l-3 8 11-4" fill="#d8efff"/>
+        <rect x="20" y="25" width="43" height="35" rx="16" fill="url(#ai-shell)"/>
+        <rect x="16" y="36" width="7" height="16" rx="3.5" fill="#dff4ff"/>
+        <rect x="60" y="35" width="7" height="17" rx="3.5" fill="#8ccafa"/>
+        <rect x="24" y="31" width="33" height="23" rx="10" fill="#062c53"/>
+        <path d="M29 36c3-2 7-2 10-2" stroke="#4b92bb" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="33" cy="42" rx="3" ry="4" fill="#67edff"/>
+        <ellipse cx="48" cy="42" rx="3" ry="4" fill="#67edff"/>
+        <path d="M36 48q5 4 9 0" stroke="#67edff" stroke-width="2" stroke-linecap="round"/>
+        <path d="M59 30c4 3 5 6 5 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
     </button>
   } @else {
-    <section id="ai-chat-panel" class="panel" aria-label="Trợ lý tìm phòng" (keydown.escape)="close()">
-      <header>
-        <strong>Trợ lý tìm phòng</strong>
-        <button type="button" (click)="reset()">Hội thoại mới</button>
-        <button type="button" (click)="close()" aria-label="Đóng trợ lý">✕</button>
+    <section id="ai-chat-panel" class="panel" [class.panel-left]="dockSide() === 'left'"
+      [class.is-minimized]="minimized()" role="dialog" aria-modal="false" aria-labelledby="ai-chat-title"
+      (keydown.escape)="close(); $event.stopPropagation()">
+      <header class="widget-heading">
+        <button class="widget-title" type="button" (click)="minimized.set(false)"
+          aria-controls="ai-chat-body" [attr.aria-expanded]="!minimized()">
+          <span class="widget-icon material-symbols-outlined" aria-hidden="true">smart_toy</span>
+          <span><strong id="ai-chat-title">Trợ lý AI Trọ Tốt</strong><small>Tìm phòng phù hợp với nhu cầu của bạn</small></span>
+        </button>
+        <div class="widget-actions">
+          <button type="button" (click)="reset()" aria-label="Bắt đầu hội thoại mới" title="Hội thoại mới">
+            <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+          </button>
+          <button type="button" (click)="minimized.set(!minimized())"
+            [attr.aria-label]="minimized() ? 'Mở lại cửa sổ AI chat' : 'Thu nhỏ cửa sổ AI chat'">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ minimized() ? 'expand_less' : 'remove' }}</span>
+          </button>
+          <button type="button" (click)="close()" aria-label="Đóng trợ lý">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
       </header>
+      <div id="ai-chat-body" class="panel-body" [hidden]="minimized()">
       <div class="messages" aria-live="polite" aria-relevant="additions text">
         @if (!entries().length) {
-          <p>Cho mình biết khu vực, ngân sách và tiện ích bạn cần nhé.</p>
-          <p class="hint">Ví dụ: Tìm phòng dưới 3 triệu ở phường Cầu Giấy, có Wifi.</p>
+          <div class="welcome">
+            <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+            <strong>Chào bạn, mình là trợ lý AI!</strong>
+            <p>Cho mình biết khu vực, ngân sách và tiện ích bạn cần nhé.</p>
+            <p class="hint">Ví dụ: Tìm phòng dưới 3 triệu ở phường Cầu Giấy, có Wifi.</p>
+          </div>
         }
         @for (entry of entries(); track entry.key) {
           <p class="question">{{ entry.question }}</p>
-          <p class="reply">{{ entry.reply || (entry.status === 'pending' ? 'Đang tìm phòng…' : '') }}</p>
+          @if (entry.reply || entry.status === 'pending') {
+            <p class="reply">{{ entry.reply || 'Đang tìm phòng…' }}</p>
+          }
           <app-ai-listing-cards [items]="entry.listings" (selected)="clicked(entry, $event)" />
           @if (entry.error) { <p class="error" role="status">{{ entry.error }}</p> }
           @if (entry.status === 'failed') {
@@ -31,14 +83,22 @@
           }
         }
       </div>
-      <form (ngSubmit)="send()">
-        <label for="ai-question" class="hint">Nhu cầu tìm phòng</label>
-        <textarea id="ai-question" name="question" [(ngModel)]="draft" maxlength="2000" rows="2" [disabled]="busy()" placeholder="Khu vực, giá, diện tích…"></textarea>
-        <div class="actions">
-          @if (busy()) { <button type="button" (click)="stop()">Dừng</button> }
-          <button type="submit" [disabled]="busy() || !draft.trim()">Gửi câu hỏi</button>
+      <form (ngSubmit)="send()" class="composer">
+        <div class="composer-row">
+          <textarea id="ai-question" name="question" aria-label="Nhu cầu tìm phòng" [(ngModel)]="draft" maxlength="2000" rows="2" [disabled]="busy()" placeholder="Nhập nhu cầu tìm phòng…"></textarea>
+          @if (busy()) {
+            <button type="button" class="send-button" (click)="stop()" aria-label="Dừng câu trả lời" title="Dừng">
+              <span class="material-symbols-outlined" aria-hidden="true">stop</span>
+            </button>
+          } @else {
+            <button type="submit" class="send-button" [disabled]="!draft.trim()" aria-label="Gửi câu hỏi" title="Gửi câu hỏi">
+              <span class="material-symbols-outlined" aria-hidden="true">send</span>
+            </button>
+          }
         </div>
+        <p class="composer-note">AI hỗ trợ gợi ý phòng theo nhu cầu của bạn.</p>
       </form>
+      </div>
     </section>
   }
 }

@@ -12,7 +12,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { GoogleMapsService } from '@services/google-maps.service';
+import { GoogleMapsService } from '@services/maps/google-maps.service';
 import { MapPlace, MapsAutocomplete, PlaceSelectEvent } from '@model/maps/maps.model';
 import { LocationUtils } from '@shared/utils/location-utils';
 

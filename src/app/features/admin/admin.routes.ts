@@ -3,6 +3,11 @@ import { Router, Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
   {
+    path: 'messages',
+    loadComponent: () =>
+      import('@shared/pages/chat/chat-page.component').then((m) => m.ChatPageComponent),
+  },
+  {
     path: 'property-types',
     loadComponent: () =>
       import('./property-type-management/property-type-management.component').then(
@@ -17,9 +22,12 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'boost-packages',
-    data: { catalog: 'boost' },
-    loadComponent: () =>
-      import('./billing-catalog/billing-catalog.component').then((m) => m.BillingCatalogComponent),
+    pathMatch: 'full',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/admin/service-packages'], {
+        queryParams: { ...queryParams, tab: 'boost' },
+        fragment: fragment ?? undefined,
+      }),
   },
   {
     path: 'subscription-orders',
@@ -45,7 +53,7 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'payments/:paymentId',
     loadComponent: () =>
-      import('../payment/pages/payment-result-page/payment-result-page.component').then(
+      import('../landlord/payment/pages/payment-result-page/payment-result-page.component').then(
         (m) => m.PaymentResultPageComponent,
       ),
   },
@@ -53,7 +61,7 @@ export const ADMIN_ROUTES: Routes = [
     path: 'listings',
     data: { admin: true },
     loadComponent: () =>
-      import('../listing/pages/listing-page/listing-page.component').then(
+      import('../landlord/listing/pages/listing-page/listing-page.component').then(
         (m) => m.ListingPageComponent,
       ),
   },
@@ -66,13 +74,6 @@ export const ADMIN_ROUTES: Routes = [
     path: 'users',
     loadComponent: () =>
       import('./user-management/user-management.component').then((m) => m.UserManagementComponent),
-  },
-  {
-    path: 'profile',
-    loadComponent: () =>
-      import('../profile/pages/profile-page/profile-page.component').then(
-        (m) => m.ProfilePageComponent,
-      ),
   },
   { path: 'rooms', redirectTo: 'listings', pathMatch: 'full' },
   {

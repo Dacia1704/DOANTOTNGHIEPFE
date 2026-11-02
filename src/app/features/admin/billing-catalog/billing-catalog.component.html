@@ -1,94 +1,127 @@
-<section class="billing-page">
+<section class="billing-page management-page">
   <header class="page-heading">
     <div>
       <p class="eyebrow">Danh mục dịch vụ</p>
-      <h1>{{ kind === 'service' ? 'Gói dịch vụ và bảng giá' : 'Danh mục gói suất Boost' }}</h1>
+      <h1>Quản lý gói dịch vụ & Boost</h1>
       <p class="description">
         Thiết lập quyền lợi và giá trong cùng một lần. Bật hoặc ngừng bán cho cả gói.
       </p>
     </div>
     <button class="primary" (click)="edit()" [disabled]="busy()">Tạo gói</button>
   </header>
-  @if (error()) {
-    <div class="notice error" role="alert">
-      {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Thử lại</button>
+
+  <app-management-table
+    [rows]="items()"
+    [columns]="columns"
+    [rowKey]="rowKey"
+    caption="Danh mục gói dịch vụ và Boost"
+    [loading]="loading()"
+    [error]="error()"
+    [disabled]="busy()"
+    [pagination]="pagination()"
+    [pageSize]="pageSize()"
+    (pageChange)="load($event)"
+    (pageSizeChange)="changePageSize($event)"
+    (retry)="load()"
+    emptyMessage="Chưa có gói trong danh mục."
+  >
+    <div tableToolbar>
+      <nav class="tabs" aria-label="Loại gói">
+        <a
+          class="button"
+          [routerLink]="[]"
+          [queryParams]="{ tab: null }"
+          queryParamsHandling="merge"
+          [attr.aria-current]="kind === 'service' ? 'page' : null"
+          >Gói dịch vụ</a
+        >
+        <a
+          class="button"
+          [routerLink]="[]"
+          [queryParams]="{ tab: 'boost' }"
+          queryParamsHandling="merge"
+          [attr.aria-current]="kind === 'boost' ? 'page' : null"
+          >Gói Boost</a
+        >
+      </nav>
+      <form class="management-filters" (submit)="$event.preventDefault()">
+        <label class="filter-search"
+          >Tên / mã gói<input type="search" name="q" placeholder="Tìm gói…"
+        /></label>
+        <label
+          >Trạng thái<select name="active">
+            <option value="">Tất cả trạng thái</option>
+            <option value="true">Đang bán</option>
+            <option value="false">Ngừng bán</option>
+          </select></label
+        >
+        <button type="reset">Xóa bộ lọc</button>
+      </form>
     </div>
-  }
-  @if (loading()) {
-    <p class="loading" role="status">Đang tải danh mục…</p>
-  } @else {
-    <div class="list">
-      @for (item of items(); track item.id) {
-        <article class="list-item">
-          <div>
-            <h3>{{ item.name }}</h3>
-            <p class="mono">{{ item.code }}</p>
-            <p>{{ item.highPrioritySlots }} suất cao · {{ item.lowPrioritySlots }} suất thấp</p>
-            @if (kind === 'service') {
-              <p class="muted">
-                {{
-                  $any(item).maxListings === null
-                    ? 'Không giới hạn tin'
-                    : $any(item).maxListings + ' tin'
-                }}
-              </p>
-              @if (item.code === 'FREE') {
-                <p class="muted">Miễn phí</p>
-              } @else if (pricesByPackage()[item.id]; as prices) {
-                <div class="package-prices" aria-label="Giá theo thời hạn">
-                  @for (price of prices; track price.id) {
-                    <span
-                      >{{ price.durationMonths }} tháng ·
-                      {{ price.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</span
-                    >
-                  } @empty {
-                    <span class="muted">Chưa có giá · Chỉnh sửa gói để bổ sung</span>
-                  }
-                </div>
-              } @else {
-                <p class="field-error">Không tải được bảng giá. Mở Chỉnh sửa để thử lại.</p>
-              }
-            } @else {
-              <p>
-                {{
-                  $any(item).durationMonths
-                    ? $any(item).durationMonths + ' tháng'
-                    : 'Chưa có thời hạn hợp lệ'
-                }}
-                · {{ $any(item).price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}
-              </p>
-            }
-            <p [class.muted]="!item.active">
-              @if (
-                kind === 'service' &&
-                item.code !== 'FREE' &&
-                item.active &&
-                pricesByPackage()[item.id]?.length === 0
-              ) {
-                Chưa thể bán · Cần bổ sung giá
-              } @else {
-                {{ item.active ? 'Đang bán' : 'Ngừng bán' }}
-              }
-            </p>
-          </div>
-          <div class="actions">
-            <button (click)="edit(item)" [disabled]="busy()">Chỉnh sửa</button>
-            @if (item.code !== 'FREE') {
-              <button [disabled]="busy()" (click)="toggle(item)">
-                {{ item.active ? 'Ngừng bán' : 'Bật bán' }}
-              </button>
+    <ng-template [appTableCell]="items()" column="name" let-item
+      ><strong class="cell-title">{{ item.name }}</strong
+      ><span class="cell-subtext">{{ item.code }}</span></ng-template
+    >
+    <ng-template [appTableCell]="items()" column="rights" let-item
+      >{{ item.highPrioritySlots }} suất cao · {{ item.lowPrioritySlots }} suất thấp</ng-template
+    >
+    <ng-template [appTableCell]="items()" column="prices" let-item>
+      @if (kind === 'service') {
+        <p class="muted">
+          {{
+            $any(item).maxListings === null ? 'Không giới hạn tin' : $any(item).maxListings + ' tin'
+          }}
+        </p>
+        @if (item.code === 'FREE') {
+          <p class="muted">Miễn phí</p>
+        } @else if (pricesByPackage()[item.id]; as prices) {
+          <div class="package-prices" aria-label="Giá theo thời hạn">
+            @for (price of prices; track price.id) {
+              <span
+                >{{ price.durationMonths }} tháng ·
+                {{ price.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</span
+              >
+            } @empty {
+              <span class="muted">Chưa có giá · Chỉnh sửa gói để bổ sung</span>
             }
           </div>
-        </article>
-      } @empty {
-        <p class="empty">Chưa có gói trong danh mục.</p>
+        } @else {
+          <p class="field-error">Không tải được bảng giá. Mở Chỉnh sửa để thử lại.</p>
+        }
+      } @else {
+        <p>
+          {{
+            $any(item).durationMonths
+              ? $any(item).durationMonths + ' tháng'
+              : 'Chưa có thời hạn hợp lệ'
+          }}
+          · {{ $any(item).price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}
+        </p>
       }
-    </div>
-    <app-billing-pager
-      [page]="page()"
-      [totalPages]="totalPages()"
-      [disabled]="busy()"
-      (changePage)="load($event)"
-    />
-  }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="status" let-item>
+      <p [class.muted]="!item.active">
+        @if (
+          kind === 'service' &&
+          item.code !== 'FREE' &&
+          item.active &&
+          pricesByPackage()[item.id]?.length === 0
+        ) {
+          Chưa thể bán · Cần bổ sung giá
+        } @else {
+          {{ item.active ? 'Đang bán' : 'Ngừng bán' }}
+        }
+      </p>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="actions" let-item>
+      <div class="actions">
+        <button (click)="edit(item)" [disabled]="busy()">Chỉnh sửa</button>
+        @if (item.code !== 'FREE') {
+          <button [disabled]="busy()" (click)="toggle(item)">
+            {{ item.active ? 'Ngừng bán' : 'Bật bán' }}
+          </button>
+        }
+      </div>
+    </ng-template>
+  </app-management-table>
 </section>

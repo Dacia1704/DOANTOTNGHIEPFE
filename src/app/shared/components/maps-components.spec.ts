@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { SimpleChange, signal } from '@angular/core';
 import { vi } from 'vitest';
-import { GoogleMapsService } from '@services/google-maps.service';
-import { GeolocationService } from '@services/geolocation.service';
+import { GoogleMapsService } from '@services/maps/google-maps.service';
+import { GeolocationService } from '@services/maps/geolocation.service';
 import { MapCanvasComponent } from './map-canvas/map-canvas.component';
 import { MapPlaceSearchComponent } from './map-place-search/map-place-search.component';
 import { PropertyLocationComponent } from './property-location/property-location.component';
 import { LocationPickerComponent } from './location-picker/location-picker.component';
-import { ListingMapComponent } from '../../features/landing/components/listing-map/listing-map.component';
+import { ListingMapComponent } from '../../features/tenant/landing/components/listing-map/listing-map.component';
 import { Coordinates, LocationFilter, MapsMarker, MapsPlaceResult } from '@model/maps/maps.model';
 import { PublicListing } from '@model/public-listing/public-listing.model';
 

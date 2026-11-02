@@ -7,10 +7,7 @@ export interface NavItem {
   route: string;
 }
 
-/**
- * Minimal sidebar dùng cho admin layout — TODO sẽ dùng layout admin riêng
- * khi có trang quản trị thật cho TroTot. Hiện tại chỉ render danh sách link.
- */
+/** Menu điều hướng dùng chung cho dashboard admin và landlord. */
 @Component({
   selector: 'app-nav-sidebar',
   imports: [RouterLink, RouterLinkActive],
@@ -21,4 +18,5 @@ export interface NavItem {
 export class NavSidebarComponent {
   @Input() menu: NavItem[] = [];
   @Input() collapsed = false;
+  @Input() label = 'Điều hướng';
 }
