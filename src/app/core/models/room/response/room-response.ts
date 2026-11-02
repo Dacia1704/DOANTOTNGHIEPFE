@@ -14,6 +14,7 @@ export interface RoomImageResponse {
 }
 
 export interface RoomResponse {
+  bookingAvailability?: import('../../rental/rental.model').BookingAvailability;
   propertyId: string;
   roomNumber: string;
   floorNumber: number | null;

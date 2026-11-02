@@ -2,11 +2,7 @@
   <div class="site-header__inner">
     <!-- Logo -->
     <a class="site-header__brand" routerLink="/">
-      <img
-        alt="Trọ Tốt"
-        class="site-header__logo"
-        src="logo.png"
-      />
+      <img alt="Trọ Tốt" class="site-header__logo" src="logo.png" />
     </a>
 
     <!-- Main nav (desktop) -->
@@ -40,10 +36,25 @@
         <span class="site-header__dot"></span>
       </button>
 
-      <a class="site-header__icon-btn" routerLink="/tin-nhan" title="Tin nhắn" aria-label="Tin nhắn"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble_outline</span></a>
+      <button
+        type="button"
+        class="site-header__icon-btn"
+        (click)="chatWidget.openInbox()"
+        title="Tin nhắn"
+        aria-label="Tin nhắn"
+        aria-haspopup="dialog"
+        aria-controls="chat-widget"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">chat_bubble_outline</span>
+      </button>
 
       @if (isLoggedIn()) {
-        <button type="button" class="site-header__avatar-trigger" aria-label="Menu tài khoản" [matMenuTriggerFor]="userMenu">
+        <button
+          type="button"
+          class="site-header__avatar-trigger"
+          aria-label="Menu tài khoản"
+          [matMenuTriggerFor]="userMenu"
+        >
           <img [src]="userAvatar" [alt]="displayName" />
           <span class="material-symbols-outlined">expand_more</span>
         </button>
@@ -53,8 +64,15 @@
             <span class="material-symbols-outlined mi">person</span>
             Hồ sơ cá nhân
           </a>
-          <a mat-menu-item routerLink="/tin-nhan"><span class="material-symbols-outlined mi" aria-hidden="true">forum</span>Tin nhắn</a>
-          @if (!isAdmin) { <a mat-menu-item routerLink="/tin-nhan" [queryParams]="{ support: '1' }"><span class="material-symbols-outlined mi" aria-hidden="true">support_agent</span>Chat hỗ trợ</a> }
+          <button type="button" mat-menu-item (click)="chatWidget.openInbox()">
+            <span class="material-symbols-outlined mi" aria-hidden="true">forum</span>Tin nhắn
+          </button>
+          @if (!isAdmin) {
+            <button type="button" mat-menu-item (click)="chatWidget.openSupport()">
+              <span class="material-symbols-outlined mi" aria-hidden="true">support_agent</span>Chat
+              hỗ trợ
+            </button>
+          }
           @if (isAdmin) {
             <a mat-menu-item routerLink="/admin/users">
               <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>
@@ -65,18 +83,31 @@
               Quản lý loại phòng
             </a>
             <a mat-menu-item routerLink="/admin/amenities">
-              <span class="material-symbols-outlined mi" aria-hidden="true">local_convenience_store</span>
+              <span class="material-symbols-outlined mi" aria-hidden="true"
+                >local_convenience_store</span
+              >
               Quản lý tiện ích
             </a>
             <a mat-menu-item [routerLink]="adminMode ? '/' : '/admin'">
-              <span class="material-symbols-outlined mi" aria-hidden="true">{{ adminMode ? 'home' : 'admin_panel_settings' }}</span>
+              <span class="material-symbols-outlined mi" aria-hidden="true">{{
+                adminMode ? 'home' : 'admin_panel_settings'
+              }}</span>
               {{ adminMode ? 'Về website' : 'Trang quản trị' }}
             </a>
           } @else if (isLandlord) {
-            <a mat-menu-item routerLink="/goi-dich-vu"><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a>
-            <a mat-menu-item routerLink="/boost"><span class="material-symbols-outlined mi">bolt</span>Gói suất Boost</a>
-            <a mat-menu-item routerLink="/lich-su-thanh-toan"><span class="material-symbols-outlined mi">receipt_long</span>Lịch sử thanh toán</a>
-            <a mat-menu-item routerLink="/tin-cua-toi"><span class="material-symbols-outlined mi">article</span>Tin của tôi</a>
+            <a mat-menu-item routerLink="/quan-ly-dat-phong"><span class="material-symbols-outlined mi">event_available</span>Yêu cầu đặt phòng & hợp đồng</a>
+            <a mat-menu-item routerLink="/goi-dich-vu"
+              ><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a
+            >
+            <a mat-menu-item routerLink="/boost"
+              ><span class="material-symbols-outlined mi">bolt</span>Gói suất Boost</a
+            >
+            <a mat-menu-item routerLink="/lich-su-thanh-toan"
+              ><span class="material-symbols-outlined mi">receipt_long</span>Lịch sử thanh toán</a
+            >
+            <a mat-menu-item routerLink="/tin-cua-toi"
+              ><span class="material-symbols-outlined mi">article</span>Tin của tôi</a
+            >
             <a mat-menu-item routerLink="/phong-cua-toi">
               <span class="material-symbols-outlined mi">real_estate_agent</span>
               Cơ sở cho thuê của tôi
@@ -90,6 +121,7 @@
               Cài đặt
             </a>
           } @else {
+            <a mat-menu-item routerLink="/yeu-cau-thue"><span class="material-symbols-outlined mi">key</span>Yêu cầu thuê & hợp đồng của tôi</a>
             <a mat-menu-item routerLink="/phong-da-luu">
               <span class="material-symbols-outlined mi">favorite</span>
               Tin đã lưu

@@ -6,7 +6,7 @@ export interface ChatMessageResponse {
   sender: ChatUser;
   content: string;
   messageType: 'TEXT' | 'IMAGE' | 'SYSTEM';
-  createdAt: string;
+  createdAt: string | null;
 }
 
 export interface ChatConversationResponse {

@@ -1,0 +1,87 @@
+@if (widget.opened()) {
+  <section
+    id="chat-widget"
+    class="chat-widget"
+    [class.is-minimized]="widget.minimized()"
+    role="dialog"
+    aria-modal="false"
+    aria-labelledby="chat-widget-title"
+    (keydown.escape)="close(); $event.stopPropagation()"
+  >
+    <header class="widget-heading">
+      <button
+        type="button"
+        class="widget-title"
+        (click)="widget.minimized.set(false)"
+        aria-controls="chat-widget-body"
+        [attr.aria-expanded]="!widget.minimized()"
+      >
+        <span class="widget-icon material-symbols-outlined" aria-hidden="true">forum</span>
+        <span
+          ><strong id="chat-widget-title">Tin nhắn Trọ Tốt</strong
+          ><small>Trao đổi theo bài đăng, hỗ trợ trực tiếp</small></span
+        >
+      </button>
+      <div class="widget-actions">
+        <a
+          routerLink="/tin-nhan"
+          [queryParams]="queryParams()"
+          (click)="widget.close()"
+          aria-label="Mở trang tin nhắn đầy đủ"
+          title="Mở rộng"
+          ><span class="material-symbols-outlined" aria-hidden="true">open_in_full</span></a
+        >
+        <button
+          type="button"
+          (click)="widget.minimized.set(!widget.minimized())"
+          [attr.aria-label]="widget.minimized() ? 'Mở lại cửa sổ chat' : 'Thu nhỏ cửa sổ chat'"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">{{
+            widget.minimized() ? 'expand_less' : 'remove'
+          }}</span>
+        </button>
+        <button #closeButton type="button" (click)="close()" aria-label="Đóng cửa sổ chat">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+    </header>
+    @if (auth.isLoggedIn() && !widget.minimized()) {
+      <nav class="widget-tabs" aria-label="Loại trò chuyện">
+        <button
+          type="button"
+          [class.is-active]="!widget.target().support"
+          [attr.aria-pressed]="!widget.target().support"
+          (click)="widget.openInbox()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span>Tin nhắn
+        </button>
+        @if (canUseSupport()) {
+          <button
+            type="button"
+            [class.is-active]="widget.target().support"
+            [attr.aria-pressed]="!!widget.target().support"
+            (click)="widget.openSupport()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>Hỗ trợ
+          </button>
+        }
+      </nav>
+    }
+    <div id="chat-widget-body" class="widget-body" [hidden]="widget.minimized()">
+      @if (auth.isLoggedIn()) {
+        <app-chat-page [compact]="true" [target]="widget.target()" [active]="!widget.minimized()" />
+      } @else {
+        <div class="widget-guest">
+          <span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span>
+          <h2>Bắt đầu một cuộc trò chuyện</h2>
+          <p>Đăng nhập để nhắn với chủ trọ, xem lại tin nhắn hoặc nhận hỗ trợ từ Trọ Tốt.</p>
+          <a routerLink="/login" [queryParams]="{ redirect: loginRedirect() }"
+            >Đăng nhập để nhắn tin<span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_forward</span
+            ></a
+          >
+        </div>
+      }
+    </div>
+  </section>
+}

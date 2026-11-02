@@ -19,7 +19,9 @@
   // Chỉ hiển thị trên mobile, mọi màn hình ≥ md sẽ ẩn.
   display: flex;
 
-  @media (min-width: 768px) { display: none; }
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
 .mobile-bottom-nav__item {
@@ -35,7 +37,8 @@
   transition: color var(--transition-fast);
   min-width: 0;
 
-  &:hover, &.is-active {
+  &:hover,
+  &.is-active {
     color: var(--primary);
   }
 }
@@ -52,4 +55,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+button.mobile-bottom-nav__item {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
 }

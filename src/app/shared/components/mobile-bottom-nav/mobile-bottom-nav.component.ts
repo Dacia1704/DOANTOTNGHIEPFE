@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChatWidgetService } from '@services/chat-widget.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface BottomNavItem {
@@ -19,6 +20,7 @@ interface BottomNavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MobileBottomNavComponent {
+  readonly chatWidget = inject(ChatWidgetService);
   readonly items: readonly BottomNavItem[] = [
     { icon: 'explore', label: 'Khám phá', route: '/' },
     { icon: 'map', label: 'Bản đồ', route: '/ban-do' },

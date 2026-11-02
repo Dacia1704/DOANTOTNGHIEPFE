@@ -30,6 +30,7 @@ export interface RoomImage {
 }
 
 export interface Room {
+  bookingAvailability?: import('../rental/rental.model').BookingAvailability;
   propertyId: string;
   roomNumber: string;
   displayName: string;

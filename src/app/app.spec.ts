@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
+import { provideHttpClient } from '@angular/common/http';
+import { ChatWidgetService } from './core/services/chat-widget.service';
 
 @Component({ template: '<p data-testid="route-content">Trang đang mở</p>' })
 class RoutedTestPage {}
@@ -10,9 +12,8 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([{ path: '', component: RoutedTestPage }])],
-    })
-      .compileComponents();
+      providers: [provideHttpClient(), provideRouter([{ path: '', component: RoutedTestPage }])],
+    }).compileComponents();
   });
 
   it('should create the app', () => {
@@ -27,5 +28,21 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('[data-testid="route-content"]')?.textContent).toContain('Trang đang mở');
+  });
+
+  it('keeps the chat window closed until requested', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('#chat-widget')).toBeNull();
+  });
+
+  it('opens a guest chat prompt without opening an authenticated inbox', async () => {
+    const fixture = TestBed.createComponent(App);
+    TestBed.inject(ChatWidgetService).openInbox();
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('#chat-widget')?.textContent).toContain('Đăng nhập để nhắn tin');
+    expect(compiled.querySelector('app-chat-page')).toBeNull();
   });
 });

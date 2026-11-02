@@ -12,8 +12,11 @@
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
-.site-header { height: 100%; }
-:host button:focus-visible, :host a:focus-visible {
+.site-header {
+  height: 100%;
+}
+:host button:focus-visible,
+:host a:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
@@ -90,9 +93,13 @@
   gap: var(--space-sm);
   white-space: nowrap;
 
-  > * { flex-shrink: 0; }
+  > * {
+    flex-shrink: 0;
+  }
 
-  button { font-family: inherit; }
+  button {
+    font-family: inherit;
+  }
 }
 
 .site-header__cta {
@@ -110,11 +117,17 @@
   box-shadow: 0 2px 8px rgba(0, 104, 95, 0.2);
   transition: background var(--transition-fast);
 
-  .material-symbols-outlined { font-size: 18px; }
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
 
-  &:hover { background: var(--primary-hover); }
+  &:hover {
+    background: var(--primary-hover);
+  }
 
-  @media (min-width: 768px) { display: inline-flex; }
+  @media (min-width: 768px) {
+    display: inline-flex;
+  }
 }
 
 .site-header__currency {
@@ -131,11 +144,18 @@
   cursor: pointer;
   transition: background var(--transition-fast);
 
-  .material-symbols-outlined { font-size: 18px; }
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
 
-  &:hover { background: var(--surface-container); color: var(--on-surface); }
+  &:hover {
+    background: var(--surface-container);
+    color: var(--on-surface);
+  }
 
-  @media (min-width: 1360px) { display: inline-flex; }
+  @media (min-width: 1360px) {
+    display: inline-flex;
+  }
 }
 
 .site-header__icon-btn {
@@ -150,11 +170,18 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 
-  .material-symbols-outlined { font-size: 22px; }
+  .material-symbols-outlined {
+    font-size: 22px;
+  }
 
-  &:hover { background: var(--surface-container); color: var(--on-surface); }
+  &:hover {
+    background: var(--surface-container);
+    color: var(--on-surface);
+  }
 }
 
 .site-header__dot {
@@ -166,7 +193,10 @@
   border-radius: 50%;
   background: var(--secondary-container);
 }
-a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
+a.site-header__icon-btn {
+  text-decoration: none;
+  flex-shrink: 0;
+}
 
 // ─── Guest buttons ──────────────────────────────────────────────────
 .site-header__login-btn {
@@ -178,7 +208,10 @@ a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
   font-weight: 600;
   transition: background var(--transition-fast);
 
-  &:hover { background: var(--surface-container); color: var(--on-surface); }
+  &:hover {
+    background: var(--surface-container);
+    color: var(--on-surface);
+  }
 }
 
 .site-header__register-btn {
@@ -191,7 +224,9 @@ a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
   font-weight: 600;
   transition: background var(--transition-fast);
 
-  &:hover { background: var(--primary-hover); }
+  &:hover {
+    background: var(--primary-hover);
+  }
 }
 
 // ─── Logged-in avatar ───────────────────────────────────────────────
@@ -218,7 +253,9 @@ a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
     color: var(--on-surface-variant);
   }
 
-  &:hover { background: var(--surface-container); }
+  &:hover {
+    background: var(--surface-container);
+  }
 }
 
 .site-header__user-menu {
@@ -234,7 +271,9 @@ a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
 .site-header__logout {
   color: var(--error) !important;
 
-  .mi { color: var(--error) !important; }
+  .mi {
+    color: var(--error) !important;
+  }
 }
 
 @media (max-width: 639px) {
@@ -243,12 +282,18 @@ a.site-header__icon-btn { text-decoration: none; flex-shrink: 0; }
     gap: 8px;
   }
 
-  .site-header__logo { max-width: 112px; }
+  .site-header__logo {
+    max-width: 112px;
+  }
 
-  .site-header__actions { gap: 4px; }
+  .site-header__actions {
+    gap: 4px;
+  }
 
   // Messaging remains available in the mobile bottom navigation.
-  .site-header__icon-btn { display: none; }
+  .site-header__icon-btn {
+    display: none;
+  }
 
   .site-header__login-btn,
   .site-header__register-btn {

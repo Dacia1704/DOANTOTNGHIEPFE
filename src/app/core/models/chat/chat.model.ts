@@ -11,7 +11,7 @@ export interface ChatMessage {
   sender: ChatUser;
   content: string;
   messageType: 'TEXT' | 'IMAGE' | 'SYSTEM';
-  createdAt: Date;
+  createdAt: Date | null;
 }
 
 export interface ChatConversation {

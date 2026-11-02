@@ -166,6 +166,7 @@ describe('Property creation and data semantics', () => {
           id: 'r',
           roomNumber: 'INTERNAL',
           rentalStatus: 'AVAILABLE',
+          bookingAvailability: 'AVAILABLE',
           price: 100,
           floorNumber: null,
           serviceFee: null,

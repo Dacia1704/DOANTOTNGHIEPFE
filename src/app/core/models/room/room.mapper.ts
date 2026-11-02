@@ -23,6 +23,7 @@ export class RoomMapper {
     const thumbnail = images.length > 0 ? images[0].url : '';
 
     return {
+      bookingAvailability: dto.bookingAvailability,
       id: dto.id,
       propertyId: dto.propertyId,
       roomNumber: dto.roomNumber,

@@ -4,9 +4,7 @@
       <header class="units-heading">
         <h2>Thông tin căn nhà</h2>
         <span class="badge" [class]="utils.getStatusBadgeClass(house.rentalStatus)">{{
-          house.rentalStatus === 'AVAILABLE'
-            ? 'Còn trống'
-            : utils.getStatusLabel(house.rentalStatus)
+          utils.bookingLabel(house)
         }}</span>
       </header>
       <dl class="house-facts">
@@ -139,7 +137,7 @@
                   </td>
                   <td data-label="Trạng thái">
                     <span class="badge" [class]="utils.getStatusBadgeClass(room.rentalStatus)">{{
-                      utils.getStatusLabel(room.rentalStatus)
+                      utils.bookingLabel(room)
                     }}</span>
                   </td>
                   <td>
@@ -179,7 +177,7 @@
                           class="btn-icon danger"
                           [attr.aria-label]="'Xóa ' + room.displayName"
                           [disabled]="
-                            property().rooms.length <= 1 || property().rentalMode === 'WHOLE'
+                            property().rooms.length <= 1 || property().rentalMode === 'WHOLE' || room.bookingAvailability === 'HELD' || room.bookingAvailability === 'RENTED'
                           "
                           [title]="
                             property().rooms.length <= 1

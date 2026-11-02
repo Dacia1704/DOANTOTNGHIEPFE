@@ -5,6 +5,10 @@ import {
 } from '@model/room/room.model';
 
 export class RoomUtils {
+  static bookingLabel(room: import('@model/room/room.model').Room): string {
+    const labels: Record<string,string>={AVAILABLE:'Còn phòng',HELD:'Đang giữ chỗ — chờ khách xác nhận hợp đồng',RENTED:'Đã cho thuê',MAINTENANCE:'Bảo trì'};
+    return labels[room.bookingAvailability??'']??'Đang cập nhật trạng thái đặt phòng';
+  }
   /** Distinguish an unspecified fee from an explicitly free service. */
   static formatFee(value: number | null): string {
     return value === null

@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterOutlet } from '@angular/router';
+import { ChatWidgetComponent } from './features/chat/components/chat-widget/chat-widget.component';
 
 @Component({
-  imports: [RouterOutlet, MatButtonModule],
+  imports: [RouterOutlet, MatButtonModule, ChatWidgetComponent],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',

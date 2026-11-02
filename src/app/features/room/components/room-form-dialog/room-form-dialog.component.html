@@ -133,6 +133,9 @@
               <option [value]="status">{{ statusLabels[status] }}</option>
             }
           </select>
+            @if(data.room?.bookingAvailability === 'HELD' || data.room?.bookingAvailability === 'RENTED') {
+              <p>Phòng đang giữ chỗ/đang thuê. Hãy xử lý hợp đồng và bàn giao trước khi đổi trạng thái.</p>
+            }
         </div>
 
         <!-- Max Occupants -->
