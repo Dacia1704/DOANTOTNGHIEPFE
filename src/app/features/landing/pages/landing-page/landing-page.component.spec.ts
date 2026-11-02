@@ -51,4 +51,38 @@ describe('Landing published posts', () => {
     component.openRoom({ listingId: 'post-1' } as PublicListing);
     expect(router.navigate).toHaveBeenCalledWith(['/tro', 'post-1']);
   });
+  it('keeps ordinary filters and sends only the selected geographic mode, resetting its page', () => {
+    const { component, api } = setup();
+    component.ngOnInit();
+    component.updateFilters({ minPrice: 100, provinceId: 'p', amenityNames: ['WiFi'] });
+    component.applyLocationFilter({ kind: 'radius', latitude: 0, longitude: 0, radiusKm: 3 });
+    expect(api.search).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        latitude: 0,
+        longitude: 0,
+        radiusKm: 3,
+        minPrice: 100,
+        provinceId: 'p',
+        page: 0,
+      }),
+    );
+    component.applyLocationFilter({ kind: 'bounds', south: 0, north: 1, west: 170, east: -170 });
+    expect(component.activeQuery().radiusKm).toBeUndefined();
+    expect(component.activeQuery().latitude).toBeUndefined();
+    expect(api.search).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        south: 0,
+        north: 1,
+        west: 170,
+        east: -170,
+        amenityNames: ['WiFi'],
+        page: 0,
+      }),
+    );
+    component.loadMapPage(1);
+    expect(api.search).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, south: 0 }));
+    component.removeFilter('map');
+    expect(component.activeQuery().south).toBeUndefined();
+    expect(component.activeQuery().minPrice).toBe(100);
+  });
 });

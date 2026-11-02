@@ -120,7 +120,7 @@
       <p class="body-md text-secondary">
         <strong>Địa chỉ cụ thể:</strong> {{ data.room.addressLine }}, {{ data.room.wardName }}, {{ data.room.provinceName }}
       </p>
-      @if (data.room.latitude && data.room.longitude) {
+      @if (data.room.latitude != null && data.room.longitude != null) {
         <p class="body-sm text-secondary">
           <strong>Tọa độ:</strong> {{ data.room.latitude }}, {{ data.room.longitude }}
         </p>

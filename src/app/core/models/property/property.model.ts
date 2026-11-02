@@ -10,6 +10,13 @@ export interface Property {
   rentalModeLabel: string;
   totalFloors: number | null;
   fullAddress: string;
+  provinceId?: string;
+  provinceName?: string;
+  wardId?: string;
+  wardName?: string;
+  addressLine?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   amenities: RoomAmenity[];
   images: RoomImage[];
   rooms: Room[];

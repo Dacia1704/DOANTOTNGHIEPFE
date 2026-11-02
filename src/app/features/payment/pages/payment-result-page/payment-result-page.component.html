@@ -4,9 +4,12 @@
       <p class="eyebrow">Giao dịch VNPay</p>
       <h1>{{ title() }}</h1>
     </div>
-    <a class="button" [routerLink]="admin ? '/admin/payment-review' : '/lich-su-thanh-toan'">{{
-      admin ? 'Về đối soát' : 'Lịch sử thanh toán'
-    }}</a>
+    <a
+      class="button"
+      [routerLink]="admin ? '/admin/payments' : '/lich-su-thanh-toan'"
+      [queryParams]="admin ? adminReturnQuery : null"
+      >{{ admin ? 'Quản lý thanh toán' : 'Lịch sử thanh toán' }}</a
+    >
   </header>
   @if (missing) {
     <div class="notice warning">
@@ -34,7 +37,7 @@
             @if (payment.requiresReview) {
               <div class="notice warning">
                 Khoản thanh toán cần đối soát. Chưa xác nhận cấp quyền cho khoản thu này.
-                <p>{{ payment.reviewReason }}</p>
+                <p>{{ ui.label(payment.reviewReason || 'Mở chi tiết để đối chiếu giao dịch.') }}</p>
               </div>
             } @else if (payment.status === 'PENDING') {
               <p class="notice">

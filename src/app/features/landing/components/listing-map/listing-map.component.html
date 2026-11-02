@@ -1,0 +1,105 @@
+<section class="listing-map" aria-label="Tìm phòng trên bản đồ">
+  <div class="map-tools">
+    <div class="place-field">
+      <span class="tool-label">Tìm quanh một địa điểm</span
+      ><app-map-place-search (placeSelected)="selectPlace($event)" />
+    </div>
+    <label class="mode-field"
+      >Phạm vi tìm kiếm<select [ngModel]="mode()" (ngModelChange)="changeMode($event)">
+        <option value="viewport">Khung bản đồ đang xem</option>
+        <option value="radius">Bán kính quanh địa điểm</option>
+        <option value="off">Không lọc theo vị trí</option>
+      </select></label
+    >
+    <button
+      type="button"
+      class="btn-secondary locate-button"
+      (click)="locate()"
+      [disabled]="locating()"
+    >
+      {{ locating() ? 'Đang định vị…' : 'Tìm quanh tôi' }}
+    </button>
+  </div>
+  @if (mode() === 'radius') {
+    <div class="radius-tools">
+      <label
+        >Bán kính<select [ngModel]="radius()" (ngModelChange)="radiusChanged($event)">
+          @for (km of [1, 3, 5, 10, 20]; track km) {
+            <option [ngValue]="km">{{ km }} km</option>
+          }
+        </select></label
+      ><span>{{
+        center()
+          ? centerLabel() || 'Địa điểm đã chọn'
+          : 'Chọn địa điểm hoặc bấm Tìm quanh tôi để bắt đầu.'
+      }}</span>
+    </div>
+    <p class="map-hint">Bán kính tính theo đường chim bay, không phải quãng đường di chuyển.</p>
+  } @else if (mode() === 'viewport') {
+    <p class="map-hint">
+      Kéo hoặc thu phóng bản đồ để tìm trong vùng đang xem. Các bộ lọc khu vực, giá và tiện ích vẫn
+      được áp dụng.
+    </p>
+  }
+  @if (error()) {
+    <p class="map-error" role="alert">{{ error() }}</p>
+  }
+  <div class="map-layout">
+    <div class="map-panel">
+      <app-map-canvas
+        [pins]="pins()"
+        [center]="center()"
+        [radiusKm]="mode() === 'radius' ? radius() : 0"
+        (boundsChange)="boundsChanged($event)"
+        (pinSelected)="openPin($event)"
+      />
+    </div>
+    <div class="map-results" [attr.aria-busy]="loading">
+      @if (loading) {
+        <p role="status">Đang tìm tin trong khu vực…</p>
+      }
+      @if (result; as data) {
+        <p class="result-summary" role="status">
+          {{ data.total }} tin phù hợp · Đang xem {{ data.items.length }} tin ở trang
+          {{ data.page + 1 }}
+        </p>
+        @if (missingPins()) {
+          <p class="map-hint">
+            {{ missingPins() }} tin ở trang này chưa có ghim; vẫn có thể xem địa chỉ trong chi tiết.
+          </p>
+        }
+        <div class="result-list">
+          @for (listing of data.items; track listing.id) {
+            <button type="button" class="map-result" (click)="listingSelected.emit(listing)">
+              <img
+                [src]="images.toImageSrc(listing.thumbnail)"
+                [alt]="listing.propertyName"
+                loading="lazy"
+              />
+              <span
+                ><strong>{{ listing.listingTitle }}</strong
+                ><span class="result-price">{{
+                  listing.price ? money(listing.price) + '/tháng' : 'Liên hệ giá'
+                }}</span
+                ><span class="result-address">{{ listing.fullAddress }}</span></span
+              >
+            </button>
+          } @empty {
+            <p class="empty-results">
+              Không có tin phù hợp. Thử mở rộng vùng hoặc thay đổi bộ lọc.
+            </p>
+          }
+        </div>
+        <app-billing-pager
+          [page]="data.page"
+          [totalPages]="data.totalPages"
+          [disabled]="loading"
+          (changePage)="pageChange.emit($event)"
+        />
+        <p class="map-hint">
+          Ghim thể hiện các tin của trang hiện tại. Thứ tự hiển thị theo mức ưu tiên của tin.
+        </p>
+      }
+    </div>
+  </div>
+</section>

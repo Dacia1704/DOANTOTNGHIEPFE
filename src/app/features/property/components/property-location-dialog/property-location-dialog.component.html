@@ -1,0 +1,83 @@
+<h2 mat-dialog-title>Địa chỉ & vị trí · {{ property.name }}</h2>
+<mat-dialog-content>
+  <p class="description">Vị trí được dùng chung cho tất cả phòng và tin đăng của cơ sở.</p>
+  @if (error() || addressError()) {
+    <p class="notice error" role="alert">{{ error() || addressError() }}</p>
+  }
+  <form id="property-location-form" [formGroup]="form" (ngSubmit)="save()">
+    <fieldset [disabled]="busy()">
+      <div class="form-grid">
+        <label class="field"
+          >Tỉnh / thành phố *<select formControlName="provinceId" required>
+            <option value="">Chọn tỉnh / thành phố</option>
+            @for (province of provinces(); track province.id) {
+              <option [value]="province.id">{{ province.name }}</option>
+            }
+          </select></label
+        >
+        <label class="field"
+          >Phường / xã *<select formControlName="wardId" required>
+            <option value="">{{ loading() ? 'Đang tải phường/xã…' : 'Chọn phường / xã' }}</option>
+            @for (ward of wards(); track ward.id) {
+              <option [value]="ward.id">{{ ward.name }}</option>
+            }
+          </select></label
+        >
+        <label class="field span-all"
+          >Địa chỉ cụ thể *<input formControlName="addressLine" maxlength="255" required
+        /></label>
+      </div>
+      @if (pinCleared()) {
+        <p class="notice" role="status">
+          Địa chỉ đã đổi. Hãy chọn lại ghim hoặc lưu địa chỉ không có ghim.
+        </p>
+      }
+      <app-location-picker
+        [latitude]="form.controls.latitude.value"
+        [longitude]="form.controls.longitude.value"
+        [disabled]="busy()"
+        [addressContext]="
+          form.controls.provinceId.value +
+          '|' +
+          form.controls.wardId.value +
+          '|' +
+          form.controls.addressLine.value
+        "
+        (locationChange)="setLocation($event)"
+        (placeSelected)="usePlaceAddress($event)"
+      />
+      <details>
+        <summary>Nhập tọa độ thủ công (không bắt buộc)</summary>
+        <div class="form-grid">
+          <label class="field"
+            >Vĩ độ<input type="number" formControlName="latitude" min="-90" max="90" step="any"
+          /></label>
+          <label class="field"
+            >Kinh độ<input
+              type="number"
+              formControlName="longitude"
+              min="-180"
+              max="180"
+              step="any"
+          /></label>
+        </div>
+      </details>
+      @if (form.hasError('coordinatePair')) {
+        <p class="field-error" role="alert">
+          Nhập đủ vĩ độ và kinh độ hợp lệ, hoặc xóa cả hai để bỏ ghim.
+        </p>
+      }
+    </fieldset>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button type="button" mat-dialog-close [disabled]="busy()">Hủy</button>
+  <button
+    type="submit"
+    form="property-location-form"
+    class="primary"
+    [disabled]="busy() || loading() || !provinces().length"
+  >
+    {{ busy() ? 'Đang lưu…' : 'Lưu vị trí' }}
+  </button>
+</mat-dialog-actions>

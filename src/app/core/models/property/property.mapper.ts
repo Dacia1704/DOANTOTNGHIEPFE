@@ -22,6 +22,13 @@ export class PropertyMapper {
       rentalModeLabel: dto.rentalMode === 'WHOLE' ? 'Cho thuê nguyên căn' : 'Cho thuê từng phòng',
       totalFloors: dto.totalFloors ?? null,
       fullAddress: [dto.addressLine, dto.wardName, dto.provinceName].filter(Boolean).join(', '),
+      provinceId: dto.provinceId,
+      provinceName: dto.provinceName,
+      wardId: dto.wardId,
+      wardName: dto.wardName,
+      addressLine: dto.addressLine,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
       amenities: (dto.amenities ?? []).map((a) => ({ ...a, icon: a.icon || 'check_circle' })),
       images: (dto.images ?? []).map((i) => ({
         ...i,

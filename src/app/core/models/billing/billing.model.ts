@@ -121,6 +121,13 @@ export interface ActiveBoost {
   allocations: BoostAllocation[];
 }
 export interface Listing {
+  property?: {
+    latitude?: number | null;
+    longitude?: number | null;
+    addressLine?: string;
+    wardName?: string;
+    provinceName?: string;
+  };
   landlordName?: string;
   propertyName?: string;
   id: string;

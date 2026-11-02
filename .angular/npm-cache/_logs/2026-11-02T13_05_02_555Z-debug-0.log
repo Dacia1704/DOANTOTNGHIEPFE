@@ -1,0 +1,32 @@
+0 verbose cli D:\node.exe D:\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.23.4
+3 silly config load:file:D:\node_modules\npm\npmrc
+4 silly config load:file:D:\DOANTOTNGHIEPFE\.npmrc
+5 silly config load:file:C:\Users\Acer\.npmrc
+6 silly config load:file:C:\Users\Acer\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm uninstall leaflet @types/leaflet
+8 verbose argv "uninstall" "leaflet" "@types/leaflet" "--ignore-scripts" "--no-package-lock" "--no-audit" "--no-fund" "--offline" "--cache" ".angular/npm-cache"
+9 verbose logfile logs-max:10 dir:D:\DOANTOTNGHIEPFE\.angular\npm-cache\_logs\2026-11-02T13_05_02_555Z-
+10 verbose logfile D:\DOANTOTNGHIEPFE\.angular\npm-cache\_logs\2026-11-02T13_05_02_555Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly reify mark retired [ 'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\geojson' ]
+15 silly reify mark retired [ 'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\leaflet' ]
+16 silly reify mark retired [ 'D:\\DOANTOTNGHIEPFE\\node_modules\\leaflet' ]
+17 silly reify moves {
+17 silly reify   'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\geojson': 'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\.geojson-WxvkAm8h',
+17 silly reify   'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\leaflet': 'D:\\DOANTOTNGHIEPFE\\node_modules\\@types\\.leaflet-7NvuD5mF',
+17 silly reify   'D:\\DOANTOTNGHIEPFE\\node_modules\\leaflet': 'D:\\DOANTOTNGHIEPFE\\node_modules\\.leaflet-1hpmi81l'
+17 silly reify }
+18 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+19 silly REMOVE node_modules/leaflet
+20 silly REMOVE node_modules/@types/leaflet
+21 silly REMOVE node_modules/@types/geojson
+22 verbose cwd D:\DOANTOTNGHIEPFE
+23 verbose os Windows_NT 10.0.26200
+24 verbose node v22.23.4
+25 verbose npm  v10.9.3
+26 verbose exit 0
+27 info ok
