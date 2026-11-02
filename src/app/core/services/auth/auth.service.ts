@@ -68,7 +68,7 @@ export class AuthService {
   homeUrl(): string {
     const r = this.primaryRole();
     switch (r) {
-      case RoleCode.ADMIN: return '/admin';
+      case RoleCode.ADMIN: return '/';
       case RoleCode.LANDLORD: return '/';
       case RoleCode.TENANT: return '/';
       default: return '/';

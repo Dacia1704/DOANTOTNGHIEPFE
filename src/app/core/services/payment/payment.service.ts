@@ -26,11 +26,11 @@ export class PaymentService {
   list(page = 0, size = 10) {
     return this.api.page<Payment>('payments', page, undefined, {}, size);
   }
-  adminList(page = 0) {
-    return this.api.page<Payment>('payments/all', page);
+  adminList(page = 0, size = 10) {
+    return this.api.page<Payment>('payments/all', page, undefined, {}, size);
   }
-  review(page = 0) {
-    return this.api.page<Payment>('payments/review', page);
+  review(page = 0, size = 10) {
+    return this.api.page<Payment>('payments/review', page, undefined, {}, size);
   }
   get(id: string) {
     return this.api.get<Payment>(`payments/${encodeURIComponent(id)}`);

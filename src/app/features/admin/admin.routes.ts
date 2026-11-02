@@ -3,6 +3,11 @@ import { Router, Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
   {
+    path: 'messages',
+    loadComponent: () =>
+      import('@shared/pages/chat/chat-page.component').then((m) => m.ChatPageComponent),
+  },
+  {
     path: 'property-types',
     loadComponent: () =>
       import('./property-type-management/property-type-management.component').then(
@@ -17,9 +22,12 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'boost-packages',
-    data: { catalog: 'boost' },
-    loadComponent: () =>
-      import('./billing-catalog/billing-catalog.component').then((m) => m.BillingCatalogComponent),
+    pathMatch: 'full',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/admin/service-packages'], {
+        queryParams: { ...queryParams, tab: 'boost' },
+        fragment: fragment ?? undefined,
+      }),
   },
   {
     path: 'subscription-orders',

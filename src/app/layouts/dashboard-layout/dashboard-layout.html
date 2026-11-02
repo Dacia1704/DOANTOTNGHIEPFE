@@ -1,7 +1,7 @@
 <div
   class="dashboard-layout"
   [class.dashboard-layout--landlord]="mode === 'landlord'"
-  [class.dashboard-layout--chat]="mode === 'landlord' && chatPage()"
+  [class.dashboard-layout--chat]="chatPage()"
 >
   <app-site-header [adminMode]="mode === 'admin'" [landlordMode]="mode === 'landlord'" />
   <mat-sidenav-container

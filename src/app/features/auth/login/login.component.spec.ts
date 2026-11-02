@@ -35,14 +35,22 @@ describe('login destination', () => {
     const page = TestBed.createComponent(LoginComponent).componentInstance;
     page.form.patchValue({ email: 'member@example.com', password: 'Password123' });
     page.submit();
-    http.expectOne((request) => request.url.endsWith('/auth/login')).flush({
-      code: 200,
-      data: {
-        id: 'member', email: 'member@example.com', phone: '', fullName: 'Member',
-        status: 'ACTIVE', roles: [role], authorities: [],
-        accessToken: 'test-access', refreshToken: 'test-refresh',
-      },
-    });
+    http
+      .expectOne((request) => request.url.endsWith('/auth/login'))
+      .flush({
+        code: 200,
+        data: {
+          id: 'member',
+          email: 'member@example.com',
+          phone: '',
+          fullName: 'Member',
+          status: 'ACTIVE',
+          roles: [role],
+          authorities: [],
+          accessToken: 'test-access',
+          refreshToken: 'test-refresh',
+        },
+      });
     return navigate;
   }
 
@@ -50,8 +58,8 @@ describe('login destination', () => {
     expect(login(role)).toHaveBeenCalledWith('/');
   });
 
-  it('keeps the admin destination', () => {
-    expect(login(RoleCode.ADMIN)).toHaveBeenCalledWith('/admin');
+  it('opens landing after admin login', () => {
+    expect(login(RoleCode.ADMIN)).toHaveBeenCalledWith('/');
   });
 
   it('returns landlords to an explicitly requested management page', () => {

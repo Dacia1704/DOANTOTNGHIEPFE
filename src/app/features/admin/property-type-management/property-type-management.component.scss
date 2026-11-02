@@ -1,3 +1,4 @@
+@use '../../../shared/styles/management';
 .catalog-page {
   padding: var(--space-lg);
   max-width: var(--container-max);
@@ -130,4 +131,22 @@ textarea {
   .catalog-layout {
     grid-template-columns: 1fr;
   }
+}
+
+.catalog-page.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-filters {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.tabs a[aria-current='page'] {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary);
 }

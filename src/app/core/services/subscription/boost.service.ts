@@ -18,8 +18,8 @@ export class BoostService {
   packages() {
     return this.api.all<BoostPackage>('boost-packages');
   }
-  catalog(page = 0) {
-    return this.api.page<BoostPackage>('boost-packages', page, true);
+  catalog(page = 0, size = 10) {
+    return this.api.page<BoostPackage>('boost-packages', page, true, {}, size);
   }
   list(page = 0, size = 10) {
     return this.api.page<BoostSubscription>('boost-subscriptions', page, undefined, {}, size);

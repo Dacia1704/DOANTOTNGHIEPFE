@@ -11,7 +11,7 @@
   margin: auto;
   padding: var(--space-xl) var(--space-lg);
 }
-:host-context(.dashboard-layout--landlord) .chat-page:not(.chat-page--compact) {
+:host-context(.dashboard-layout) .chat-page:not(.chat-page--compact) {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;

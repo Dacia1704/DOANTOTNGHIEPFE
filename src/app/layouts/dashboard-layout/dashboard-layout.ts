@@ -76,7 +76,7 @@ export class DashboardLayoutComponent implements OnChanges {
 
   private updateBreadcrumb(): void {
     const path = this.router.url.split(/[?#]/)[0];
-    this.chatPage.set(path === '/landlord/messages');
+    this.chatPage.set(path === '/landlord/messages' || path === '/admin/messages');
     this.pageLabel.set(
       this.menu.find((item) => path === item.route || path.startsWith(item.route + '/'))?.label ??
         this.title,

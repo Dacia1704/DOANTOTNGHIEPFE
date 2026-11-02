@@ -9,8 +9,8 @@ export class ServicePackageService {
   all() {
     return this.api.all<ServicePackage>('service-packages');
   }
-  list(page = 0) {
-    return this.api.page<ServicePackage>('service-packages', page, true);
+  list(page = 0, size = 10) {
+    return this.api.page<ServicePackage>('service-packages', page, true, {}, size);
   }
   prices(id: string, admin = false) {
     return this.api.get<PriceOption[]>(

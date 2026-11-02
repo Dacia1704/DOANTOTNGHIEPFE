@@ -7,7 +7,7 @@
   margin: 0 auto;
   padding: var(--space-2xl) var(--space-lg) 96px;
 }
-:host-context(.dashboard-layout--landlord) .billing-page {
+:host-context(.dashboard-layout) .billing-page {
   width: 100%;
   max-width: none;
   margin: 0;

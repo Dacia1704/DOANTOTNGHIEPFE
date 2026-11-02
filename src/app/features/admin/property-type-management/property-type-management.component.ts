@@ -1,3 +1,9 @@
+import { computed } from '@angular/core';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,12 +20,26 @@ import { PropertyType, PropertyTypeList } from '@model/property-type/property-ty
 
 @Component({
   selector: 'app-property-type-management',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ManagementTableComponent, ManagementTableCellDirective],
   templateUrl: './property-type-management.component.html',
   styleUrl: './property-type-management.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PropertyTypeManagementComponent implements OnInit {
+  readonly pageSize = signal(10);
+  readonly rowKey = (row: PropertyType) => row.id;
+  readonly columns: readonly ManagementTableColumn<PropertyType>[] = [
+    { key: 'name', label: 'Tên loại cơ sở', value: (type) => type.name },
+    { key: 'description', label: 'Mô tả', value: (type) => type.description || 'Chưa có mô tả' },
+    { key: 'actions', label: 'Thao tác' },
+  ];
+  readonly pagination = computed(() => this.result());
+  changePageSize(size: number): void {
+    if (this.loading() || this.busy()) return;
+    this.pageSize.set(size);
+    this.load(0);
+  }
+
   private readonly service = inject(PropertyTypeService);
   private readonly destroyRef = inject(DestroyRef);
   readonly result = signal<PropertyTypeList | null>(null);
@@ -41,7 +61,7 @@ export class PropertyTypeManagementComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
     this.service
-      .getPage(page)
+      .getPage(page, this.pageSize())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.loading.set(false)),

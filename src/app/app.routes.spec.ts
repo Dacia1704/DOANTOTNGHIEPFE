@@ -73,7 +73,7 @@ describe('role layouts and navigation', () => {
           useValue: {
             isLoggedIn: () => loggedIn,
             hasAnyRole: (roles: RoleCode[]) => roles.includes(role),
-            homeUrl: () => (role === RoleCode.ADMIN ? '/admin' : '/'),
+            homeUrl: () => '/',
           },
         },
       ],
@@ -189,5 +189,17 @@ describe('role layouts and navigation', () => {
     role = RoleCode.TENANT;
     await harness.navigateByUrl('/yeu-cau-thue', TenantShell);
     expect(router.url).toBe('/yeu-cau-thue');
+  });
+
+  it('keeps admin landing public and routes support and legacy catalog URLs into the dashboard', async () => {
+    role = RoleCode.ADMIN;
+    await harness.navigateByUrl('/', TenantShell);
+    expect(router.url).toBe('/');
+    await harness.navigateByUrl('/admin/messages', AdminShell);
+    expect(router.url).toBe('/admin/messages');
+    await harness.navigateByUrl('/tin-nhan?conversation=chat', AdminShell);
+    expect(router.url).toBe('/admin/messages?conversation=chat');
+    await harness.navigateByUrl('/admin/boost-packages?source=menu', AdminShell);
+    expect(router.url).toBe('/admin/service-packages?source=menu&tab=boost');
   });
 });

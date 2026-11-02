@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { RedirectFunction, Router, Routes } from '@angular/router';
 import { roleGuard } from '@guards/role.guard';
 import { RoleCode } from '@model/auth/auth.model';
+import { AuthService } from '@services/auth/auth.service';
 
 const profileRedirect: RedirectFunction = ({ queryParams, fragment }) =>
   inject(Router).createUrlTree(['/trang-ca-nhan'], {
@@ -36,6 +37,21 @@ export const TENANT_ROUTES: Routes = [
       import('@features/tenant/listing/pages/listing-detail-page/listing-detail-page.component').then(
         (m) => m.ListingDetailPageComponent,
       ),
+  },
+  {
+    path: '',
+    canMatch: [() => inject(AuthService).hasAnyRole([RoleCode.ADMIN])],
+    children: [
+      {
+        path: 'tin-nhan',
+        pathMatch: 'full',
+        redirectTo: ({ queryParams, fragment }) =>
+          inject(Router).createUrlTree(['/admin/messages'], {
+            queryParams,
+            fragment: fragment ?? undefined,
+          }),
+      },
+    ],
   },
   {
     path: 'tin-nhan',

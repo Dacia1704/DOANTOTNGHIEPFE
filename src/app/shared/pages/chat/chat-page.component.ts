@@ -234,18 +234,23 @@ export class ChatPageComponent implements OnInit {
     }
     if (this.compact) this.selections.next(conversation);
     else
-      void this.router.navigate(['/tin-nhan'], { queryParams: { conversation: conversation.id } });
+      void this.router.navigate([this.inboxRoute], {
+        queryParams: { conversation: conversation.id },
+      });
   }
 
   openSupport(): void {
     if (!this.canUseSupport) return;
     if (this.compact) this.widget.openSupport();
-    else void this.router.navigate(['/tin-nhan'], { queryParams: { support: '1' } });
+    else void this.router.navigate([this.inboxRoute], { queryParams: { support: '1' } });
   }
 
   backToConversations(): void {
     if (this.compact) this.widget.openInbox();
     else this.showConversation.set(false);
+  }
+  private get inboxRoute(): string {
+    return this.auth.primaryRole() === RoleCode.ADMIN ? '/admin/messages' : '/tin-nhan';
   }
 
   retryMessages(): void {

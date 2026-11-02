@@ -11,9 +11,8 @@ import { DashboardLayoutComponent } from '../dashboard-layout/dashboard-layout';
 })
 export class AdminLayout {
   readonly menu: NavItem[] = [
-    { icon: 'forum', label: 'Tin nhắn & hỗ trợ', route: '/tin-nhan' },
-    { icon: 'inventory_2', label: 'Gói dịch vụ', route: '/admin/service-packages' },
-    { icon: 'bolt', label: 'Gói suất Boost', route: '/admin/boost-packages' },
+    { icon: 'forum', label: 'Tin nhắn & hỗ trợ', route: '/admin/messages' },
+    { icon: 'inventory_2', label: 'Gói dịch vụ & Boost', route: '/admin/service-packages' },
     { icon: 'receipt_long', label: 'Quản lý thanh toán', route: '/admin/payments' },
     { icon: 'fact_check', label: 'Quản lý bài đăng', route: '/admin/listings' },
     { icon: 'manage_accounts', label: 'Quản lý người dùng', route: '/admin/users' },

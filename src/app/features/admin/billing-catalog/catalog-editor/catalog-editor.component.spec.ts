@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { Observable, Subject, defer, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { ServicePackageService } from '@services/subscription/service-package.service';
@@ -247,7 +247,7 @@ describe('Package sale controls', () => {
     TestBed.configureTestingModule({
       imports: [BillingCatalogComponent],
       providers: [
-        { provide: ActivatedRoute, useValue: { snapshot: { data: { catalog: 'service' } } } },
+        provideRouter([]),
         { provide: ServicePackageService, useValue: api },
         { provide: BoostService, useValue: {} },
         { provide: MatDialog, useValue: dialog },
