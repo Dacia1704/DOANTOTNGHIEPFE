@@ -17,6 +17,7 @@ import { RoomRentalStatus } from '@model/room/room.model';
 import { SearchCapsuleComponent } from '../../components/search-capsule/search-capsule.component';
 import { RoomGridComponent } from '../../components/room-grid/room-grid.component';
 import { LandlordCtaComponent } from '../../components/landlord-cta/landlord-cta.component';
+import { AiRecommendationComponent } from '../../components/ai-recommendation/ai-recommendation.component';
 
 /**
  * Trang landing page của tenant.
@@ -28,7 +29,7 @@ import { LandlordCtaComponent } from '../../components/landlord-cta/landlord-cta
  */
 @Component({
   selector: 'app-landing-page',
-  imports: [SearchCapsuleComponent, RoomGridComponent, LandlordCtaComponent],
+  imports: [SearchCapsuleComponent, RoomGridComponent, LandlordCtaComponent, AiRecommendationComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

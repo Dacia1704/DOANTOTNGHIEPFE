@@ -7,6 +7,10 @@
 
 export interface AiListingItem {
   id: string;
+  listing_id?: string;
+  property_id?: string;
+  matched_room_id?: string;
+  rental_mode?: 'WHOLE' | 'BY_ROOM';
   title: string;
   price: number;
   area_m2: number;
@@ -21,6 +25,9 @@ export interface AiListingItem {
 
 export interface AiRecommendationItem {
   listing_id: string;
+  property_id?: string;
+  matched_room_id?: string;
+  rental_mode?: 'WHOLE' | 'BY_ROOM';
   title: string;
   price: number;
   area_m2: number;

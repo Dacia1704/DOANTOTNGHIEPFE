@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { AuthService } from '@services/auth.service';
 import {
@@ -49,37 +49,57 @@ export class AiService {
   ): Observable<AiChatEvent> {
     return new Observable<AiChatEvent>(subscriber => {
       const controller = new AbortController();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const token = this.getAccessToken();
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      fetch(`${this.api}/chat`, {
+      const request = () => fetch(`${this.api}/chat`, {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+          ...(this.getAccessToken() ? { Authorization: `Bearer ${this.getAccessToken()}` } : {}),
+        },
         body: JSON.stringify({ message, conversation_id: conversationId ?? null }),
         signal: controller.signal,
-      })
+      });
+      request()
         .then(async response => {
+          if (response.status === 401 && this.auth.refreshToken) {
+            try {
+              await firstValueFrom(this.auth.refresh());
+            } catch (error) {
+              this.auth.clearSession();
+              throw error;
+            }
+            if (controller.signal.aborted) return;
+            response = await request();
+          }
           if (!response.ok || !response.body) {
-            throw new Error(`AI service trả HTTP ${response.status}`);
+            const detail = await response.json().catch(() => null);
+            throw new Error(typeof detail?.detail === 'string' ? detail.detail : `AI service trả HTTP ${response.status}`);
           }
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
           let buffer = '';
+          let finished = false;
 
           for (;;) {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
+            buffer = buffer.replace(/\r\n/g, '\n');
 
             let boundary = buffer.indexOf('\n\n');
             while (boundary !== -1) {
               const raw = buffer.slice(0, boundary);
               buffer = buffer.slice(boundary + 2);
               const event = parseSseChunk(raw);
-              if (event) subscriber.next(event);
+              if (event) {
+                finished ||= event.type === 'done';
+                subscriber.next(event);
+              }
               boundary = buffer.indexOf('\n\n');
             }
+          }
+          if (!finished && !controller.signal.aborted) {
+            throw new Error('Kết nối AI bị ngắt trước khi hoàn tất. Bạn có thể thử lại.');
           }
           subscriber.complete();
         })
@@ -107,11 +127,11 @@ export type AiChatEvent =
   | { type: 'retry'; data: { reason: string } }
   | { type: 'done'; data: AiChatDone };
 
-function parseSseChunk(raw: string): AiChatEvent | null {
+export function parseSseChunk(raw: string): AiChatEvent | null {
   let event = 'message';
   const dataLines: string[] = [];
 
-  for (const line of raw.split('\n')) {
+  for (const line of raw.split(/\r?\n/)) {
     if (line.startsWith('event:')) {
       event = line.slice(6).trim();
     } else if (line.startsWith('data:')) {
