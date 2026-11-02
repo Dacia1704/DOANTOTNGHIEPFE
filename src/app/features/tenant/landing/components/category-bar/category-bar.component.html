@@ -4,6 +4,7 @@
   cdkOverlayOrigin
   #origin="cdkOverlayOrigin"
   [class.has-selection]="!!selectedName()"
+  [class.is-open]="expanded()"
   [attr.aria-expanded]="expanded()"
   aria-haspopup="dialog"
   aria-controls="public-type-picker"
@@ -22,6 +23,7 @@
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="origin"
   [cdkConnectedOverlayOpen]="expanded()"
+  [cdkConnectedOverlayWidth]="origin.elementRef.nativeElement.getBoundingClientRect().width"
   [cdkConnectedOverlayPositions]="positions"
   [cdkConnectedOverlayHasBackdrop]="true"
   cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"

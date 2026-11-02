@@ -16,7 +16,7 @@ interface NavLink {
 /**
  * Glass header dùng cho toàn bộ trang public của tenant (landing, room-list, ...).
  * - Guest: hiển thị nút "Đăng nhập" / "Đăng ký".
- * - Đã login: hiển thị avatar + dropdown (Hồ sơ, Tin đã lưu, Phòng của tôi, Cài đặt, Đăng xuất).
+ * - Đã login: hiển thị tên, vai trò và avatar cùng dropdown quản lý tài khoản.
  *
  * Component dùng signal `auth.session()` để reactive — header tự cập nhật khi login/logout.
  */
@@ -47,12 +47,22 @@ export class SiteHeaderComponent {
 
   readonly imageUtils = ImageUtils;
 
-  readonly navLinks: readonly NavLink[] = [
-    { label: 'Thuê phòng', route: '/', exact: true },
-    { label: 'Ghép phòng', route: '/o-ghep' },
-    { label: 'Cho thuê / Đăng tin', route: '/dang-tin' },
-    { label: 'Cẩm nang thuê trọ', route: '/cam-nang' },
-  ];
+  get navLinks(): readonly NavLink[] {
+    return [
+      { label: 'Thuê phòng', route: '/', exact: true },
+      ...(this.isLandlord ? [{ label: 'Cho thuê / Đăng tin', route: '/dang-tin' }] : []),
+      {
+        label: this.isLandlord ? 'Cẩm nang thuê / cho thuê trọ' : 'Cẩm nang thuê trọ',
+        route: '/cam-nang',
+      },
+      ...(this.isLoggedIn() && this.isTenant
+        ? [
+            { label: 'Tin đã lưu', route: '/phong-da-luu' },
+            { label: 'Yêu cầu thuê & hợp đồng', route: '/yeu-cau-thue' },
+          ]
+        : []),
+    ];
+  }
 
   /** Lấy session hiện tại qua signal (reactive). */
   readonly session = this.auth.session;
@@ -83,9 +93,12 @@ export class SiteHeaderComponent {
 
   get profileUrl(): string {
     switch (this.auth.primaryRole()) {
-      case RoleCode.ADMIN: return '/admin/profile';
-      case RoleCode.LANDLORD: return '/landlord/profile';
-      default: return '/trang-ca-nhan';
+      case RoleCode.ADMIN:
+        return '/admin/profile';
+      case RoleCode.LANDLORD:
+        return '/landlord/profile';
+      default:
+        return '/trang-ca-nhan';
     }
   }
 

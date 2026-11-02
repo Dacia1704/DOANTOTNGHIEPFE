@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   EventEmitter,
   Input,
   OnInit,
@@ -8,7 +9,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { AmenityService } from '@services/room/amenity.service';
 import { AddressService } from '@services/address/address.service';
 import { Amenity } from '@model/amenity/amenity.model';
@@ -17,10 +17,11 @@ import { Ward } from '@model/address/ward.model';
 import { RoomQueryParams } from '@model/room/request/room-query-params';
 import { RoomRentalStatus } from '@model/room/room.model';
 import { CategoryBarComponent } from '../category-bar/category-bar.component';
+import { FilterOption, FilterSelectComponent } from '../filter-select/filter-select.component';
 
 @Component({
   selector: 'app-search-capsule',
-  imports: [FormsModule, CategoryBarComponent],
+  imports: [FilterSelectComponent, CategoryBarComponent],
   templateUrl: './search-capsule.component.html',
   styleUrl: './search-capsule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +36,24 @@ export class SearchCapsuleComponent implements OnInit {
   readonly amenities = signal<Amenity[]>([]);
   readonly provinces = signal<Province[]>([]);
   readonly wards = signal<Ward[]>([]);
+  readonly provinceOptions = computed<FilterOption[]>(() => [
+    { value: '', label: 'Tất cả khu vực' },
+    ...this.provinces().map(({ id, name }) => ({ value: id, label: name })),
+  ]);
+  readonly wardOptions = computed<FilterOption[]>(() => [
+    { value: '', label: 'Tất cả phường / xã' },
+    ...this.wards().map(({ id, name }) => ({ value: id, label: name })),
+  ]);
+  readonly priceOptions: FilterOption[] = [
+    { value: 'all', label: 'Tất cả mức giá' },
+    { value: 'under3', label: 'Dưới 3 triệu' },
+    { value: '3to5', label: '3 – 5 triệu' },
+    { value: 'over5', label: 'Trên 5 triệu' },
+  ];
+  readonly statusOptions: FilterOption[] = [
+    { value: RoomRentalStatus.AVAILABLE, label: 'Còn phòng' },
+    { value: '', label: 'Mọi trạng thái' },
+  ];
   readonly location = signal('');
   readonly provinceId = signal('');
   readonly wardId = signal('');
@@ -67,6 +86,10 @@ export class SearchCapsuleComponent implements OnInit {
     this.selectedAmenityNames.update((names) =>
       checked ? [...new Set([...names, name])] : names.filter((value) => value !== name),
     );
+  }
+
+  onRentalStatusChange(value: string): void {
+    this.rentalStatus.set(value === RoomRentalStatus.AVAILABLE ? RoomRentalStatus.AVAILABLE : '');
   }
 
   onProvinceChange(provinceId: string): void {

@@ -1,23 +1,29 @@
 <div class="profile-page">
+  <div class="profile-shell">
   <header class="page-heading">
     <span class="eyebrow">Tài khoản của bạn</span>
     <h1>Thông tin cá nhân</h1>
     <p>Quản lý hồ sơ và bảo mật tài khoản của bạn tại Trọ Tốt.</p>
   </header>
 
-  @if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
-  @if (success()) { <div class="message success" role="status">{{ success() }}</div> }
   @if (loading()) {
     <div class="panel loading" role="status">Đang tải thông tin cá nhân…</div>
   } @else if (user(); as profile) {
     <div class="profile-grid">
-      <aside>
+      <aside class="profile-sidebar">
         <section class="panel identity">
-          <div class="avatar">
-            @if (profile.avatarUrl) {
-              <img [src]="imageUtils.toImageSrc(profile.avatarUrl)" alt="Ảnh đại diện" (error)="avatarImage.hidden = true" #avatarImage />
-            }
-            <span aria-hidden="true">{{ profile.fullName.charAt(0).toUpperCase() }}</span>
+          <div class="avatar-container">
+            <div class="avatar">
+              @if (profile.avatarUrl) {
+                <img [src]="imageUtils.toImageSrc(profile.avatarUrl)" alt="Ảnh đại diện" (error)="avatarImage.hidden = true" #avatarImage />
+              }
+              <span aria-hidden="true">{{ profile.fullName.charAt(0).toUpperCase() }}</span>
+            </div>
+            <input #avatarInput type="file" hidden accept="image/jpeg,image/png,image/webp" [disabled]="busy()" (change)="upload($event)" />
+            <button type="button" class="avatar-edit" [disabled]="busy()" (click)="avatarInput.click()"
+              aria-label="Thay ảnh đại diện" title="Thay ảnh đại diện (JPG, PNG, WebP)">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
           </div>
           <h2>{{ profile.fullName }}</h2>
           <p class="email">{{ profile.email }}</p>
@@ -36,27 +42,17 @@
           </button>
         </nav>
       </aside>
-      <main>
+      <main class="profile-content">
         @if (section() === 'profile') {
           <section class="panel">
-            <h2>Ảnh đại diện</h2>
-            <p>Một bức ảnh giúp mọi người dễ dàng nhận ra bạn.</p>
-            <div class="avatar-actions">
-              <label class="btn-secondary" [class.disabled]="busy()">
-                <span class="material-symbols-outlined" aria-hidden="true">upload</span> Thay ảnh đại diện
-                <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="busy()" (change)="upload($event)" />
-              </label>
-              @if (profile.avatarUrl) { <button type="button" class="btn-danger" [disabled]="busy()" (click)="removeAvatar()">Xóa ảnh</button> }
+            <div class="section-heading">
+              <span class="material-symbols-outlined" aria-hidden="true">person</span>
+              <div><h2>Thông tin cơ bản</h2><p>Cập nhật thông tin để thuận tiện liên hệ và sử dụng dịch vụ.</p></div>
             </div>
-            <small>Hỗ trợ JPG, PNG và WebP.</small>
-          </section>
-          <section class="panel">
-            <h2>Thông tin cơ bản</h2>
-            <p>Cập nhật thông tin để thuận tiện liên hệ và sử dụng dịch vụ.</p>
             <form [formGroup]="form" (ngSubmit)="save()">
               <fieldset [disabled]="busy()">
                 <div class="fields">
-                  <label class="wide" for="fullName">Họ và tên <span class="required">*</span>
+                  <label class="wide" for="fullName"><span>Họ và tên <span class="required">*</span></span>
                     <input class="input" id="fullName" formControlName="fullName" autocomplete="name" maxlength="100" [attr.aria-invalid]="form.controls.fullName.touched && form.controls.fullName.invalid" />
                     @if (form.controls.fullName.touched && form.controls.fullName.invalid) { <small class="field-error">Nhập họ tên hợp lệ, tối đa 100 ký tự.</small> }
                   </label>
@@ -86,8 +82,10 @@
           </section>
         } @else {
           <section class="panel">
-            <h2>Đổi mật khẩu</h2>
-            <p>Sử dụng mật khẩu riêng để bảo vệ tài khoản của bạn.</p>
+            <div class="section-heading">
+              <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+              <div><h2>Đổi mật khẩu</h2><p>Sử dụng mật khẩu riêng để bảo vệ tài khoản của bạn.</p></div>
+            </div>
             <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
               <fieldset [disabled]="busy()">
                 <div class="fields">
@@ -117,4 +115,5 @@
   } @else {
     <section class="panel loading"><p>Chưa tải được hồ sơ cá nhân.</p><button type="button" class="btn-primary" (click)="load()">Thử lại</button></section>
   }
+  </div>
 </div>

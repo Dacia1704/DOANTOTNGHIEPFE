@@ -4,6 +4,12 @@ import { RoleCode } from '@model/auth/auth.model';
 
 export const TENANT_ROUTES: Routes = [
   {
+    path: 'cam-nang',
+    title: 'Cẩm nang thuê / cho thuê trọ | Trọ Tốt',
+    loadComponent: () =>
+      import('./rental-guide/rental-guide-page.component').then((m) => m.RentalGuidePageComponent),
+  },
+  {
     path: 'yeu-cau-thue',
     canActivate: [roleGuard([RoleCode.TENANT])],
     loadComponent: () =>

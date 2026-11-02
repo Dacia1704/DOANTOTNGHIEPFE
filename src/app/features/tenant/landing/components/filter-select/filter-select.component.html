@@ -1,0 +1,22 @@
+<mat-select
+  #select
+  class="landing-filter-select"
+  [class.is-open]="select.panelOpen"
+  [value]="value"
+  [aria-label]="label"
+  panelWidth="auto"
+  panelClass="landing-filter-panel"
+  (selectionChange)="valueChange.emit($event.value)"
+>
+  <mat-select-trigger>
+    <span class="landing-filter-select__icon material-symbols-outlined" aria-hidden="true">{{ icon }}</span>
+    <span class="landing-filter-select__field">
+      <span class="landing-filter-select__label">{{ label }}</span>
+      <span class="landing-filter-select__value">{{ selectedLabel }}</span>
+    </span>
+    <span class="landing-filter-select__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
+  </mat-select-trigger>
+  @for (option of options; track option.value) {
+    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+  }
+</mat-select>

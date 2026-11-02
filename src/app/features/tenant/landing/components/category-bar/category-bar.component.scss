@@ -1,3 +1,5 @@
+@use '../filter-dropdown' as filter;
+
 :host {
   display: block;
   min-width: 0;
@@ -11,23 +13,7 @@ button:focus-visible {
   outline-offset: 3px;
 }
 .category-picker {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-  min-height: 78px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--on-surface);
-  text-align: left;
-  &:hover,
-  &.has-selection {
-    border-color: var(--primary);
-    background: var(--primary-subtle);
-  }
+  @include filter.trigger;
 }
 .category-picker__icon {
   display: grid;
@@ -68,22 +54,13 @@ button:focus-visible {
     transform: rotate(180deg);
   }
 }
-@media (max-width: 600px) {
-  .category-picker {
-    min-height: 72px;
-  }
-}
 .type-picker {
   display: flex;
   flex-direction: column;
-  width: min(368px, calc(100vw - 32px));
+  width: 100%;
+  min-width: 0;
   max-height: min(540px, calc(100dvh - 120px));
-  box-sizing: border-box;
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-floating);
+  @include filter.panel;
   overflow: hidden;
 }
 .type-picker__header {
@@ -97,6 +74,9 @@ button:focus-visible {
   font-size: 0.9375rem;
   font-weight: 600;
   margin: 0;
+}
+.type-picker__header > div {
+  min-width: 0;
 }
 .type-picker__header p {
   font-size: 0.75rem;
@@ -149,6 +129,7 @@ button:focus-visible {
 }
 .type-picker__footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);

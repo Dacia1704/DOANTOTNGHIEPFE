@@ -6,7 +6,17 @@
           ><span class="material-symbols-outlined" aria-hidden="true">home_work</span>MỘT NƠI Ở, MỘT
           KHỞI ĐẦU MỚI</span
         >
-        <h1 id="landing-title" class="hero__title">Tìm nơi ở <span>hợp với bạn.</span></h1>
+        <div class="hero__title-row">
+          <h1 id="landing-title" class="hero__title">Tìm nơi ở <span>hợp với bạn.</span></h1>
+          <div class="result-view" aria-label="Cách xem kết quả">
+            <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
+              <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách
+            </button>
+            <button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
+              <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+            </button>
+          </div>
+        </div>
         <p class="hero__sub">
           Từ căn phòng đầu tiên đến một tổ ấm mới. Chọn khu vực, ngân sách và những điều bạn cần.
         </p>
@@ -41,14 +51,6 @@
         </button>
       </div>
     }
-    <div class="result-view" aria-label="Cách xem kết quả">
-      <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
-        <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách
-      </button>
-      <button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
-        <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
-      </button>
-    </div>
     @if (view() === 'map') {
       <app-listing-map
         [result]="rooms()"

@@ -15,63 +15,6 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
-.capsule__col {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  min-height: 78px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-  &:hover,
-  &:focus-within {
-    border-color: var(--primary);
-    background: var(--primary-subtle);
-  }
-}
-.capsule__icon {
-  display: grid;
-  width: 32px;
-  height: 36px;
-  flex: 0 0 32px;
-  place-items: center;
-  color: var(--primary);
-  font-size: 23px;
-}
-.capsule__field {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-  gap: 5px;
-}
-.capsule__label {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-}
-.capsule__select {
-  width: 100%;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--on-surface);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 22px;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
 .capsule__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -254,9 +197,6 @@ button:disabled {
   .capsule__fields {
     grid-template-columns: 1fr;
     gap: 10px;
-  }
-  .capsule__col {
-    min-height: 72px;
   }
   .capsule__toolbar {
     gap: 12px;

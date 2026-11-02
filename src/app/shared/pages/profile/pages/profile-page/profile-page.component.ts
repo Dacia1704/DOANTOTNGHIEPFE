@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,12 +20,11 @@ export class ProfilePageComponent {
   private readonly users = inject(UserService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(MatSnackBar);
 
   readonly user = signal<UserProfile | null>(null);
   readonly loading = signal(true);
   readonly busy = signal(false);
-  readonly error = signal('');
-  readonly success = signal('');
   readonly section = signal<'profile' | 'security'>('profile');
   readonly showPasswords = signal(false);
   readonly roleLabels = ROLE_LABELS;
@@ -47,7 +47,6 @@ export class ProfilePageComponent {
 
   load(): void {
     this.loading.set(true);
-    this.error.set('');
     this.users.getMe().pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
@@ -74,8 +73,7 @@ export class ProfilePageComponent {
     input.value = '';
     if (!file || this.busy()) return;
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      this.success.set('');
-      this.error.set('Vui lòng chọn ảnh JPG, PNG hoặc WebP.');
+      this.notify('Vui lòng chọn ảnh JPG, PNG hoặc WebP.', 'error');
       return;
     }
     this.mutate(this.users.uploadAvatar(file), 'Đã cập nhật ảnh đại diện.', true);
@@ -92,7 +90,7 @@ export class ProfilePageComponent {
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.busy.set(false)),
     ).subscribe({
-      next: () => { this.passwordForm.reset(); this.success.set('Đã đổi mật khẩu thành công.'); },
+      next: () => { this.passwordForm.reset(); this.notify('Đã đổi mật khẩu thành công.', 'success'); },
       error: err => this.fail(err),
     });
   }
@@ -100,17 +98,25 @@ export class ProfilePageComponent {
   private mutate(request: Observable<UserProfile>, message: string, preserveEdits = false): void {
     this.begin();
     request.pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.busy.set(false))).subscribe({
-      next: user => { if (preserveEdits) this.user.set(user); else this.applyUser(user); this.success.set(message); },
+      next: user => { if (preserveEdits) this.user.set(user); else this.applyUser(user); this.notify(message, 'success'); },
       error: err => this.fail(err),
     });
   }
 
   private applyUser(user: UserProfile): void { this.user.set(user); this.reset(); }
-  private begin(): void { this.busy.set(true); this.error.set(''); this.success.set(''); }
+  private begin(): void { this.busy.set(true); }
+  private notify(message: string, type: 'success' | 'error'): void {
+    this.toast.open(message, 'Đóng', {
+      duration: type === 'success' ? 3000 : 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['app-toast', `app-toast-${type}`],
+    });
+  }
   private fail(err: unknown): void {
     const response = err as { status?: number; error?: { message?: string } };
-    this.error.set(response.error?.message || (response.status === 0
+    this.notify(response.error?.message || (response.status === 0
       ? 'Không kết nối được máy chủ. Vui lòng thử lại.'
-      : 'Không thể thực hiện yêu cầu. Vui lòng thử lại.'));
+      : 'Không thể thực hiện yêu cầu. Vui lòng thử lại.'), 'error');
   }
 }
