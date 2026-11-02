@@ -69,6 +69,14 @@
             </p>
           }
           <p class="mono muted">Mã tin: {{ listing.id }}</p>
+          @if (admin && listing.property) {
+            <app-property-location
+              [latitude]="listing.property.latitude"
+              [longitude]="listing.property.longitude"
+              [address]="locationAddress(listing)"
+              [collapsible]="true"
+            />
+          }
           @if (listing.rejectionReason) {
             <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
           }
@@ -145,7 +153,10 @@
         <div class="empty">
           <h2>{{ admin ? 'Không có bài đăng phù hợp' : 'Bạn chưa có tin đăng' }}</h2>
           @if (!admin) {
-            <p>Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển thị.</p>
+            <p>
+              Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển
+              thị.
+            </p>
             <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
           }
         </div>
@@ -159,4 +170,3 @@
     />
   }
 </section>
-

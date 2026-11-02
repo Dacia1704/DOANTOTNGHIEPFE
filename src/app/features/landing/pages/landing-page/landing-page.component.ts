@@ -17,6 +17,8 @@ import { RoomRentalStatus } from '@model/room/room.model';
 import { SearchCapsuleComponent } from '../../components/search-capsule/search-capsule.component';
 import { RoomGridComponent } from '../../components/room-grid/room-grid.component';
 import { LandlordCtaComponent } from '../../components/landlord-cta/landlord-cta.component';
+import { ListingMapComponent } from '../../components/listing-map/listing-map.component';
+import { LocationFilter } from '@model/maps/maps.model';
 
 /**
  * Trang landing page của tenant.
@@ -28,7 +30,7 @@ import { LandlordCtaComponent } from '../../components/landlord-cta/landlord-cta
  */
 @Component({
   selector: 'app-landing-page',
-  imports: [SearchCapsuleComponent, RoomGridComponent, LandlordCtaComponent],
+  imports: [SearchCapsuleComponent, RoomGridComponent, LandlordCtaComponent, ListingMapComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +43,7 @@ export class LandingPageComponent implements OnInit {
   readonly rooms = signal<PublicListingList | null>(null);
   readonly searchError = signal('');
   readonly searching = signal(false);
+  readonly view = signal<'list' | 'map'>('list');
   readonly locationLabels = signal({ province: '', ward: '' });
   readonly activeQuery = signal<RoomQueryParams>({
     page: 0,
@@ -70,6 +73,9 @@ export class LandingPageComponent implements OnInit {
     }
     for (const name of query.amenityNames ?? [])
       chips.push({ key: `amenity:${name}`, label: name });
+    if (query.radiusKm != null)
+      chips.push({ key: 'map', label: `Trong bán kính ${query.radiusKm} km` });
+    else if (query.south != null) chips.push({ key: 'map', label: 'Trong khung bản đồ' });
     return chips;
   });
 
@@ -122,6 +128,9 @@ export class LandingPageComponent implements OnInit {
 
   removeFilter(key: string): void {
     switch (key) {
+      case 'map':
+        this.applyLocationFilter(null);
+        break;
       case 'province':
         this.updateFilters({ provinceId: undefined, wardId: undefined });
         break;
@@ -146,6 +155,34 @@ export class LandingPageComponent implements OnInit {
   resetFilters(): void {
     this.activeQuery.set({ page: 0, size: 12, rentalStatus: RoomRentalStatus.AVAILABLE });
     this.loadRooms();
+  }
+  applyLocationFilter(filter: LocationFilter | null): void {
+    const location: RoomQueryParams = {
+      latitude: undefined,
+      longitude: undefined,
+      radiusKm: undefined,
+      south: undefined,
+      north: undefined,
+      west: undefined,
+      east: undefined,
+    };
+    if (filter?.kind === 'radius')
+      Object.assign(location, {
+        latitude: filter.latitude,
+        longitude: filter.longitude,
+        radiusKm: filter.radiusKm,
+      });
+    else if (filter?.kind === 'bounds')
+      Object.assign(location, {
+        south: filter.south,
+        north: filter.north,
+        west: filter.west,
+        east: filter.east,
+      });
+    this.updateFilters(location);
+  }
+  loadMapPage(page: number): void {
+    this.requests.next({ page, append: false });
   }
 
   openRoom(listing: PublicListing): void {

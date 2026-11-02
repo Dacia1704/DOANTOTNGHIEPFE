@@ -11,10 +11,17 @@ import { BillingPagerComponent } from '@shared/components/billing-pager/billing-
 import { BillingConfirmComponent } from '@shared/components/billing-confirm/billing-confirm.component';
 import { ListingEditorComponent } from '../../components/listing-editor/listing-editor.component';
 import { BoostAllocationDialogComponent } from '../../../boost/components/boost-allocation-dialog/boost-allocation-dialog.component';
+import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
 
 @Component({
   selector: 'app-listing-page',
-  imports: [FormsModule, RouterLink, BillingStatusComponent, BillingPagerComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    BillingStatusComponent,
+    BillingPagerComponent,
+    PropertyLocationComponent,
+  ],
   templateUrl: './listing-page.component.html',
   styleUrl: './listing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,6 +68,15 @@ export class ListingPageComponent {
       BillingUtils.published(listing) ||
       (listing.status === 'PENDING' && BillingUtils.future(listing.pendingExpiresAt))
     );
+  }
+  locationAddress(listing: Listing): string {
+    return [
+      listing.property?.addressLine,
+      listing.property?.wardName,
+      listing.property?.provinceName,
+    ]
+      .filter(Boolean)
+      .join(', ');
   }
   edit(listing?: Listing, reject = false): void {
     this.dialog

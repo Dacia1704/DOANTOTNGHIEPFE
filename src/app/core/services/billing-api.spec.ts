@@ -38,6 +38,21 @@ describe('Billing API contracts', () => {
     expect(request.request.body).toEqual({ boostPackageId: 'boost-catalog' });
     request.flush({ data: { id: 'purchase' } });
   });
+  it('uses the admin payment endpoint separately from landlord history and the review queue', () => {
+    const api = TestBed.inject(PaymentService);
+    api.adminList(2).subscribe();
+    const all = http.expectOne((req) => req.url === `${environment.apiUrl}/payments/all`);
+    expect(all.request.params.get('page')).toBe('2');
+    all.flush({ data: { data: [], currentPage: 2, totalPages: 3, totalElements: 25 } });
+    api.list().subscribe();
+    http
+      .expectOne((req) => req.url === `${environment.apiUrl}/payments`)
+      .flush({ data: { data: [], currentPage: 0, totalPages: 0, totalElements: 0 } });
+    api.review().subscribe();
+    http
+      .expectOne((req) => req.url === `${environment.apiUrl}/payments/review`)
+      .flush({ data: { data: [], currentPage: 0, totalPages: 0, totalElements: 0 } });
+  });
   it('keeps server upgrade classification and zero-charge application from the order response', () => {
     let order: SubscriptionOrder | undefined;
     TestBed.inject(SubscriptionService)

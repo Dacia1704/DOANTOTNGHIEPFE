@@ -29,6 +29,11 @@ export class BillingUtils {
     CHANGE: 'Đổi gói',
     SERVICE_PACKAGE: 'Gói dịch vụ',
     BOOST_PACKAGE: 'Boost tin đăng',
+    DUPLICATE_COLLECTION: 'Thu tiền trùng',
+    PAID_AFTER_DEADLINE: 'Thanh toán sau thời hạn',
+    LATE_PAYMENT: 'Thanh toán sau thời hạn',
+    SUBSCRIPTION_CONDITIONS_CHANGED: 'Điều kiện áp dụng gói đã thay đổi',
+    BOOST_CONDITIONS_CHANGED: 'Điều kiện áp dụng Boost đã thay đổi',
   };
   /** Keep unknown server states visible rather than assuming success. */
   static label(status: string): string {

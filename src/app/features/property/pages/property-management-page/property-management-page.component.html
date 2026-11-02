@@ -140,6 +140,9 @@
             </p>
           </div>
           <div class="detail-tags">
+            <button type="button" class="btn-secondary" (click)="editLocation()">
+              Sửa địa chỉ & vị trí
+            </button>
             <span class="badge badge-primary">{{ property.propertyTypeName }}</span
             ><span class="badge">{{ property.rentalModeLabel }}</span>
             @if (property.totalFloors !== null) {
@@ -147,6 +150,12 @@
             }
           </div>
         </header>
+        <app-property-location
+          [latitude]="property.latitude"
+          [longitude]="property.longitude"
+          [address]="property.fullAddress"
+          [collapsible]="true"
+        />
         @if (property.rentalMode === 'BY_ROOM') {
           <div class="overview-stats">
             <div>

@@ -12,4 +12,11 @@ export interface RoomQueryParams {
   maxPrice?: number;
   amenityNames?: string[];
   amenityIds?: string[];
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  south?: number;
+  north?: number;
+  west?: number;
+  east?: number;
 }

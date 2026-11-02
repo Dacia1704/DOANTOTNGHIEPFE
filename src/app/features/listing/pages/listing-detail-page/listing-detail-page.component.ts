@@ -21,10 +21,11 @@ import { ChatWidgetService } from '@services/chat-widget.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoomUtils } from '@shared/utils/room-utils';
 import { BookingDialogComponent } from '../../components/booking-dialog/booking-dialog.component';
+import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
 
 @Component({
   selector: 'app-listing-detail-page',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, PropertyLocationComponent],
   templateUrl: './listing-detail-page.component.html',
   styleUrl: './listing-detail-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,7 +44,9 @@ export class ListingDetailPageComponent implements OnInit {
   readonly chatWidget = inject(ChatWidgetService);
   private readonly requests = new Subject<string>();
   readonly listing = signal<PublicListing | null>(null);
-  readonly wholeMappingInvalid = computed(() => this.listing()?.rentalMode === 'WHOLE' && this.listing()?.property.rooms.length !== 1);
+  readonly wholeMappingInvalid = computed(
+    () => this.listing()?.rentalMode === 'WHOLE' && this.listing()?.property.rooms.length !== 1,
+  );
   readonly selectedRoom = signal<Room | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
@@ -122,16 +125,30 @@ export class ListingDetailPageComponent implements OnInit {
   book(): void {
     const listing = this.listing();
     const room = this.selectedRoom();
-    if (!listing || !room || room.bookingAvailability !== 'AVAILABLE' || this.ownListing() || this.wholeMappingInvalid()) return;
-    if (!this.auth.isLoggedIn()) { void this.router.navigate(['/login'], {queryParams:{redirect:this.router.url}}); return; }
+    if (
+      !listing ||
+      !room ||
+      room.bookingAvailability !== 'AVAILABLE' ||
+      this.ownListing() ||
+      this.wholeMappingInvalid()
+    )
+      return;
+    if (!this.auth.isLoggedIn()) {
+      void this.router.navigate(['/login'], { queryParams: { redirect: this.router.url } });
+      return;
+    }
     if (!this.auth.hasAnyRole([RoleCode.TENANT])) return;
-    this.dialogs.open(BookingDialogComponent, {
-      data: { listing, room },
-      width: '560px',
-      maxWidth: 'calc(100vw - 24px)',
-      maxHeight: '92dvh',
-      autoFocus: 'first-tabbable',
-    }).afterClosed().pipe(takeUntilDestroyed(this.destroy)).subscribe(() => this.reload());
+    this.dialogs
+      .open(BookingDialogComponent, {
+        data: { listing, room },
+        width: '560px',
+        maxWidth: 'calc(100vw - 24px)',
+        maxHeight: '92dvh',
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe(() => this.reload());
   }
 
   chatWithLandlord(): void {

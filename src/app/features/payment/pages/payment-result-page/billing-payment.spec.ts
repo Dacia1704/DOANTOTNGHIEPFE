@@ -182,7 +182,7 @@ describe('Billing payment confirmation', () => {
     const { page, api, subscriptions, payment } = setup();
     api.check.mockReturnValue(
       of({
-        payment: { ...payment, status: 'SUCCESS' },
+        payment: { ...payment, status: 'SUCCESS', invoiceId: 'invoice' },
         providerResponseCode: '00',
         providerTransactionStatus: '00',
         message: 'Đã xác nhận',
@@ -191,7 +191,7 @@ describe('Billing payment confirmation', () => {
     vi.advanceTimersByTime(0);
     expect(api.check).toHaveBeenCalledExactlyOnceWith('payment');
     expect(page.payment()?.status).toBe('SUCCESS');
-    expect(api.invoice).toHaveBeenCalledTimes(2);
+    expect(api.invoice).toHaveBeenCalledTimes(1);
     expect(subscriptions.order).toHaveBeenCalledTimes(2);
     expect(page.verifying()).toBe(false);
     vi.advanceTimersByTime(60000);

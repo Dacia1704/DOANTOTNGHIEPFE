@@ -3,7 +3,9 @@
     <div>
       <p class="eyebrow">Danh mục dịch vụ</p>
       <h1>{{ kind === 'service' ? 'Gói dịch vụ và bảng giá' : 'Danh mục gói suất Boost' }}</h1>
-      <p class="description">Quản lý cả gói đang bán và ngừng bán. Các quyền đã mua giữ nguyên.</p>
+      <p class="description">
+        Thiết lập quyền lợi và giá trong cùng một lần. Bật hoặc ngừng bán cho cả gói.
+      </p>
     </div>
     <button class="primary" (click)="edit()" [disabled]="busy()">Tạo gói</button>
   </header>
@@ -30,6 +32,22 @@
                     : $any(item).maxListings + ' tin'
                 }}
               </p>
+              @if (item.code === 'FREE') {
+                <p class="muted">Miễn phí</p>
+              } @else if (pricesByPackage()[item.id]; as prices) {
+                <div class="package-prices" aria-label="Giá theo thời hạn">
+                  @for (price of prices; track price.id) {
+                    <span
+                      >{{ price.durationMonths }} tháng ·
+                      {{ price.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</span
+                    >
+                  } @empty {
+                    <span class="muted">Chưa có giá · Chỉnh sửa gói để bổ sung</span>
+                  }
+                </div>
+              } @else {
+                <p class="field-error">Không tải được bảng giá. Mở Chỉnh sửa để thử lại.</p>
+              }
             } @else {
               <p>
                 {{
@@ -40,13 +58,21 @@
                 · {{ $any(item).price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}
               </p>
             }
-            <p [class.muted]="!item.active">{{ item.active ? 'Đang bán' : 'Ngừng bán' }}</p>
+            <p [class.muted]="!item.active">
+              @if (
+                kind === 'service' &&
+                item.code !== 'FREE' &&
+                item.active &&
+                pricesByPackage()[item.id]?.length === 0
+              ) {
+                Chưa thể bán · Cần bổ sung giá
+              } @else {
+                {{ item.active ? 'Đang bán' : 'Ngừng bán' }}
+              }
+            </p>
           </div>
           <div class="actions">
             <button (click)="edit(item)" [disabled]="busy()">Chỉnh sửa</button>
-            @if (kind === 'service' && item.code !== 'FREE') {
-              <button (click)="prices(item)" [disabled]="busy()">Quản lý giá</button>
-            }
             @if (item.code !== 'FREE') {
               <button [disabled]="busy()" (click)="toggle(item)">
                 {{ item.active ? 'Ngừng bán' : 'Bật bán' }}

@@ -5,6 +5,7 @@ import { environment } from '@environments/environment';
 import { ApiResponse, PageResponse } from '@model/api-response';
 import { PropertyResponse } from '@model/property/response/property-response';
 import { CreatePropertyRequest } from '@model/property/request/create-property-request';
+import { UpdatePropertyLocationRequest } from '@model/property/request/update-property-location-request';
 import { Property, PropertyList } from '@model/property/property.model';
 import { PropertyMapper } from '@model/property/property.mapper';
 
@@ -43,6 +44,11 @@ export class PropertyService {
   create(request: CreatePropertyRequest): Observable<Property> {
     return this.http
       .post<ApiResponse<PropertyResponse>>(this.api, request)
+      .pipe(map((res) => PropertyMapper.fromResponse(res.data)));
+  }
+  updateLocation(id: string, request: UpdatePropertyLocationRequest): Observable<Property> {
+    return this.http
+      .put<ApiResponse<PropertyResponse>>(`${this.api}/${encodeURIComponent(id)}/location`, request)
       .pipe(map((res) => PropertyMapper.fromResponse(res.data)));
   }
 }

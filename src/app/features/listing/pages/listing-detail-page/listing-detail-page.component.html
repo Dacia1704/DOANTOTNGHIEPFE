@@ -131,7 +131,11 @@
               {{ post.rentalMode === 'WHOLE' ? 'căn' : 'phòng' }}</span
             >
           </div>
-          @if(wholeMappingInvalid()) { <p role="alert">Cơ sở nguyên căn chưa có một phòng đại diện hợp lệ. Vui lòng liên hệ chủ trọ.</p> }
+          @if (wholeMappingInvalid()) {
+            <p role="alert">
+              Cơ sở nguyên căn chưa có một phòng đại diện hợp lệ. Vui lòng liên hệ chủ trọ.
+            </p>
+          }
           <div class="room-options">
             @for (room of post.property.rooms; track room.id) {
               <button
@@ -213,12 +217,7 @@
               </div>
               <div>
                 <dt>Giá điện</dt>
-                <dd>
-                  {{ utils.formatFee(room.electricityPrice)
-                  }}{{
-                    ''
-                  }}
-                </dd>
+                <dd>{{ utils.formatFee(room.electricityPrice) }}{{ '' }}</dd>
               </div>
               <div>
                 <dt>Giá nước</dt>
@@ -268,6 +267,13 @@
             </div>
           }
         </section>
+        <section class="detail-section">
+          <app-property-location
+            [latitude]="post.property.latitude"
+            [longitude]="post.property.longitude"
+            [address]="post.fullAddress"
+          />
+        </section>
       </div>
       <aside class="booking-sidebar" id="dat-phong" aria-label="Đặt phòng và liên hệ">
         <div class="booking-card">
@@ -285,9 +291,11 @@
             <div class="booking-room-meta">
               <span>{{ utils.formatArea(room.areaM2) }}</span
               ><span>{{ room.maxOccupants }} người</span
-              ><span class="availability" [class.unavailable]="room.bookingAvailability !== 'AVAILABLE'">{{
-                utils.bookingLabel(room)
-              }}</span>
+              ><span
+                class="availability"
+                [class.unavailable]="room.bookingAvailability !== 'AVAILABLE'"
+                >{{ utils.bookingLabel(room) }}</span
+              >
             </div>
             <div class="deposit-row">
               <span>Tiền cọc</span><strong>{{ utils.formatFee(room.defaultDeposit) }}</strong>
@@ -295,7 +303,12 @@
             <button
               type="button"
               class="btn-primary booking-button"
-              [disabled]="room.bookingAvailability !== 'AVAILABLE' || ownListing() || wholeMappingInvalid() || (auth.isLoggedIn() && !auth.hasAnyRole([tenantRole]))"
+              [disabled]="
+                room.bookingAvailability !== 'AVAILABLE' ||
+                ownListing() ||
+                wholeMappingInvalid() ||
+                (auth.isLoggedIn() && !auth.hasAnyRole([tenantRole]))
+              "
               (click)="book()"
             >
               <span class="material-symbols-outlined" aria-hidden="true">event_available</span

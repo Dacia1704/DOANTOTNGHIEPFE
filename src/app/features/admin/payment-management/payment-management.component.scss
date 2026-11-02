@@ -1,0 +1,61 @@
+@use '../../../shared/styles/billing';
+
+.billing-page {
+  padding: 0;
+}
+.payment-tabs {
+  margin-bottom: var(--space-lg);
+}
+.payment-tabs a {
+  text-decoration: none;
+}
+.payment-tabs [aria-current='page'] {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary);
+}
+.count {
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-align: center;
+  background: var(--background);
+  color: var(--text-secondary);
+}
+.count.attention {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+}
+.list-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.payment-result {
+  display: grid;
+  gap: var(--space-sm);
+  justify-items: end;
+}
+.payment-amount {
+  font-size: 19px;
+}
+.needs-review {
+  border-color: var(--warning-text);
+}
+.review-reason {
+  color: var(--warning-text);
+  overflow-wrap: anywhere;
+}
+.payment-info .mono {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .payment-result {
+    justify-items: start;
+    width: 100%;
+  }
+  .payment-result > a {
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
