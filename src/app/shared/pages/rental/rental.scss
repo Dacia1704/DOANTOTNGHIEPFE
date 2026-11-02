@@ -1,3 +1,4 @@
+@use '../../styles/management';
 :host {
   font-family: 'Be Vietnam Pro', sans-serif;
   display: block;
@@ -155,5 +156,17 @@ button:disabled {
   margin-bottom: 16px;
 }
 @media (max-width: 639px) {
-  .rental-list-page { padding-inline: 12px; }
+  .rental-list-page {
+    padding-inline: 12px;
+  }
+}
+
+.rental-list-page.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-page .management-filters {
+  margin: 0 0 16px;
 }

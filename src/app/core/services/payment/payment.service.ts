@@ -23,8 +23,8 @@ export class PaymentService {
   private readonly api = inject(BillingApiService);
   private readonly auth = inject(AuthService);
   private readonly memory = new Map<string, PaymentReference[]>();
-  list(page = 0) {
-    return this.api.page<Payment>('payments', page);
+  list(page = 0, size = 10) {
+    return this.api.page<Payment>('payments', page, undefined, {}, size);
   }
   adminList(page = 0) {
     return this.api.page<Payment>('payments/all', page);

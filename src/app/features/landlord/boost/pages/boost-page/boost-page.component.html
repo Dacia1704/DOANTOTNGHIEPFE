@@ -1,15 +1,17 @@
-<section class="billing-page">
-  <header class="page-heading">
-    <div>
-      <p class="eyebrow">Ưu tiên hiển thị</p>
-      <h1>Gói suất Boost</h1>
-      <p class="description">Mua gói trước, phân bổ suất cao và thấp cho tin khi cần.</p>
-    </div>
-    <div class="actions">
-      <a class="button" routerLink="/tin-cua-toi">Tin của tôi</a
-      ><button class="primary" (click)="switchTab('catalog')">Mua gói Boost</button>
-    </div>
-  </header>
+<section class="billing-page management-page">
+  @if (!embedded()) {
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Ưu tiên hiển thị</p>
+        <h1>Gói suất Boost</h1>
+        <p class="description">Mua gói trước, phân bổ suất cao và thấp cho tin khi cần.</p>
+      </div>
+      <div class="actions">
+        <a class="button" routerLink="/tin-cua-toi">Tin của tôi</a
+        ><button class="primary" (click)="switchTab('catalog')">Mua gói Boost</button>
+      </div>
+    </header>
+  }
   <div class="notice">
     Bạn có thể dùng nhiều gói Boost đồng thời, kể cả khi đang dùng Free hoặc gói dịch vụ đã hết hạn.
     Mỗi gói giữ thời hạn riêng; Boost không tăng số tin hoặc kéo dài hạn tin.
@@ -151,53 +153,51 @@
       </div>
     }
   }
+
   @if (tab() === 'history') {
-    @if (historyLoading()) {
-      <p class="loading" role="status">Đang tải lịch sử mua…</p>
-    } @else if (historyError()) {
-      <div class="notice error" role="alert">
-        {{ historyError() }} <button (click)="loadHistory(page())">Thử lại</button>
-      </div>
-    } @else {
-      <div class="list">
-        @for (boost of history(); track boost.id) {
-          <article class="list-item">
-            <div>
-              <h3>{{ boost.packageNameSnapshot }}</h3>
-              <p>
-                {{ boost.highPrioritySlotsSnapshot }} suất cao ·
-                {{ boost.lowPrioritySlotsSnapshot }} suất thấp ·
-                {{ boost.durationMonthsSnapshot }} tháng
-              </p>
-              <p class="muted">
-                {{
-                  boost.startAt
-                    ? ui.date(boost.startAt) + ' – ' + ui.date(boost.endAt)
-                    : 'Bắt đầu sau khi kích hoạt'
-                }}
-              </p>
-              <p class="muted">{{ boost.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</p>
-            </div>
-            <div class="actions">
-              <app-billing-status [status]="boost.status" />
-              @if (boost.status === 'PENDING_PAYMENT' && ui.future(boost.paymentExpiresAt)) {
-                <a
-                  class="button primary"
-                  [routerLink]="['/thanh-toan/xac-nhan/BOOST_PACKAGE', boost.id]"
-                  >Thanh toán</a
-                >
-              }
-            </div>
-          </article>
-        } @empty {
-          <p class="empty">Bạn chưa mua gói Boost.</p>
+    <app-management-table
+      [rows]="history()"
+      [columns]="historyColumns"
+      [rowKey]="boostKey"
+      caption="Lịch sử mua Boost"
+      [loading]="historyLoading()"
+      [error]="historyError()"
+      [disabled]="busy()"
+      [pagination]="pagination()"
+      [pageSize]="pageSize()"
+      (pageChange)="loadHistory($event)"
+      (pageSizeChange)="changePageSize($event)"
+      (retry)="loadHistory(page())"
+      emptyMessage="Bạn chưa mua gói Boost."
+    >
+      <div tableToolbar><h2>Lịch sử mua Boost</h2></div>
+      <ng-template [appTableCell]="history()" column="quota" let-boost>
+        {{ boost.highPrioritySlotsSnapshot }} suất cao · {{ boost.lowPrioritySlotsSnapshot }} suất
+        thấp
+      </ng-template>
+      <ng-template [appTableCell]="history()" column="duration" let-boost>
+        {{ boost.durationMonthsSnapshot }} tháng
+        <span class="cell-subtext">{{
+          boost.startAt
+            ? ui.date(boost.startAt) + ' – ' + ui.date(boost.endAt)
+            : 'Bắt đầu sau khi kích hoạt'
+        }}</span>
+      </ng-template>
+      <ng-template [appTableCell]="history()" column="price" let-boost>
+        <strong>{{ boost.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong>
+      </ng-template>
+      <ng-template [appTableCell]="history()" column="status" let-boost
+        ><app-billing-status [status]="boost.status"
+      /></ng-template>
+      <ng-template [appTableCell]="history()" column="actions" let-boost>
+        @if (boost.status === 'PENDING_PAYMENT' && ui.future(boost.paymentExpiresAt)) {
+          <a class="button primary" [routerLink]="['/thanh-toan/xac-nhan/BOOST_PACKAGE', boost.id]"
+            >Thanh toán</a
+          >
+        } @else {
+          <span>—</span>
         }
-      </div>
-      <app-billing-pager
-        [page]="page()"
-        [totalPages]="totalPages()"
-        (changePage)="loadHistory($event)"
-      />
-    }
+      </ng-template>
+    </app-management-table>
   }
 </section>

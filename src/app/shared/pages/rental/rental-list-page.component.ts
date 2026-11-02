@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,10 +18,22 @@ import { Property } from '@model/property/property.model';
 import { RentalService } from '@services/rental/rental.service';
 import { PropertyService } from '@services/property/property.service';
 import { ConfirmRentalDialogComponent } from './confirm-rental-dialog.component';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 
 @Component({
   selector: 'app-rental-list',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [
+    DatePipe,
+    NgTemplateOutlet,
+    FormsModule,
+    RouterLink,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
+  ],
   templateUrl: './rental-list-page.component.html',
   styleUrl: './rental.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +62,45 @@ export class RentalListPageComponent implements OnInit {
   roomId = '';
   page = 0;
   totalPages = 0;
+  total = 0;
+  pageSize = 10;
+  readonly requestKey = (request: RentalRequest) => request.id;
+  readonly agreementKey = (agreement: RentalAgreement) => agreement.id;
+  readonly requestColumns: readonly ManagementTableColumn<RentalRequest>[] = [
+    { key: 'room', label: 'Cơ sở / phòng' },
+    { key: 'tenant', label: 'Khách thuê', value: (request) => request.tenantName },
+    { key: 'stay', label: 'Thông tin thuê' },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'actions', label: 'Thao tác' },
+  ];
+  readonly agreementColumns: readonly ManagementTableColumn<RentalAgreement>[] = [
+    { key: 'code', label: 'Mã hợp đồng', value: (agreement) => agreement.agreementCode },
+    { key: 'room', label: 'Cơ sở / phòng' },
+    { key: 'tenant', label: 'Khách thuê', value: (agreement) => agreement.tenantName },
+    { key: 'dates', label: 'Thời hạn thuê' },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'actions', label: 'Thao tác' },
+  ];
+  get pagination() {
+    return { page: this.page, total: this.total, totalPages: this.totalPages };
+  }
+  changePage(page: number) {
+    if (this.loading() || this.busy()) return;
+    this.page = page;
+    this.load();
+  }
+  changePageSize(size: number) {
+    if (this.loading() || this.busy()) return;
+    this.pageSize = size;
+    this.page = 0;
+    this.load();
+  }
+  resetFilters() {
+    this.status = '';
+    this.propertyId = '';
+    this.roomId = '';
+    this.filter();
+  }
   get rooms() {
     return this.properties().find((p) => p.id === this.propertyId)?.rooms ?? [];
   }
@@ -78,7 +129,7 @@ export class RentalListPageComponent implements OnInit {
       if (this.propertyId) filters['propertyId'] = this.propertyId;
       if (this.roomId) filters['roomId'] = this.roomId;
       this.api
-        .requests(this.owner, this.page, filters)
+        .requests(this.owner, this.page, filters, this.pageSize)
         .pipe(
           takeUntilDestroyed(this.destroy),
           finalize(() => this.loading.set(false)),
@@ -87,12 +138,14 @@ export class RentalListPageComponent implements OnInit {
           next: (p) => {
             this.requests.set(p.data);
             this.totalPages = p.totalPages;
+            this.total = p.totalElements;
+            this.page = p.currentPage;
           },
           error: (e) => this.fail(e),
         });
     } else
       this.api
-        .agreements(this.owner, this.page)
+        .agreements(this.owner, this.page, this.pageSize)
         .pipe(
           takeUntilDestroyed(this.destroy),
           finalize(() => this.loading.set(false)),
@@ -101,6 +154,8 @@ export class RentalListPageComponent implements OnInit {
           next: (p) => {
             this.contracts.set(p.data);
             this.totalPages = p.totalPages;
+            this.total = p.totalElements;
+            this.page = p.currentPage;
           },
           error: (e) => this.fail(e),
         });

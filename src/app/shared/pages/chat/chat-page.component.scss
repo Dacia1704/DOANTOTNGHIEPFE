@@ -1,10 +1,59 @@
 :host {
   display: block;
 }
+:host-context(.dashboard-layout--chat) {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
 .chat-page {
   max-width: var(--container-max);
   margin: auto;
   padding: var(--space-xl) var(--space-lg);
+}
+:host-context(.dashboard-layout--landlord) .chat-page:not(.chat-page--compact) {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  .page-heading,
+  .error-banner {
+    flex-shrink: 0;
+    min-width: 0;
+  }
+
+  .page-heading {
+    flex-wrap: wrap;
+  }
+
+  .inbox {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+  }
+
+  .conversation-list,
+  .conversation-panel,
+  .messages {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .conversation-items {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+  }
 }
 .page-heading {
   display: flex;

@@ -1,4 +1,4 @@
-<header class="site-header">
+<header class="site-header" [class.site-header--dashboard]="landlordMode">
   <div class="site-header__inner">
     <!-- Logo -->
     <div class="site-header__brand-group">
@@ -42,7 +42,12 @@
 
     <!-- Right actions -->
     <div class="site-header__actions">
-      <button type="button" class="site-header__cta" (click)="postListing()">
+      <button
+        type="button"
+        class="site-header__cta"
+        [attr.aria-label]="isLandlord ? 'Đăng tin phòng mới' : 'Tạo hợp đồng'"
+        (click)="postListing()"
+      >
         <span class="material-symbols-outlined">add_circle</span>
         @if (isLandlord) {
           <span>Đăng tin phòng mới</span>
@@ -93,6 +98,7 @@
           <div
             class="site-header__user-menu-items"
             [style.width.px]="avatarTrigger.getBoundingClientRect().width - 2"
+            [style.min-width.px]="landlordMode ? 240 : null"
           >
             <a mat-menu-item [routerLink]="profileUrl">
               <span class="material-symbols-outlined mi">person</span>
@@ -120,37 +126,11 @@
                 {{ adminMode ? 'Về website' : 'Trang quản trị' }}
               </a>
             } @else if (isLandlord) {
-              <a mat-menu-item [routerLink]="landlordMode ? '/' : '/phong-cua-toi'">
-                <span class="material-symbols-outlined mi" aria-hidden="true">{{
-                  landlordMode ? 'home' : 'dashboard'
-                }}</span>
-                {{ landlordMode ? 'Về website' : 'Quản lý cho thuê' }}
-              </a>
-              <a mat-menu-item routerLink="/quan-ly-dat-phong"
-                ><span class="material-symbols-outlined mi">event_available</span>Yêu cầu đặt phòng
-                & hợp đồng</a
-              >
-              <a mat-menu-item routerLink="/goi-dich-vu"
-                ><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a
-              >
-              <a mat-menu-item routerLink="/boost"
-                ><span class="material-symbols-outlined mi">bolt</span>Gói suất Boost</a
-              >
-              <a mat-menu-item routerLink="/lich-su-thanh-toan"
-                ><span class="material-symbols-outlined mi">receipt_long</span>Lịch sử thanh toán</a
-              >
-              <a mat-menu-item routerLink="/tin-cua-toi"
-                ><span class="material-symbols-outlined mi">article</span>Tin của tôi</a
-              >
               <a mat-menu-item routerLink="/phong-cua-toi">
-                <span class="material-symbols-outlined mi">real_estate_agent</span>
-                Cơ sở cho thuê của tôi
+                <span class="material-symbols-outlined mi" aria-hidden="true">dashboard</span>
+                Trang quản lý
               </a>
-              <a mat-menu-item routerLink="/dang-tin">
-                <span class="material-symbols-outlined mi">add_circle</span>
-                Đăng tin phòng mới
-              </a>
-              <a mat-menu-item routerLink="/landlord/profile">
+              <a mat-menu-item routerLink="/cai-dat">
                 <span class="material-symbols-outlined mi">settings</span>
                 Cài đặt
               </a>

@@ -14,11 +14,11 @@ export class RentalService {
       .post<ApiResponse<RentalRequest>>(`${this.base}/rental-requests`, body)
       .pipe(map((r) => r.data));
   }
-  requests(owner: boolean, page = 0, filters: Record<string, string> = {}) {
+  requests(owner: boolean, page = 0, filters: Record<string, string> = {}, size = 10) {
     return this.http
       .get<ApiResponse<PageResponse<RentalRequest>>>(
         `${this.base}/${owner ? 'landlord/rental-requests' : 'rental-requests/my'}`,
-        { params: { ...filters, page, size: 10 } },
+        { params: { ...filters, page, size } },
       )
       .pipe(map((r) => r.data));
   }
@@ -27,11 +27,11 @@ export class RentalService {
       .get<ApiResponse<RentalRequest>>(`${this.base}/rental-requests/${encodeURIComponent(id)}`)
       .pipe(map((r) => r.data));
   }
-  agreements(owner: boolean, page = 0) {
+  agreements(owner: boolean, page = 0, size = 10) {
     return this.http
       .get<ApiResponse<PageResponse<RentalAgreement>>>(
         `${this.base}/${owner ? 'landlord/rental-agreements' : 'rental-agreements/my'}`,
-        { params: { page, size: 10 } },
+        { params: { page, size } },
       )
       .pipe(map((r) => r.data));
   }

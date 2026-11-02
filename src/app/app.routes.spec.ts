@@ -73,12 +73,7 @@ describe('role layouts and navigation', () => {
           useValue: {
             isLoggedIn: () => loggedIn,
             hasAnyRole: (roles: RoleCode[]) => roles.includes(role),
-            homeUrl: () =>
-              role === RoleCode.ADMIN
-                ? '/admin'
-                : role === RoleCode.LANDLORD
-                  ? '/phong-cua-toi'
-                  : '/',
+            homeUrl: () => (role === RoleCode.ADMIN ? '/admin' : '/'),
           },
         },
       ],
@@ -102,9 +97,7 @@ describe('role layouts and navigation', () => {
       '/tin-cua-toi',
       '/quan-ly-dat-phong',
       '/goi-dich-vu',
-      '/boost',
       '/lich-su-thanh-toan',
-      '/landlord/profile',
       '/landlord/messages',
       '/landlord/agreements/contract',
     ]) {
@@ -115,6 +108,14 @@ describe('role layouts and navigation', () => {
     expect(router.url).toBe('/phong-cua-toi');
     await harness.navigateByUrl('/dang-tin', LandlordShell);
     expect(router.url).toBe('/tin-cua-toi');
+    await harness.navigateByUrl('/boost', LandlordShell);
+    expect(router.url).toBe('/goi-dich-vu?tab=boost');
+  });
+
+  it('keeps the landlord landing page in the public layout', async () => {
+    role = RoleCode.LANDLORD;
+    await harness.navigateByUrl('/', TenantShell);
+    expect(router.url).toBe('/');
   });
 
   it('preserves payment return query parameters', async () => {
@@ -127,8 +128,6 @@ describe('role layouts and navigation', () => {
   it('selects role layouts for shared legacy URLs', async () => {
     role = RoleCode.LANDLORD;
     for (const [oldUrl, newUrl] of [
-      ['/trang-ca-nhan', '/landlord/profile'],
-      ['/cai-dat', '/landlord/profile'],
       ['/tin-nhan?conversation=chat', '/landlord/messages?conversation=chat'],
       ['/hop-dong/contract', '/landlord/agreements/contract'],
     ]) {
@@ -150,10 +149,30 @@ describe('role layouts and navigation', () => {
   });
 
   it('prevents tenants from entering landlord and admin dashboards', async () => {
-    for (const url of ['/phong-cua-toi', '/landlord/profile', '/admin/users']) {
+    for (const url of ['/phong-cua-toi', '/admin/users']) {
       await harness.navigateByUrl(url, TenantShell);
       expect(router.url).toBe('/');
     }
+  });
+
+  it.each([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])(
+    'uses one shared profile route for %s',
+    async (userRole) => {
+      role = userRole;
+      await harness.navigateByUrl('/trang-ca-nhan', TenantShell);
+      expect(router.url).toBe('/trang-ca-nhan');
+      for (const alias of ['/cai-dat', '/landlord/profile', '/admin/profile']) {
+        await harness.navigateByUrl(alias + '?section=security#account', TenantShell);
+        expect(router.url).toBe('/trang-ca-nhan?section=security#account');
+      }
+    },
+  );
+
+  it('requires login for the shared profile page', async () => {
+    loggedIn = false;
+    await harness.navigateByUrl('/trang-ca-nhan', TenantShell);
+    expect(router.url.split('?')[0]).toBe('/login');
+    expect(router.parseUrl(router.url).queryParams['redirect']).toBe('/trang-ca-nhan');
   });
 
   it('checks access again when navigating between landlord children', async () => {

@@ -1,4 +1,8 @@
-<div class="dashboard-layout">
+<div
+  class="dashboard-layout"
+  [class.dashboard-layout--landlord]="mode === 'landlord'"
+  [class.dashboard-layout--chat]="mode === 'landlord' && chatPage()"
+>
   <app-site-header [adminMode]="mode === 'admin'" [landlordMode]="mode === 'landlord'" />
   <mat-sidenav-container
     class="dashboard-layout__container"
@@ -51,11 +55,11 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <main class="dashboard-layout__main">
-        <nav class="dashboard-layout__breadcrumb" aria-label="Đường dẫn">
+        <!-- <nav class="dashboard-layout__breadcrumb" aria-label="Đường dẫn">
           <a [routerLink]="home">{{ title }}</a>
           <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
           <span aria-current="page">{{ pageLabel() }}</span>
-        </nav>
+        </nav> -->
         <section class="dashboard-layout__content"><router-outlet /></section>
       </main>
     </mat-sidenav-content>

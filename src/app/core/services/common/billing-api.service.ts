@@ -18,8 +18,14 @@ export class BillingApiService {
       .get<ApiResponse<BillingResponse<T>>>(`${this.api}/${path}`)
       .pipe(map((res) => BillingMapper.fromResponse<T>(res.data)));
   }
-  page<T>(path: string, page = 0, includeInactive?: boolean, filters: Record<string, string> = {}): Observable<ResultPage<T>> {
-    const params: Record<string, string | number | boolean> = { ...filters, page, size: 10 };
+  page<T>(
+    path: string,
+    page = 0,
+    includeInactive?: boolean,
+    filters: Record<string, string> = {},
+    size = 10,
+  ): Observable<ResultPage<T>> {
+    const params: Record<string, string | number | boolean> = { ...filters, page, size };
     if (includeInactive !== undefined) params['includeInactive'] = includeInactive;
     return this.http
       .get<ApiResponse<PageResponse<BillingResponse<T>>>>(`${this.api}/${path}`, { params })

@@ -20,8 +20,6 @@ export const LANDLORD_ROUTES: Routes = [
     path: '',
     canMatch: [isLandlord],
     children: [
-      { path: 'trang-ca-nhan', redirectTo: dashboardRedirect('profile'), pathMatch: 'full' },
-      { path: 'cai-dat', redirectTo: dashboardRedirect('profile'), pathMatch: 'full' },
       { path: 'tin-nhan', redirectTo: dashboardRedirect('messages'), pathMatch: 'full' },
       { path: 'hop-dong/:id', redirectTo: dashboardRedirect('agreements'), pathMatch: 'full' },
     ],
@@ -37,16 +35,18 @@ export const LANDLORD_ROUTES: Routes = [
   {
     path: 'goi-dich-vu',
     loadComponent: () =>
-      import('@features/landlord/service-package/pages/service-package-page/service-package-page.component').then(
-        (m) => m.ServicePackagePageComponent,
+      import('@features/landlord/packages/packages-page.component').then(
+        (m) => m.PackagesPageComponent,
       ),
   },
   {
     path: 'boost',
-    loadComponent: () =>
-      import('@features/landlord/boost/pages/boost-page/boost-page.component').then(
-        (m) => m.BoostPageComponent,
-      ),
+    pathMatch: 'full',
+    redirectTo: ({ queryParams, fragment }) =>
+      inject(Router).createUrlTree(['/goi-dich-vu'], {
+        queryParams: { ...queryParams, tab: 'boost' },
+        fragment: fragment ?? undefined,
+      }),
   },
   {
     path: 'tin-cua-toi',
@@ -109,13 +109,6 @@ export const LANDLORD_ROUTES: Routes = [
     path: 'danh-sach-phong',
     redirectTo: 'phong-cua-toi',
     pathMatch: 'full',
-  },
-  {
-    path: 'landlord/profile',
-    loadComponent: () =>
-      import('@shared/pages/profile/pages/profile-page/profile-page.component').then(
-        (m) => m.ProfilePageComponent,
-      ),
   },
   {
     path: 'landlord/messages',

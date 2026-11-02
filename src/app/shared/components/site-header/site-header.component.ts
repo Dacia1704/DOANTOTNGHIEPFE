@@ -91,16 +91,7 @@ export class SiteHeaderComponent {
     }
   }
 
-  get profileUrl(): string {
-    switch (this.auth.primaryRole()) {
-      case RoleCode.ADMIN:
-        return '/admin/profile';
-      case RoleCode.LANDLORD:
-        return '/landlord/profile';
-      default:
-        return '/trang-ca-nhan';
-    }
-  }
+  readonly profileUrl = '/trang-ca-nhan';
 
   logout(): void {
     this.auth.logout();

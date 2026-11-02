@@ -38,6 +38,7 @@ export class DashboardLayoutComponent implements OnChanges {
   readonly mobile = signal(false);
   readonly collapsed = signal(false);
   readonly pageLabel = signal('Quản trị');
+  readonly chatPage = signal(false);
   @Input({ required: true }) menu: NavItem[] = [];
   @Input() title = 'Quản trị';
   @Input() home = '/admin';
@@ -75,6 +76,7 @@ export class DashboardLayoutComponent implements OnChanges {
 
   private updateBreadcrumb(): void {
     const path = this.router.url.split(/[?#]/)[0];
+    this.chatPage.set(path === '/landlord/messages');
     this.pageLabel.set(
       this.menu.find((item) => path === item.route || path.startsWith(item.route + '/'))?.label ??
         this.title,

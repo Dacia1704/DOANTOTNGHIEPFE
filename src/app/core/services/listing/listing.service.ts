@@ -6,14 +6,20 @@ import { SaveListingRequest } from '@model/billing/request/billing-request';
 @Injectable({ providedIn: 'root' })
 export class ListingService {
   private readonly api = inject(BillingApiService);
-  mine(page = 0) {
-    return this.api.page<Listing>('listings/mine', page);
+  mine(page = 0, size = 10) {
+    return this.api.page<Listing>('listings/mine', page, undefined, {}, size);
   }
   allMine() {
     return this.api.all<Listing>('listings/mine');
   }
-  admin(page = 0, status?: string) {
-    return this.api.page<Listing>('listings/admin', page, undefined, status ? { status } : {});
+  admin(page = 0, status?: string, size = 10) {
+    return this.api.page<Listing>(
+      'listings/admin',
+      page,
+      undefined,
+      status ? { status } : {},
+      size,
+    );
   }
   pending(page = 0) {
     return this.api.page<Listing>('listings/pending', page);

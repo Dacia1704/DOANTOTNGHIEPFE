@@ -38,14 +38,14 @@ describe('Admin manages posts rather than rooms', () => {
     });
     const fixture = TestBed.createComponent(ListingPageComponent);
     fixture.detectChanges();
-    expect(api.admin).toHaveBeenCalledWith(0, undefined);
+    expect(api.admin).toHaveBeenCalledWith(0, undefined, 10);
     expect(api.pending).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.querySelectorAll('article').length).toBe(5);
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(5);
     const approve = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     expect(approve.filter((button) => button.textContent?.trim() === 'Duyệt tin').length).toBe(1);
     expect(approve.filter((button) => button.textContent?.trim() === 'Từ chối').length).toBe(1);
     fixture.componentInstance.statusFilter.set('HIDDEN');
     fixture.componentInstance.load(0);
-    expect(api.admin).toHaveBeenLastCalledWith(0, 'HIDDEN');
+    expect(api.admin).toHaveBeenLastCalledWith(0, 'HIDDEN', 10);
   });
 });

@@ -56,13 +56,7 @@ export class OtpPageComponent {
   }
 
   get email(): string { return this.emailForm.controls.email.value.trim().toLowerCase(); }
-  get profileUrl(): string {
-    switch (this.auth.primaryRole()) {
-      case 'ADMIN': return '/admin/profile';
-      case 'LANDLORD': return '/landlord/profile';
-      default: return '/trang-ca-nhan';
-    }
-  }
+  readonly profileUrl = '/trang-ca-nhan';
 
   send(): void {
     this.emailForm.controls.email.setValue(this.email);

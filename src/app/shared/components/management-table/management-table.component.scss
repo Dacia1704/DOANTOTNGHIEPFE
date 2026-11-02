@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.management-table {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+.table-toolbar {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.table-toolbar:empty {
+  display: none;
+}
+.page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+.page-size select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.page-size select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.table-scroll:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+th {
+  padding: 14px 20px;
+  background: var(--background);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+td {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:hover {
+  background: var(--primary-subtle);
+}
+.table-state {
+  padding: var(--space-3xl);
+  text-align: center !important;
+  color: var(--text-secondary);
+}
+.table-state > .material-symbols-outlined {
+  font-size: 36px;
+  color: var(--primary);
+}
+.table-state p {
+  margin: var(--space-sm) 0 var(--space-md);
+}
+.empty-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.total {
+  margin-right: auto;
+  color: var(--text-secondary);
+}
+@media (max-width: 600px) {
+  th,
+  td {
+    padding: 12px;
+  }
+  .table-state {
+    padding: var(--space-lg);
+  }
+  .table-pagination {
+    gap: var(--space-sm);
+    padding: 12px;
+  }
+  .total {
+    flex-basis: 100%;
+  }
+}

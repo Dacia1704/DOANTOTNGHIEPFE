@@ -1,0 +1,32 @@
+<section class="billing-page management-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Dịch vụ dành cho chủ trọ</p>
+      <h1>Gói dịch vụ & Boost tin đăng</h1>
+      <p class="description">Quản lý quyền đăng tin, suất ưu tiên và lịch sử mua tại một nơi.</p>
+    </div>
+    <div class="actions">
+      <a class="button" routerLink="/tin-cua-toi">Tin của tôi</a>
+      <a class="button" routerLink="/lich-su-thanh-toan">Lịch sử thanh toán</a>
+    </div>
+  </header>
+  <mat-tab-group
+    [selectedIndex]="selectedTab()"
+    (selectedIndexChange)="selectTab($event)"
+    [preserveContent]="true"
+    mat-align-tabs="start"
+    [mat-stretch-tabs]="false"
+    animationDuration="0ms"
+  >
+    <mat-tab label="Gói dịch vụ">
+      <ng-template matTabContent
+        ><div class="package-tab"><app-service-package-page [embedded]="true" /></div
+      ></ng-template>
+    </mat-tab>
+    <mat-tab label="Boost tin đăng">
+      <ng-template matTabContent
+        ><div class="package-tab"><app-boost-page [embedded]="true" /></div
+      ></ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</section>

@@ -1,4 +1,4 @@
-<section class="billing-page">
+<section class="billing-page management-page">
   <header class="page-heading">
     <div>
       <p class="eyebrow">{{ admin ? 'Kiểm duyệt nội dung' : 'Quản lý đăng tin' }}</p>
@@ -20,55 +20,75 @@
       </div>
     }
   </header>
-  @if (admin) {
-    <label class="status-filter"
-      >Trạng thái bài đăng<select
-        [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event); load(0)"
-        [disabled]="loading() || busy()"
-      >
-        <option value="">Tất cả trạng thái</option>
-        @for (status of statuses; track status) {
-          <option [value]="status">{{ ui.label(status) }}</option>
-        }
-      </select></label
-    >
-  }
-  @if (error()) {
-    <div class="notice error" role="alert">
-      {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Tải lại</button>
-    </div>
-  }
+
   @if (success()) {
     <p class="notice success" role="status">{{ success() }}</p>
   }
-  @if (loading()) {
-    <p class="loading" role="status">Đang tải tin đăng…</p>
-  } @else {
-    <div class="stack">
-      @for (listing of items(); track listing.id) {
-        <article class="panel">
-          <div class="row">
-            <h2>{{ listing.title }}</h2>
-            <app-billing-status
-              [status]="
-                (listing.status === 'PUBLISHED' && !ui.published(listing)) ||
-                (listing.status === 'PENDING' && !ui.future(listing.pendingExpiresAt))
-                  ? 'EXPIRED'
-                  : listing.status
-              "
-            />
-          </div>
-          <p class="listing-description">{{ listing.description }}</p>
-          @if (admin) {
-            <p class="muted">
-              Chủ trọ: {{ listing.landlordName || listing.landlordId }}
-              @if (listing.propertyName) {
-                · {{ listing.propertyName }}
-              }
-            </p>
+  <app-management-table
+    [rows]="items()"
+    [columns]="columns"
+    [rowKey]="listingKey"
+    caption="Danh sách tin đăng"
+    [loading]="loading()"
+    [error]="error()"
+    [disabled]="busy()"
+    [pagination]="pagination()"
+    [pageSize]="pageSize()"
+    (pageChange)="load($event)"
+    (pageSizeChange)="changePageSize($event)"
+    (retry)="load()"
+    [emptyMessage]="admin ? 'Không có bài đăng phù hợp' : 'Bạn chưa có tin đăng'"
+  >
+    <form
+      tableToolbar
+      class="management-filters"
+      aria-label="Bộ lọc tin đăng"
+      (submit)="$event.preventDefault()"
+      (reset)="resetFilters()"
+    >
+      <label class="filter-search"
+        >Tìm tin đăng<input type="search" name="keyword" placeholder="Tiêu đề, mã tin đăng…"
+      /></label>
+      <label
+        >Trạng thái bài đăng<select
+          name="status"
+          [ngModel]="statusFilter()"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="statusFilter.set($event); admin && load(0)"
+          [disabled]="loading() || busy()"
+        >
+          <option value="">Tất cả trạng thái</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ ui.label(status) }}</option>
           }
-          <p class="mono muted">Mã tin: {{ listing.id }}</p>
+        </select></label
+      >
+      <label
+        >Mức ưu tiên<select name="priority">
+          <option value="">Tất cả mức ưu tiên</option>
+          <option value="0">Thường</option>
+          <option value="1">Ưu tiên thấp</option>
+          <option value="2">Ưu tiên cao</option>
+        </select></label
+      >
+      <label>Ngày đăng từ<input type="date" name="from" /></label>
+      <button type="reset" [disabled]="loading() || busy()">Xóa bộ lọc</button>
+    </form>
+    <ng-template [appTableCell]="items()" column="listing" let-listing>
+      <div class="cell-content">
+        <strong class="cell-title">{{ listing.title }}</strong>
+        <span class="cell-subtext">Mã tin: {{ listing.id }}</span>
+        @if (listing.propertyName) {
+          <span class="cell-subtext">{{ listing.propertyName }}</span>
+        }
+        @if (admin) {
+          <span class="cell-subtext"
+            >Chủ trọ: {{ listing.landlordName || listing.landlordId }}</span
+          >
+        }
+        <details>
+          <summary>Xem nội dung</summary>
+          <p class="listing-description">{{ listing.description }}</p>
           @if (admin && listing.property) {
             <app-property-location
               [latitude]="listing.property.latitude"
@@ -77,96 +97,95 @@
               [collapsible]="true"
             />
           }
-          @if (listing.rejectionReason) {
-            <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
+        </details>
+      </div>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="status" let-listing>
+      <app-billing-status
+        [status]="
+          (listing.status === 'PUBLISHED' && !ui.published(listing)) ||
+          (listing.status === 'PENDING' && !ui.future(listing.pendingExpiresAt))
+            ? 'EXPIRED'
+            : listing.status
+        "
+      />
+      @if (listing.rejectionReason) {
+        <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
+      }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="dates" let-listing>
+      {{ ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt) }}
+      <span class="cell-subtext">{{
+        listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn hiển thị'
+      }}</span>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="priority" let-listing>
+      @if (ui.published(listing)) {
+        <strong>{{
+          listing.priorityLevel === 2
+            ? 'Ưu tiên cao'
+            : listing.priorityLevel === 1
+              ? 'Ưu tiên thấp'
+              : 'Thường'
+        }}</strong>
+        <span class="cell-subtext"
+          >Theo gói:
+          {{
+            listing.packagePriorityLevel === 2
+              ? 'Cao'
+              : listing.packagePriorityLevel === 1
+                ? 'Thấp'
+                : 'Không chọn suất riêng'
+          }}</span
+        >
+      } @else {
+        <span>—</span>
+      }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="actions" let-listing>
+      <div class="table-actions">
+        @if (admin && listing.status === 'PENDING' && ui.future(listing.pendingExpiresAt)) {
+          <button class="primary" [disabled]="busy()" (click)="action(listing, 'approve')">
+            Duyệt tin</button
+          ><button class="danger" [disabled]="busy()" (click)="edit(listing, true)">Từ chối</button>
+        } @else if (!admin) {
+          @if (holding(listing)) {
+            <button [disabled]="busy()" (click)="action(listing, 'hide')">Ẩn tin</button>
+          } @else {
+            <button [disabled]="busy()" (click)="edit(listing)">Sửa nội dung</button
+            ><button class="primary" [disabled]="busy()" (click)="action(listing, 'submit')">
+              Gửi duyệt lại
+            </button>
           }
-          <p class="muted">
-            {{
-              listing.status === 'PENDING'
-                ? 'Hạn chờ duyệt: ' + ui.date(listing.pendingExpiresAt)
-                : 'Hạn hiển thị: ' + ui.date(listing.expiresAt)
-            }}
-          </p>
           @if (ui.published(listing)) {
-            <p>
-              Mức hiển thị thực tế:
-              <strong>{{
-                listing.priorityLevel === 2
-                  ? 'Ưu tiên cao'
-                  : listing.priorityLevel === 1
-                    ? 'Ưu tiên thấp'
-                    : 'Thường'
-              }}</strong>
-            </p>
-            <p class="muted">
-              Lựa chọn theo gói dịch vụ:
-              {{
-                listing.packagePriorityLevel === 2
-                  ? 'Cao'
-                  : listing.packagePriorityLevel === 1
-                    ? 'Thấp'
-                    : 'Không chọn suất riêng'
-              }}
-            </p>
+            <button class="subtle" [disabled]="busy()" (click)="allocation(listing)">
+              Phân bổ / thu hồi Boost
+            </button>
           }
+        }
+      </div>
+      @if (!admin && ui.published(listing)) {
+        <details class="package-priority">
+          <summary>Ưu tiên theo gói dịch vụ</summary>
+          <p class="muted">
+            Thao tác dùng suất của kỳ dịch vụ hiện tại. Rút suất riêng vẫn giữ mức mặc định của gói;
+            phân bổ Boost được quản lý độc lập.
+          </p>
           <div class="actions">
-            @if (admin && listing.status === 'PENDING' && ui.future(listing.pendingExpiresAt)) {
-              <button class="primary" [disabled]="busy()" (click)="action(listing, 'approve')">
-                Duyệt tin</button
-              ><button class="danger" [disabled]="busy()" (click)="edit(listing, true)">
-                Từ chối
-              </button>
-            } @else if (!admin) {
-              @if (holding(listing)) {
-                <button [disabled]="busy()" (click)="action(listing, 'hide')">Ẩn tin</button>
-              } @else {
-                <button [disabled]="busy()" (click)="edit(listing)">Sửa nội dung</button
-                ><button class="primary" [disabled]="busy()" (click)="action(listing, 'submit')">
-                  Gửi duyệt lại
-                </button>
-              }
-              @if (ui.published(listing)) {
-                <button class="subtle" [disabled]="busy()" (click)="allocation(listing)">
-                  Phân bổ / thu hồi Boost
-                </button>
-              }
-            }
+            <button [disabled]="busy()" (click)="priority(listing, 2)">Chọn suất cao</button
+            ><button [disabled]="busy()" (click)="priority(listing, 1)">Chọn suất thấp</button
+            ><button [disabled]="busy()" (click)="priority(listing, 0)">Rút suất đã chọn</button>
           </div>
-          @if (!admin && ui.published(listing)) {
-            <details class="package-priority">
-              <summary>Ưu tiên theo gói dịch vụ</summary>
-              <p class="muted">
-                Thao tác dùng suất của kỳ dịch vụ hiện tại. Rút suất riêng vẫn giữ mức mặc định của
-                gói; phân bổ Boost được quản lý độc lập.
-              </p>
-              <div class="actions">
-                <button [disabled]="busy()" (click)="priority(listing, 2)">Chọn suất cao</button
-                ><button [disabled]="busy()" (click)="priority(listing, 1)">Chọn suất thấp</button
-                ><button [disabled]="busy()" (click)="priority(listing, 0)">
-                  Rút suất đã chọn
-                </button>
-              </div>
-            </details>
-          }
-        </article>
-      } @empty {
-        <div class="empty">
-          <h2>{{ admin ? 'Không có bài đăng phù hợp' : 'Bạn chưa có tin đăng' }}</h2>
-          @if (!admin) {
-            <p>
-              Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển
-              thị.
-            </p>
-            <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
-          }
-        </div>
+        </details>
+      }
+    </ng-template>
+    <div tableEmpty>
+      @if (!admin) {
+        <p>
+          Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển thị.
+        </p>
+        <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
       }
     </div>
-    <app-billing-pager
-      [page]="page()"
-      [totalPages]="totalPages()"
-      [disabled]="busy()"
-      (changePage)="load($event)"
-    />
-  }
+  </app-management-table>
 </section>

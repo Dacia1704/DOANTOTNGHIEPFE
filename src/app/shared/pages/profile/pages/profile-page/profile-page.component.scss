@@ -8,6 +8,12 @@
   margin: 0 auto;
   padding: var(--space-md) var(--gutter);
 }
+:host-context(.dashboard-layout--landlord) .profile-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
 .profile-shell {
   background: var(--surface);
   border: 1px solid var(--border);

@@ -15,9 +15,7 @@ export class LandlordLayout {
     { icon: 'article', label: 'Quản lý tin đăng', route: '/tin-cua-toi' },
     { icon: 'event_available', label: 'Đặt phòng & hợp đồng', route: '/quan-ly-dat-phong' },
     { icon: 'forum', label: 'Tin nhắn & hỗ trợ', route: '/landlord/messages' },
-    { icon: 'inventory_2', label: 'Gói dịch vụ', route: '/goi-dich-vu' },
-    { icon: 'bolt', label: 'Gói suất Boost', route: '/boost' },
+    { icon: 'inventory_2', label: 'Gói dịch vụ & Boost', route: '/goi-dich-vu' },
     { icon: 'receipt_long', label: 'Lịch sử thanh toán', route: '/lich-su-thanh-toan' },
-    { icon: 'person', label: 'Hồ sơ cá nhân', route: '/landlord/profile' },
   ];
 }

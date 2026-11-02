@@ -1,6 +1,13 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { RedirectFunction, Router, Routes } from '@angular/router';
 import { roleGuard } from '@guards/role.guard';
 import { RoleCode } from '@model/auth/auth.model';
+
+const profileRedirect: RedirectFunction = ({ queryParams, fragment }) =>
+  inject(Router).createUrlTree(['/trang-ca-nhan'], {
+    queryParams,
+    fragment: fragment ?? undefined,
+  });
 
 export const TENANT_ROUTES: Routes = [
   {
@@ -74,7 +81,10 @@ export const TENANT_ROUTES: Routes = [
   },
   {
     path: 'cai-dat',
-    redirectTo: 'trang-ca-nhan',
+    redirectTo: profileRedirect,
     pathMatch: 'full',
   },
+  // Compatibility aliases share the same profile page and access rules for every role.
+  { path: 'landlord/profile', redirectTo: profileRedirect, pathMatch: 'full' },
+  { path: 'admin/profile', redirectTo: profileRedirect, pathMatch: 'full' },
 ];

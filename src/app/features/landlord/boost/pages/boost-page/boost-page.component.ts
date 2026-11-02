@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   computed,
+  input,
   inject,
   signal,
 } from '@angular/core';
@@ -20,18 +21,29 @@ import {
 } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 import { BillingStatusComponent } from '@shared/components/billing-status/billing-status.component';
-import { BillingPagerComponent } from '@shared/components/billing-pager/billing-pager.component';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 import { BillingConfirmComponent } from '@shared/components/billing-confirm/billing-confirm.component';
 import { BoostAllocationDialogComponent } from '../../components/boost-allocation-dialog/boost-allocation-dialog.component';
 
 @Component({
   selector: 'app-boost-page',
-  imports: [CurrencyPipe, RouterLink, BillingStatusComponent, BillingPagerComponent],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    BillingStatusComponent,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
+  ],
   templateUrl: './boost-page.component.html',
   styleUrl: './boost-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BoostPageComponent {
+  readonly embedded = input(false);
   private readonly api = inject(BoostService);
   private readonly dialog = inject(MatDialog);
   private readonly listingsApi = inject(ListingService);
@@ -52,6 +64,22 @@ export class BoostPageComponent {
   readonly purchaseError = signal('');
   readonly page = signal(0);
   readonly totalPages = signal(0);
+  readonly total = signal(0);
+  readonly pageSize = signal(10);
+  readonly pagination = computed(() => ({
+    page: this.page(),
+    total: this.total(),
+    totalPages: this.totalPages(),
+  }));
+  readonly boostKey = (boost: BoostSubscription) => boost.id;
+  readonly historyColumns: readonly ManagementTableColumn<BoostSubscription>[] = [
+    { key: 'package', label: 'Gói Boost', value: (boost) => boost.packageNameSnapshot },
+    { key: 'quota', label: 'Số suất ưu tiên' },
+    { key: 'duration', label: 'Thời hạn' },
+    { key: 'price', label: 'Giá mua', align: 'right' },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'actions', label: 'Thao tác', align: 'right' },
+  ];
   readonly listings = signal<Record<string, Listing>>({});
   readonly totals = computed(() =>
     this.active().reduce(
@@ -123,13 +151,14 @@ export class BoostPageComponent {
     this.historyLoading.set(true);
     this.historyError.set('');
     this.api
-      .list(page)
+      .list(page, this.pageSize())
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (result) => {
           this.history.set(result.items);
           this.page.set(result.page);
           this.totalPages.set(result.totalPages);
+          this.total.set(result.total);
           this.historyLoading.set(false);
         },
         error: (error) => {
@@ -137,6 +166,11 @@ export class BoostPageComponent {
           this.historyLoading.set(false);
         },
       });
+  }
+  changePageSize(size: number): void {
+    if (this.historyLoading() || this.busy()) return;
+    this.pageSize.set(size);
+    this.loadHistory(0);
   }
   buy(pkg: BoostPackage): void {
     if (this.busy()) return;

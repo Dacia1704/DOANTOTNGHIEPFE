@@ -14,8 +14,8 @@ export class SubscriptionService {
   current() {
     return this.api.get<CurrentSubscription>('subscriptions/current');
   }
-  orders(page = 0) {
-    return this.api.page<SubscriptionOrder>('subscriptions/orders', page);
+  orders(page = 0, size = 10) {
+    return this.api.page<SubscriptionOrder>('subscriptions/orders', page, undefined, {}, size);
   }
   allOrders() {
     return this.api.all<SubscriptionOrder>('subscriptions/orders');
@@ -26,11 +26,11 @@ export class SubscriptionService {
   create(body: CreateOrderRequest) {
     return this.api.send<SubscriptionOrder>('POST', 'subscriptions/orders', body);
   }
-  history(page = 0) {
-    return this.api.page<Subscription>('subscriptions/history', page);
+  history(page = 0, size = 10) {
+    return this.api.page<Subscription>('subscriptions/history', page, undefined, {}, size);
   }
-  periods(page = 0) {
-    return this.api.page<SubscriptionPeriod>('subscriptions/periods', page);
+  periods(page = 0, size = 10) {
+    return this.api.page<SubscriptionPeriod>('subscriptions/periods', page, undefined, {}, size);
   }
   awaiting(page = 0) {
     return this.api.page<SubscriptionOrder>('subscriptions/orders/awaiting-confirmation', page);

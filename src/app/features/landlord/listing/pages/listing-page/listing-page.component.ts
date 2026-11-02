@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -7,7 +14,11 @@ import { ListingService } from '@services/listing/listing.service';
 import { Listing } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 import { BillingStatusComponent } from '@shared/components/billing-status/billing-status.component';
-import { BillingPagerComponent } from '@shared/components/billing-pager/billing-pager.component';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 import { BillingConfirmComponent } from '@shared/components/billing-confirm/billing-confirm.component';
 import { ListingEditorComponent } from '../../components/listing-editor/listing-editor.component';
 import { BoostAllocationDialogComponent } from '../../../boost/components/boost-allocation-dialog/boost-allocation-dialog.component';
@@ -19,7 +30,8 @@ import { PropertyLocationComponent } from '@shared/components/property-location/
     FormsModule,
     RouterLink,
     BillingStatusComponent,
-    BillingPagerComponent,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
     PropertyLocationComponent,
   ],
   templateUrl: './listing-page.component.html',
@@ -41,6 +53,21 @@ export class ListingPageComponent {
   readonly success = signal('');
   readonly page = signal(0);
   readonly totalPages = signal(0);
+  readonly total = signal(0);
+  readonly pageSize = signal(10);
+  readonly pagination = computed(() => ({
+    page: this.page(),
+    total: this.total(),
+    totalPages: this.totalPages(),
+  }));
+  readonly listingKey = (listing: Listing) => listing.id;
+  readonly columns: readonly ManagementTableColumn<Listing>[] = [
+    { key: 'listing', label: 'Tin đăng', width: '32%' },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'dates', label: 'Thời hạn' },
+    { key: 'priority', label: 'Mức ưu tiên' },
+    { key: 'actions', label: 'Thao tác' },
+  ];
   constructor() {
     this.load(0);
   }
@@ -48,13 +75,17 @@ export class ListingPageComponent {
     if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
-    (this.admin ? this.api.admin(page, this.statusFilter() || undefined) : this.api.mine(page))
+    (this.admin
+      ? this.api.admin(page, this.statusFilter() || undefined, this.pageSize())
+      : this.api.mine(page, this.pageSize())
+    )
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (result) => {
           this.items.set(result.items);
           this.page.set(result.page);
           this.totalPages.set(result.totalPages);
+          this.total.set(result.total);
           this.loading.set(false);
         },
         error: (error) => {
@@ -62,6 +93,15 @@ export class ListingPageComponent {
           this.loading.set(false);
         },
       });
+  }
+  changePageSize(size: number): void {
+    if (this.loading() || this.busy()) return;
+    this.pageSize.set(size);
+    this.load(0);
+  }
+  resetFilters(): void {
+    this.statusFilter.set('');
+    if (this.admin) this.load(0);
   }
   holding(listing: Listing): boolean {
     return (

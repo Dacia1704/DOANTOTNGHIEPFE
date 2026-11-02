@@ -1,5 +1,4 @@
 .units-heading,
-.floor-heading,
 .actions,
 .unit-filters {
   display: flex;
@@ -17,7 +16,7 @@ h2 {
   margin: var(--space-sm) 0 0;
 }
 .unit-filters {
-  margin: var(--space-lg) 0;
+  margin: var(--space-lg) 0 0;
   justify-content: flex-start;
 }
 .search-field {
@@ -38,53 +37,6 @@ h2 {
 }
 .status-filter {
   max-width: 220px;
-}
-.floor-group {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-lg);
-  overflow: hidden;
-}
-.floor-heading {
-  padding: var(--space-md) var(--space-lg);
-  background: var(--primary-subtle);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-.floor-heading h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: 0.9rem;
-  color: var(--primary);
-  margin: 0;
-}
-.table-scroll {
-  overflow-x: auto;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-  white-space: nowrap;
-  text-align: left;
-  font-size: 0.85rem;
-}
-th {
-  padding: var(--space-md) var(--space-lg);
-  color: var(--text-secondary);
-  background: var(--background);
-  font-size: 0.72rem;
-  font-weight: 500;
-}
-td {
-  padding: var(--space-md) var(--space-lg);
-  border-top: 1px solid var(--border);
-  vertical-align: middle;
-}
-tbody tr:hover {
-  background: var(--primary-subtle);
 }
 .room-name {
   background: none;
@@ -148,49 +100,6 @@ button:disabled {
   }
 }
 
-@media (max-width: 600px) {
-  .table-scroll {
-    overflow: visible;
-  }
-  table,
-  tbody {
-    display: block;
-    white-space: normal;
-  }
-  thead {
-    display: none;
-  }
-  tbody tr {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: var(--space-md);
-    gap: var(--space-md);
-    border-bottom: 1px solid var(--border);
-  }
-  td {
-    border: 0;
-    padding: 0;
-    min-width: 0;
-  }
-  td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 0.65rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--space-xs);
-  }
-  td:first-child,
-  td:last-child {
-    grid-column: 1 / -1;
-  }
-  td:last-child::before {
-    display: none;
-  }
-  .actions {
-    justify-content: flex-end;
-  }
-}
-
 .whole-house {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -228,4 +137,9 @@ button:disabled {
   flex-wrap: wrap;
   gap: var(--space-sm);
   margin-bottom: var(--space-lg);
+}
+
+.room-actions {
+  justify-content: flex-end;
+  white-space: nowrap;
 }

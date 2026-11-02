@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  input,
+  inject,
+  signal,
+} from '@angular/core';
+import { CurrencyPipe, NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,17 +25,29 @@ import {
 } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 import { BillingStatusComponent } from '@shared/components/billing-status/billing-status.component';
-import { BillingPagerComponent } from '@shared/components/billing-pager/billing-pager.component';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 import { BillingConfirmComponent } from '@shared/components/billing-confirm/billing-confirm.component';
 
 @Component({
   selector: 'app-service-package-page',
-  imports: [CurrencyPipe, RouterLink, BillingStatusComponent, BillingPagerComponent],
+  imports: [
+    CurrencyPipe,
+    NgTemplateOutlet,
+    RouterLink,
+    BillingStatusComponent,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
+  ],
   templateUrl: './service-package-page.component.html',
   styleUrl: './service-package-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicePackagePageComponent {
+  readonly embedded = input(false);
   private readonly packagesApi = inject(ServicePackageService);
   private readonly subscriptions = inject(SubscriptionService);
   private readonly dialog = inject(MatDialog);
@@ -51,6 +71,36 @@ export class ServicePackagePageComponent {
   readonly periods = signal<SubscriptionPeriod[]>([]);
   readonly page = signal(0);
   readonly totalPages = signal(0);
+  readonly total = signal(0);
+  readonly pageSize = signal(10);
+  readonly pagination = computed(() => ({
+    page: this.page(),
+    total: this.total(),
+    totalPages: this.totalPages(),
+  }));
+  readonly recordKey = (record: { id: string }) => record.id;
+  readonly orderColumns: readonly ManagementTableColumn<SubscriptionOrder>[] = [
+    { key: 'package', label: 'Gói dịch vụ', value: (order) => order.rights.packageName },
+    { key: 'type', label: 'Loại đơn', value: (order) => this.ui.orderLabel(order) },
+    { key: 'price', label: 'Giá trị đơn', align: 'right' },
+    { key: 'date', label: 'Ngày tạo', value: (order) => this.ui.date(order.createdAt) },
+    { key: 'status', label: 'Trạng thái' },
+    { key: 'actions', label: 'Thao tác / chi tiết' },
+  ];
+  readonly subscriptionColumns: readonly ManagementTableColumn<Subscription>[] = [
+    { key: 'id', label: 'Mã gói đăng ký', value: (entry) => entry.id },
+    { key: 'start', label: 'Bắt đầu', value: (entry) => this.ui.date(entry.startAt) },
+    { key: 'end', label: 'Kết thúc', value: (entry) => this.ui.date(entry.endAt) },
+    { key: 'status', label: 'Trạng thái' },
+  ];
+  readonly periodColumns: readonly ManagementTableColumn<SubscriptionPeriod>[] = [
+    { key: 'package', label: 'Gói dịch vụ', value: (period) => period.rights.packageName },
+    { key: 'number', label: 'Kỳ sử dụng', value: (period) => period.periodNumber },
+    { key: 'start', label: 'Bắt đầu', value: (period) => this.ui.date(period.startAt) },
+    { key: 'end', label: 'Kết thúc', value: (period) => this.ui.date(period.endAt) },
+    { key: 'high', label: 'Suất ưu tiên cao', value: (period) => period.rights.highPrioritySlots },
+    { key: 'low', label: 'Suất ưu tiên thấp', value: (period) => period.rights.lowPrioritySlots },
+  ];
   readonly expanded = signal<string | null>(null);
 
   constructor() {
@@ -186,10 +236,10 @@ export class ServicePackagePageComponent {
     this.historyError.set('');
     const request: Observable<ResultPage<SubscriptionOrder | Subscription | SubscriptionPeriod>> =
       this.tab() === 'orders'
-        ? this.subscriptions.orders(page)
+        ? this.subscriptions.orders(page, this.pageSize())
         : this.tab() === 'history'
-          ? this.subscriptions.history(page)
-          : this.subscriptions.periods(page);
+          ? this.subscriptions.history(page, this.pageSize())
+          : this.subscriptions.periods(page, this.pageSize());
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (result: ResultPage<SubscriptionOrder | Subscription | SubscriptionPeriod>) => {
         if (this.tab() === 'orders') this.orders.set(result.items as SubscriptionOrder[]);
@@ -197,6 +247,7 @@ export class ServicePackagePageComponent {
         if (this.tab() === 'periods') this.periods.set(result.items as SubscriptionPeriod[]);
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
+        this.total.set(result.total);
         this.historyLoading.set(false);
       },
       error: (error) => {
@@ -204,5 +255,10 @@ export class ServicePackagePageComponent {
         this.historyLoading.set(false);
       },
     });
+  }
+  changePageSize(size: number): void {
+    if (this.historyLoading() || this.busy()) return;
+    this.pageSize.set(size);
+    this.loadHistory(0);
   }
 }

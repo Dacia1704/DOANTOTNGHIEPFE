@@ -23,10 +23,21 @@ import { RoomImageDialogComponent } from '../../../room/components/room-image-di
 import { RoomDeleteDialogComponent } from '../../../room/components/room-delete-dialog/room-delete-dialog.component';
 import { PropertyLocationDialogComponent } from '../../components/property-location-dialog/property-location-dialog.component';
 import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
+import {
+  ManagementTableComponent,
+  ManagementTableColumn,
+} from '@shared/components/management-table/management-table.component';
+import { ManagementTableCellDirective } from '@shared/components/management-table/management-table-cell.directive';
 
 @Component({
   selector: 'app-property-management-page',
-  imports: [RouterLink, PropertyRoomsComponent, PropertyLocationComponent],
+  imports: [
+    RouterLink,
+    PropertyRoomsComponent,
+    PropertyLocationComponent,
+    ManagementTableComponent,
+    ManagementTableCellDirective,
+  ],
   templateUrl: './property-management-page.component.html',
   styleUrl: './property-management-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,8 +53,24 @@ export class PropertyManagementPageComponent implements OnInit {
   readonly success = signal('');
   readonly selectedId = signal('');
   readonly selected = signal<Property | null>(null);
+  readonly pageSize = signal(10);
   readonly roomUtils = RoomUtils;
   readonly imageUtils = ImageUtils;
+  readonly propertyKey = (property: Property) => property.id;
+  readonly propertyColumns: readonly ManagementTableColumn<Property>[] = [
+    { key: 'name', label: 'Cơ sở cho thuê' },
+    { key: 'address', label: 'Địa chỉ', value: (property) => property.fullAddress },
+    { key: 'type', label: 'Loại cơ sở', value: (property) => property.propertyTypeName },
+    { key: 'mode', label: 'Hình thức thuê', value: (property) => property.rentalModeLabel },
+    {
+      key: 'rooms',
+      label: 'Phòng / căn',
+      align: 'center',
+      value: (property) => (property.rentalMode === 'WHOLE' ? 'Nguyên căn' : property.rooms.length),
+    },
+    { key: 'availability', label: 'Còn trống', align: 'center' },
+    { key: 'actions', label: 'Thao tác', align: 'right' },
+  ];
 
   ngOnInit(): void {
     this.requests
@@ -57,7 +84,9 @@ export class PropertyManagementPageComponent implements OnInit {
             ? this.properties
                 .getById(id)
                 .pipe(map((property) => ({ kind: 'detail' as const, property })))
-            : this.properties.getMine(page).pipe(map((list) => ({ kind: 'list' as const, list })));
+            : this.properties
+                .getMine(page, this.pageSize())
+                .pipe(map((list) => ({ kind: 'list' as const, list })));
           return request.pipe(
             catchError((err) => {
               this.error.set(
@@ -78,6 +107,10 @@ export class PropertyManagementPageComponent implements OnInit {
   }
   load(page = this.result()?.page ?? 0): void {
     this.requests.next({ page, id: this.selectedId() });
+  }
+  changePageSize(size: number): void {
+    this.pageSize.set(size);
+    this.load(0);
   }
   select(property: Property): void {
     this.selectedId.set(property.id);

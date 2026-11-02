@@ -67,13 +67,6 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./user-management/user-management.component').then((m) => m.UserManagementComponent),
   },
-  {
-    path: 'profile',
-    loadComponent: () =>
-      import('../../shared/pages/profile/pages/profile-page/profile-page.component').then(
-        (m) => m.ProfilePageComponent,
-      ),
-  },
   { path: 'rooms', redirectTo: 'listings', pathMatch: 'full' },
   {
     path: 'room-types',

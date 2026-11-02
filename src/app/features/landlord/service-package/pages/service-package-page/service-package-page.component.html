@@ -1,16 +1,18 @@
-<section class="billing-page">
-  <header class="page-heading">
-    <div>
-      <p class="eyebrow">Dịch vụ dành cho chủ trọ</p>
-      <h1>Gói dịch vụ</h1>
-      <p class="description">Chọn quyền đăng tin phù hợp với nhu cầu của bạn.</p>
-    </div>
-    <a class="button" routerLink="/lich-su-thanh-toan">Lịch sử thanh toán</a>
-  </header>
-  <nav class="actions" aria-label="Dịch vụ">
-    <a class="button subtle" routerLink="/tin-cua-toi">Tin của tôi</a
-    ><a class="button" routerLink="/boost">Boost tin đăng</a>
-  </nav>
+<section class="billing-page management-page">
+  @if (!embedded()) {
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Dịch vụ dành cho chủ trọ</p>
+        <h1>Gói dịch vụ</h1>
+        <p class="description">Chọn quyền đăng tin phù hợp với nhu cầu của bạn.</p>
+      </div>
+      <a class="button" routerLink="/lich-su-thanh-toan">Lịch sử thanh toán</a>
+    </header>
+    <nav class="actions" aria-label="Dịch vụ">
+      <a class="button subtle" routerLink="/tin-cua-toi">Tin của tôi</a
+      ><a class="button" routerLink="/boost">Boost tin đăng</a>
+    </nav>
+  }
   @if (error()) {
     <div class="notice error" role="alert">
       {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Thử lại</button>
@@ -166,135 +168,142 @@
         <p class="empty">Chưa có gói dịch vụ đang bán.</p>
       }
     </div>
-    <div class="section-heading"><h2>Lịch sử sử dụng</h2></div>
-    <div class="tabs" role="tablist" aria-label="Lịch sử sử dụng">
-      @for (item of ['orders', 'history', 'periods']; track item) {
-        <button
-          role="tab"
-          [disabled]="historyLoading()"
-          [attr.aria-selected]="tab() === item"
-          (click)="switchTab($any(item))"
-        >
-          {{
-            item === 'orders'
-              ? 'Đơn đăng ký'
-              : item === 'history'
-                ? 'Lịch sử gói'
-                : 'Các kỳ sử dụng'
-          }}
-        </button>
-      }
-    </div>
-    @if (historyLoading()) {
-      <p class="loading" role="status">Đang tải lịch sử…</p>
-    } @else if (historyError()) {
-      <div class="notice error" role="alert">
-        {{ historyError() }} <button (click)="loadHistory(page())">Thử lại</button>
+
+    <ng-template #historyToolbar>
+      <h2>Lịch sử mua & sử dụng</h2>
+      <div class="tabs" role="tablist" aria-label="Lịch sử sử dụng">
+        @for (item of ['orders', 'history', 'periods']; track item) {
+          <button
+            role="tab"
+            [disabled]="historyLoading() || busy()"
+            [attr.aria-selected]="tab() === item"
+            (click)="switchTab($any(item))"
+          >
+            {{
+              item === 'orders'
+                ? 'Đơn đăng ký'
+                : item === 'history'
+                  ? 'Lịch sử gói'
+                  : 'Các kỳ sử dụng'
+            }}
+          </button>
+        }
       </div>
-    } @else {
-      <div class="list">
-        @if (tab() === 'orders') {
-          @for (order of orders(); track order.id) {
-            <article class="panel">
-              <div class="row">
-                <div>
-                  <h3>{{ order.rights.packageName }} · {{ ui.orderLabel(order) }}</h3>
-                  <p class="muted">
-                    {{ order.immediateUpgrade ? 'Bảng giá tham chiếu ' : ''
-                    }}{{ order.durationMonths }} tháng ·
-                    {{ order.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }} ·
-                    {{ ui.date(order.createdAt) }}
-                  </p>
-                  <app-billing-status [status]="order.status" />
-                </div>
-                <div class="actions">
-                  <button
-                    (click)="expanded.set(expanded() === order.id ? null : order.id)"
-                    [attr.aria-expanded]="expanded() === order.id"
-                  >
-                    Chi tiết
-                  </button>
-                  @if (order.status === 'PENDING_PAYMENT' && ui.future(order.expiresAt)) {
-                    <a
-                      class="button primary"
-                      [routerLink]="['/thanh-toan/xac-nhan/SERVICE_PACKAGE', order.id]"
-                      >Thanh toán</a
-                    >
-                  }
-                </div>
-              </div>
-              @if (expanded() === order.id) {
-                <div class="notice">
-                  <p class="mono">Mã đơn: {{ order.id }}</p>
-                  <p>Hạn thanh toán: {{ ui.date(order.expiresAt) }}</p>
-                  <p>Hiệu lực: {{ ui.date(order.effectiveAt) }} – {{ ui.date(order.endAt) }}</p>
-                  <p>
-                    Quyền đã mua:
-                    {{
-                      order.rights.maxListings === null
-                        ? 'Không giới hạn'
-                        : order.rights.maxListings
-                    }}
-                    tin · {{ order.rights.highPrioritySlots }} suất cao ·
-                    {{ order.rights.lowPrioritySlots }} suất thấp
-                  </p>
-                  @if (order.status === 'AWAITING_ADMIN_CONFIRMATION') {
-                    <p>Đơn đổi gói cũ đang chờ admin xác nhận.</p>
-                  } @else if (order.immediateUpgrade) {
-                    <p>
-                      Phí nâng gói theo thời gian còn lại; áp dụng sau xác nhận thanh toán và giữ
-                      nguyên hạn tổng đã mua. Không reset quota hoặc hạn tin/Boost.
-                    </p>
-                  } @else if (order.type === 'CHANGE' && order.immediateUpgrade === false) {
-                    <p>Thanh toán cả kỳ mới và tự xếp lịch từ hạn tổng gói cũ, không cần admin.</p>
-                  }
-                  @if (order.status === 'APPLIED' && order.price === 0) {
-                    <p>Đã áp dụng với phí bằng 0, không phát sinh thanh toán VNPay.</p>
-                  }
-                </div>
-              }
-            </article>
-          } @empty {
-            <p class="empty">Bạn chưa có đơn đăng ký.</p>
-          }
-        }
-        @if (tab() === 'history') {
-          @for (entry of history(); track entry.id) {
-            <article class="list-item">
-              <div>
-                <h3>
-                  Gói đăng ký <span class="mono">{{ entry.id }}</span>
-                </h3>
-                <p>{{ ui.date(entry.startAt) }} – {{ ui.date(entry.endAt) }}</p>
-              </div>
-              <app-billing-status [status]="entry.status" />
-            </article>
-          } @empty {
-            <p class="empty">Chưa có lịch sử gói trả phí.</p>
-          }
-        }
-        @if (tab() === 'periods') {
-          @for (period of periods(); track period.id) {
-            <article class="list-item">
-              <div>
-                <h3>{{ period.rights.packageName }} · Kỳ {{ period.periodNumber }}</h3>
-                <p>{{ ui.date(period.startAt) }} – {{ ui.date(period.endAt) }}</p>
+    </ng-template>
+    @if (tab() === 'orders') {
+      <app-management-table
+        [rows]="orders()"
+        [columns]="orderColumns"
+        [rowKey]="recordKey"
+        caption="Đơn đăng ký gói dịch vụ"
+        [loading]="historyLoading()"
+        [error]="historyError()"
+        [disabled]="busy()"
+        [pagination]="pagination()"
+        [pageSize]="pageSize()"
+        (pageChange)="loadHistory($event)"
+        (pageSizeChange)="changePageSize($event)"
+        (retry)="loadHistory(page())"
+        emptyMessage="Bạn chưa có đơn đăng ký."
+      >
+        <div tableToolbar><ng-container [ngTemplateOutlet]="historyToolbar" /></div>
+        <ng-template [appTableCell]="orders()" column="price" let-order>
+          <strong>{{ order.price | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong>
+          <span class="cell-subtext"
+            >{{ order.immediateUpgrade ? 'Bảng giá tham chiếu · ' : ''
+            }}{{ order.durationMonths }} tháng</span
+          >
+        </ng-template>
+        <ng-template [appTableCell]="orders()" column="status" let-order
+          ><app-billing-status [status]="order.status"
+        /></ng-template>
+        <ng-template [appTableCell]="orders()" column="actions" let-order>
+          <div class="table-actions">
+            <button
+              (click)="expanded.set(expanded() === order.id ? null : order.id)"
+              [attr.aria-expanded]="expanded() === order.id"
+            >
+              Chi tiết
+            </button>
+            @if (order.status === 'PENDING_PAYMENT' && ui.future(order.expiresAt)) {
+              <a
+                class="button primary"
+                [routerLink]="['/thanh-toan/xac-nhan/SERVICE_PACKAGE', order.id]"
+                >Thanh toán</a
+              >
+            }
+          </div>
+          @if (expanded() === order.id) {
+            <div class="notice">
+              <p class="mono">Mã đơn: {{ order.id }}</p>
+              <p>Hạn thanh toán: {{ ui.date(order.expiresAt) }}</p>
+              <p>Hiệu lực: {{ ui.date(order.effectiveAt) }} – {{ ui.date(order.endAt) }}</p>
+              <p>
+                Quyền đã mua:
+                {{
+                  order.rights.maxListings === null ? 'Không giới hạn' : order.rights.maxListings
+                }}
+                tin · {{ order.rights.highPrioritySlots }} suất cao ·
+                {{ order.rights.lowPrioritySlots }} suất thấp
+              </p>
+              @if (order.status === 'AWAITING_ADMIN_CONFIRMATION') {
+                <p>Đơn đổi gói cũ đang chờ admin xác nhận.</p>
+              } @else if (order.immediateUpgrade) {
                 <p>
-                  {{ period.rights.highPrioritySlots }} suất cao ·
-                  {{ period.rights.lowPrioritySlots }} suất thấp
+                  Phí nâng gói theo thời gian còn lại; áp dụng sau xác nhận thanh toán và giữ nguyên
+                  hạn tổng đã mua. Không reset quota hoặc hạn tin/Boost.
                 </p>
-              </div>
-            </article>
-          } @empty {
-            <p class="empty">Chưa có kỳ sử dụng đã mua.</p>
+              } @else if (order.type === 'CHANGE' && order.immediateUpgrade === false) {
+                <p>Thanh toán cả kỳ mới và tự xếp lịch từ hạn tổng gói cũ, không cần admin.</p>
+              }
+              @if (order.status === 'APPLIED' && order.price === 0) {
+                <p>Đã áp dụng với phí bằng 0, không phát sinh thanh toán VNPay.</p>
+              }
+            </div>
           }
-        }
-      </div>
-      <app-billing-pager
-        [page]="page()"
-        [totalPages]="totalPages()"
-        (changePage)="loadHistory($event)"
-      />
+        </ng-template>
+      </app-management-table>
+    }
+    @if (tab() === 'history') {
+      <app-management-table
+        [rows]="history()"
+        [columns]="subscriptionColumns"
+        [rowKey]="recordKey"
+        caption="Lịch sử gói dịch vụ"
+        [loading]="historyLoading()"
+        [error]="historyError()"
+        [disabled]="busy()"
+        [pagination]="pagination()"
+        [pageSize]="pageSize()"
+        (pageChange)="loadHistory($event)"
+        (pageSizeChange)="changePageSize($event)"
+        (retry)="loadHistory(page())"
+        emptyMessage="Chưa có lịch sử gói trả phí."
+      >
+        <div tableToolbar><ng-container [ngTemplateOutlet]="historyToolbar" /></div>
+        <ng-template [appTableCell]="history()" column="status" let-entry
+          ><app-billing-status [status]="entry.status"
+        /></ng-template>
+      </app-management-table>
+    }
+    @if (tab() === 'periods') {
+      <app-management-table
+        [rows]="periods()"
+        [columns]="periodColumns"
+        [rowKey]="recordKey"
+        caption="Các kỳ sử dụng gói dịch vụ"
+        [loading]="historyLoading()"
+        [error]="historyError()"
+        [disabled]="busy()"
+        [pagination]="pagination()"
+        [pageSize]="pageSize()"
+        (pageChange)="loadHistory($event)"
+        (pageSizeChange)="changePageSize($event)"
+        (retry)="loadHistory(page())"
+        emptyMessage="Chưa có kỳ sử dụng đã mua."
+      >
+        <div tableToolbar><ng-container [ngTemplateOutlet]="historyToolbar" /></div>
+      </app-management-table>
     }
   }
 </section>
