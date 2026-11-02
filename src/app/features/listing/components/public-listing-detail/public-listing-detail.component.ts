@@ -5,9 +5,10 @@ import { Room } from '@model/room/room.model';
 import { PropertyRoomsComponent } from '../../../property/components/property-rooms/property-rooms.component';
 import { RoomDetailDialogComponent } from '../../../room/components/room-detail-dialog/room-detail-dialog.component';
 import { ImageUtils } from '@shared/utils/image-utils';
+import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
 @Component({
   selector: 'app-public-listing-detail',
-  imports: [MatDialogModule, PropertyRoomsComponent],
+  imports: [MatDialogModule, PropertyRoomsComponent, PropertyLocationComponent],
   templateUrl: './public-listing-detail.component.html',
   styleUrl: './public-listing-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

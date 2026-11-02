@@ -21,10 +21,12 @@ import { RoomFormDialogComponent } from '../../../room/components/room-form-dial
 import { RoomDetailDialogComponent } from '../../../room/components/room-detail-dialog/room-detail-dialog.component';
 import { RoomImageDialogComponent } from '../../../room/components/room-image-dialog/room-image-dialog.component';
 import { RoomDeleteDialogComponent } from '../../../room/components/room-delete-dialog/room-delete-dialog.component';
+import { PropertyLocationDialogComponent } from '../../components/property-location-dialog/property-location-dialog.component';
+import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
 
 @Component({
   selector: 'app-property-management-page',
-  imports: [RouterLink, PropertyRoomsComponent],
+  imports: [RouterLink, PropertyRoomsComponent, PropertyLocationComponent],
   templateUrl: './property-management-page.component.html',
   styleUrl: './property-management-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -125,6 +127,25 @@ export class PropertyManagementPageComponent implements OnInit {
       .subscribe((changed) => {
         if (changed) {
           this.success.set('Đã thêm phòng vào cơ sở.');
+          this.load();
+        }
+      });
+  }
+  editLocation(): void {
+    const property = this.selected();
+    if (!property) return;
+    this.dialog
+      .open(PropertyLocationDialogComponent, {
+        data: property,
+        width: '840px',
+        maxWidth: '96vw',
+        maxHeight: '92dvh',
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((saved?: Property) => {
+        if (saved) {
+          this.success.set('Đã cập nhật địa chỉ và vị trí cho cơ sở, các phòng và tin đăng.');
           this.load();
         }
       });

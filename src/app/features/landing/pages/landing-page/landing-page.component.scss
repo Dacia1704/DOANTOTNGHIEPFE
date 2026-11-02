@@ -2,6 +2,32 @@
   display: block;
   background: var(--background);
 }
+.result-view {
+  display: flex;
+  gap: 8px;
+  align-self: flex-end;
+}
+.result-view button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.result-view button[aria-pressed='true'] {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.result-view .material-symbols-outlined {
+  font-size: 20px;
+}
 .landing {
   width: 100%;
   min-height: 100vh;

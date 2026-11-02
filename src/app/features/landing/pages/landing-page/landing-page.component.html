@@ -41,12 +41,31 @@
         </button>
       </div>
     }
-    <app-room-grid
-      [result]="rooms()"
-      [loading]="searching()"
-      (loadMore)="loadMore()"
-      (roomSelected)="openRoom($event)"
-    />
+    <div class="result-view" aria-label="Cách xem kết quả">
+      <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
+        <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách
+      </button>
+      <button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
+        <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+      </button>
+    </div>
+    @if (view() === 'map') {
+      <app-listing-map
+        [result]="rooms()"
+        [query]="activeQuery()"
+        [loading]="searching()"
+        (locationFilter)="applyLocationFilter($event)"
+        (listingSelected)="openRoom($event)"
+        (pageChange)="loadMapPage($event)"
+      />
+    } @else {
+      <app-room-grid
+        [result]="rooms()"
+        [loading]="searching()"
+        (loadMore)="loadMore()"
+        (roomSelected)="openRoom($event)"
+      />
+    }
     <app-ai-recommendation />
     <app-landlord-cta />
   </div>

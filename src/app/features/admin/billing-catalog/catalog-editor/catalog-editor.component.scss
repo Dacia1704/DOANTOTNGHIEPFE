@@ -1,1 +1,96 @@
 @use '../../../../shared/styles/billing';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 92dvh;
+}
+
+mat-dialog-content {
+  max-height: none;
+  min-height: 0;
+}
+
+mat-dialog-actions {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.editor-section {
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-section:first-child {
+  padding-top: 0;
+}
+.editor-section h3 {
+  margin-bottom: var(--space-md);
+}
+
+.section-description,
+.pricing-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-md);
+}
+
+.price-rows {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.price-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) minmax(180px, 2fr) auto;
+  gap: var(--space-sm) var(--space-md);
+  align-items: end;
+  padding: var(--space-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.remove-price {
+  color: var(--error);
+}
+.price-error {
+  grid-column: 1 / -1;
+}
+.add-price {
+  margin-top: var(--space-md);
+}
+.pricing-hint {
+  margin: var(--space-md) 0 0;
+}
+
+.sale-status {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 2fr;
+  gap: var(--space-lg);
+  align-items: center;
+  padding: var(--space-lg) 0 var(--space-sm);
+}
+.sale-status p {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .price-row,
+  .sale-status {
+    grid-template-columns: 1fr;
+  }
+  .remove-price {
+    justify-self: start;
+  }
+}

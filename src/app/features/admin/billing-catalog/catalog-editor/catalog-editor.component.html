@@ -1,80 +1,198 @@
-<h2 mat-dialog-title>
-  {{ data.item ? 'Cập nhật' : 'Tạo' }} {{ data.kind === 'boost' ? 'gói Boost' : 'gói dịch vụ' }}
+﻿<h2 mat-dialog-title>
+  {{ data.item ? 'Chỉnh sửa' : 'Tạo' }} {{ data.kind === 'boost' ? 'gói Boost' : 'gói dịch vụ' }}
 </h2>
 <mat-dialog-content>
   @if (error()) {
     <div class="notice error" role="alert">{{ error() }}</div>
   }
   @if (free) {
-    <p class="notice">Gói Free chỉ được sửa tên hiển thị. Quyền mặc định được giữ cố định.</p>
+    <p class="notice">
+      Gói Free chỉ được sửa tên hiển thị. Gói luôn miễn phí và được cung cấp mặc định.
+    </p>
   }
-  <form id="catalog-form" [formGroup]="form" (ngSubmit)="save()" class="form-grid">
-    <label class="field">Mã gói<input formControlName="code" maxlength="50" required /></label
-    ><label class="field">Tên gói<input formControlName="name" maxlength="100" required /></label>
-    @if (data.kind === 'service') {
-      <label class="check span-all"
-        ><input type="checkbox" formControlName="unlimited" /> Không giới hạn số tin</label
-      ><label class="field span-all"
-        >Giới hạn tin<input type="number" formControlName="maxListings" min="0" step="1"
-      /></label>
-    }
-    <label class="field"
-      >Số suất ưu tiên cao<input
-        type="number"
-        formControlName="highPrioritySlots"
-        min="0"
-        step="1"
-        required /></label
-    ><label class="field"
-      >Số suất ưu tiên thấp<input
-        type="number"
-        formControlName="lowPrioritySlots"
-        min="0"
-        step="1"
-        required
-    /></label>
-    @if (data.kind === 'service') {
-      <label class="field span-all"
-        >Mức ưu tiên mặc định<select formControlName="defaultPriorityLevel">
-          <option [ngValue]="0">Thường</option>
-          <option [ngValue]="1">Ưu tiên thấp</option>
-        </select></label
-      ><label class="check"
-        ><input type="checkbox" formControlName="hasStats" /> Quyền thống kê</label
-      >
-    } @else {
-      <label class="field"
-        >Thời hạn<select formControlName="durationMonths">
-          @if (data.item && !$any(data.item).durationMonths) {
-            <option [ngValue]="null">Chọn thời hạn hợp lệ</option>
+  <form id="catalog-form" [formGroup]="form" (ngSubmit)="save()">
+    <fieldset [disabled]="busy()">
+      <section class="editor-section" aria-labelledby="package-info-title">
+        <h3 id="package-info-title">Thông tin gói</h3>
+        <div class="form-grid">
+          <label class="field">
+            Mã gói *
+            <input formControlName="code" maxlength="50" placeholder="VD: PACKAGE_3" required />
+          </label>
+          <label class="field">
+            Tên gói *
+            <input
+              formControlName="name"
+              maxlength="100"
+              placeholder="VD: Gói chuyên nghiệp"
+              required
+            />
+          </label>
+        </div>
+      </section>
+      <section class="editor-section" aria-labelledby="package-rights-title">
+        <h3 id="package-rights-title">Quyền lợi</h3>
+        <div class="form-grid">
+          @if (data.kind === 'service') {
+            <label class="check span-all">
+              <input type="checkbox" formControlName="unlimited" /> Không giới hạn số tin
+            </label>
+            <label class="field span-all">
+              Giới hạn tin *
+              <input type="number" formControlName="maxListings" min="0" step="1" />
+            </label>
           }
-          @for (months of [1, 3, 6]; track months) {
-            <option [ngValue]="months">{{ months }} tháng</option>
+          <label class="field">
+            Số suất ưu tiên cao *
+            <input type="number" formControlName="highPrioritySlots" min="0" step="1" required />
+          </label>
+          <label class="field">
+            Số suất ưu tiên thấp *
+            <input type="number" formControlName="lowPrioritySlots" min="0" step="1" required />
+          </label>
+          @if (data.kind === 'service') {
+            <label class="field">
+              Mức ưu tiên mặc định
+              <select formControlName="defaultPriorityLevel">
+                <option [ngValue]="0">Thường</option>
+                <option [ngValue]="1">Ưu tiên thấp</option>
+              </select>
+            </label>
+            <label class="check">
+              <input type="checkbox" formControlName="hasStats" /> Quyền thống kê
+            </label>
           }
-        </select></label
-      ><label class="field"
-        >Giá cả kỳ (VND)<input
-          type="number"
-          formControlName="price"
-          min="0"
-          max="9999999999.99"
-          step="0.01"
-          required
-      /></label>
-      <p class="notice span-all">
-        Số suất cao và thấp bắt buộc có tổng lớn hơn 0. Chủ trọ mua gói rồi tự phân bổ cho các tin.
-      </p>
-    }
-    <label class="check"><input type="checkbox" formControlName="active" /> Đang bán</label>
-    @if (data.kind === 'service' && !free) {
-      <p class="notice span-all">
-        Gói cần ít nhất một mức giá đang bán để xuất hiện cho chủ trọ. Quản lý giá sau khi lưu gói.
-      </p>
-    }
-  </form> </mat-dialog-content
-><mat-dialog-actions align="end"
-  ><button [mat-dialog-close]="false" [disabled]="busy()">Hủy</button
-  ><button class="primary" type="submit" form="catalog-form" [disabled]="busy()">
+        </div>
+      </section>
+      @if (servicePricing) {
+        <section class="editor-section" aria-labelledby="package-prices-title">
+          <h3 id="package-prices-title">Giá theo thời hạn</h3>
+          <p class="section-description" id="package-prices-help">
+            Nhập tổng giá cho cả kỳ. Chỉ những thời hạn bên dưới được cung cấp khi gói đang bán.
+          </p>
+          @if (loadingPrices()) {
+            <p role="status" class="muted">Đang tải bảng giá…</p>
+          } @else if (priceLoadFailed()) {
+            <button type="button" (click)="loadPrices()">Thử tải lại bảng giá</button>
+          } @else {
+            <div formArrayName="prices" class="price-rows" aria-describedby="package-prices-help">
+              @for (row of priceRows.controls; track row; let index = $index) {
+                <div class="price-row" [formGroupName]="index">
+                  <label class="field">
+                    Thời hạn *
+                    <select formControlName="durationMonths">
+                      @for (months of durations; track months) {
+                        <option [ngValue]="months" [disabled]="durationUsed(months, row)">
+                          {{ months }} tháng
+                        </option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field">
+                    Tổng giá cả kỳ (VND) *
+                    <input
+                      type="number"
+                      formControlName="price"
+                      min="0"
+                      max="9999999999.99"
+                      step="0.01"
+                      placeholder="VD: 250000"
+                      required
+                      [attr.aria-invalid]="row.controls.price.touched && row.controls.price.invalid"
+                      [attr.aria-describedby]="
+                        row.controls.price.touched && row.controls.price.invalid
+                          ? 'price-error-' + index
+                          : null
+                      "
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="remove-price"
+                    (click)="removePrice(index)"
+                    [disabled]="priceRows.length <= 1"
+                    [attr.aria-label]="
+                      'Bỏ thời hạn ' + row.controls.durationMonths.value + ' tháng'
+                    "
+                  >
+                    Bỏ thời hạn
+                  </button>
+                  @if (row.controls.price.touched && row.controls.price.invalid) {
+                    <span class="field-error price-error" [id]="'price-error-' + index">
+                      Nhập giá từ 0 đến 9.999.999.999,99 VND, tối đa 2 chữ số thập phân.
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+            @if (priceRows.length < durations.length) {
+              <button class="subtle add-price" type="button" (click)="addPrice()">
+                + Thêm thời hạn
+              </button>
+            }
+            <p class="pricing-hint">
+              Gói cần ít nhất một thời hạn có giá. Thay đổi được áp dụng khi bấm Lưu gói.
+            </p>
+          }
+        </section>
+      } @else if (data.kind === 'boost') {
+        <section class="editor-section" aria-labelledby="boost-prices-title">
+          <h3 id="boost-prices-title">Thời hạn và giá</h3>
+          <div class="form-grid">
+            <label class="field">
+              Thời hạn *
+              <select formControlName="durationMonths">
+                @if (data.item && !$any(data.item).durationMonths) {
+                  <option [ngValue]="null">Chọn thời hạn hợp lệ</option>
+                }
+                @for (months of [1, 3, 6]; track months) {
+                  <option [ngValue]="months">{{ months }} tháng</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              Giá cả kỳ (VND) *
+              <input
+                type="number"
+                formControlName="price"
+                min="0"
+                max="9999999999.99"
+                step="0.01"
+                required
+              />
+            </label>
+          </div>
+          <p class="pricing-hint">
+            Tổng số suất cao và thấp phải lớn hơn 0. Chủ trọ mua gói rồi tự phân bổ cho các tin.
+          </p>
+        </section>
+      }
+      @if (!free) {
+        <section class="sale-status" aria-label="Trạng thái bán của gói">
+          <label class="field">
+            Trạng thái gói
+            <select formControlName="active">
+              <option [ngValue]="true">Đang bán</option>
+              <option [ngValue]="false">Ngừng bán</option>
+            </select>
+          </label>
+          <p class="section-description">
+            Trạng thái áp dụng cho toàn bộ gói và các thời hạn. Các đơn đã tạo và quyền đã mua được
+            giữ nguyên.
+          </p>
+        </section>
+      }
+    </fieldset>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button type="button" (click)="close()" [disabled]="busy()">Hủy</button>
+  <button
+    class="primary"
+    type="submit"
+    form="catalog-form"
+    [disabled]="busy() || loadingPrices() || priceLoadFailed()"
+  >
     {{ busy() ? 'Đang lưu…' : 'Lưu gói' }}
-  </button></mat-dialog-actions
->
+  </button>
+</mat-dialog-actions>

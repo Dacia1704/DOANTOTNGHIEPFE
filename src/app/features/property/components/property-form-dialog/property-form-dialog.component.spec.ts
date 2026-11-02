@@ -31,7 +31,10 @@ describe('Property creation and data semantics', () => {
         { provide: AmenityService, useValue: { getAllAmenities: () => of([]) } },
         {
           provide: AddressService,
-          useValue: { getProvinces: () => of([{ id: 'p', name: 'Hà Nội' }]), getAllWards: () => of([]) },
+          useValue: {
+            getProvinces: () => of([{ id: 'p', name: 'Hà Nội' }]),
+            getAllWards: () => of([]),
+          },
         },
         { provide: MatDialogRef, useValue: { close, disableClose: false } },
       ],
@@ -79,6 +82,24 @@ describe('Property creation and data semantics', () => {
     expect(request.floors[0].rooms[1].serviceFee).toBe(0);
     expect(component.defaults.getRawValue()).toEqual(before);
     expect(close).toHaveBeenCalled();
+  });
+  it('submits a valid zero coordinate pair and rejects a half-filled pair', () => {
+    const component = setup();
+    component.info.controls.latitude.setValue(0);
+    component.submit();
+    expect(create).not.toHaveBeenCalled();
+    component.info.controls.longitude.setValue(0);
+    component.submit();
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ latitude: 0, longitude: 0 }));
+  });
+  it('clears a selected pin when any part of the address is edited', () => {
+    const component = setup();
+    component.ngOnInit();
+    component.setLocation({ latitude: 10, longitude: 106 });
+    component.info.controls.addressLine.setValue('Another address');
+    expect(component.info.controls.latitude.value).toBeNull();
+    expect(component.info.controls.longitude.value).toBeNull();
+    expect(component.pinCleared()).toBe(true);
   });
   it('keeps unspecified floors separate from ground floor', () => {
     const component = setup();
@@ -129,7 +150,9 @@ describe('Property creation and data semantics', () => {
     component.info.controls.rentalMode.setValue('WHOLE');
     component.submit();
     const request = create.mock.calls[0][0] as CreatePropertyRequest;
-    expect(request.floors).toEqual([{ floorNumber: null, rooms: [{ roomNumber: 'WHOLE', amenityIds: [] }] }]);
+    expect(request.floors).toEqual([
+      { floorNumber: null, rooms: [{ roomNumber: 'WHOLE', amenityIds: [] }] },
+    ]);
     expect(request.defaultRoom.price).toBe(3000000);
     expect(request.defaultRoom.serviceFee).toBe(100000);
     expect(component.units.length).toBe(2);

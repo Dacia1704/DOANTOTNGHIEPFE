@@ -52,6 +52,8 @@ export class PaymentResultPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
   readonly admin = inject(AuthService).primaryRole() === RoleCode.ADMIN;
+  readonly adminReturnQuery =
+    this.route.snapshot.queryParamMap.get('tab') === 'review' ? { tab: 'review' } : {};
   readonly ui = BillingUtils;
   readonly payment = signal<Payment | null>(null);
   readonly invoice = signal<Invoice | null>(null);
@@ -143,6 +145,12 @@ export class PaymentResultPageComponent {
       });
   }
   loadInvoice(): void {
+    if (!this.payment()?.invoiceId) {
+      this.invoice.set(null);
+      this.invoiceState.set('missing');
+      this.invoiceError.set('');
+      return;
+    }
     this.invoiceState.set('loading');
     this.invoiceError.set('');
     this.api

@@ -133,6 +133,19 @@
                 placeholder="Không bắt buộc"
             /></label>
           </div>
+          @if (pinCleared()) {
+            <p class="hint" role="status">
+              Địa chỉ đã thay đổi. Hãy chọn lại ghim nếu muốn lưu vị trí trên bản đồ.
+            </p>
+          }
+          <app-location-picker
+            [latitude]="info.controls.latitude.value"
+            [longitude]="info.controls.longitude.value"
+            [disabled]="busy()"
+            [addressContext]="addressLabel()"
+            (locationChange)="setLocation($event)"
+            (placeSelected)="usePlaceAddress($event)"
+          />
           <details class="coordinates">
             <summary>Bổ sung tọa độ (không bắt buộc)</summary>
             <div class="form-grid">
@@ -155,6 +168,11 @@
               /></label>
             </div>
           </details>
+          @if (info.hasError('coordinatePair')) {
+            <p class="field-error" role="alert">
+              Cần nhập đủ vĩ độ và kinh độ hợp lệ, hoặc xóa cả hai tọa độ.
+            </p>
+          }
           <h3 class="small-heading">
             {{ isWhole() ? 'Tiện ích căn nhà' : 'Tiện ích chung của cơ sở' }}
           </h3>

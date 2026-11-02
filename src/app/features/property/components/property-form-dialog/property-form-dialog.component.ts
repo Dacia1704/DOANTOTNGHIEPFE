@@ -9,7 +9,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, merge, of, switchMap } from 'rxjs';
 import { PropertyService } from '@services/property.service';
 import { PropertyTypeService } from '@services/property-type.service';
 import { RoomTypeService } from '@services/room-type.service';
@@ -29,10 +29,18 @@ import { TextUtils } from '@shared/utils/text-utils';
 import { RoomUtils } from '@shared/utils/room-utils';
 import { createPropertyUnitForm } from '../../models/property-unit-form';
 import { PropertyUnitEditorComponent } from '../property-unit-editor/property-unit-editor.component';
+import { LocationPickerComponent } from '@shared/components/location-picker/location-picker.component';
+import { LocationUtils } from '@shared/utils/location-utils';
+import { Coordinates, MapPlace } from '@model/maps/maps.model';
 
 @Component({
   selector: 'app-property-form-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, PropertyUnitEditorComponent],
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    PropertyUnitEditorComponent,
+    LocationPickerComponent,
+  ],
   templateUrl: './property-form-dialog.component.html',
   styleUrl: './property-form-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,23 +65,27 @@ export class PropertyFormDialogComponent implements OnInit {
   readonly amenities = signal<Amenity[]>([]);
   readonly provinces = signal<Province[]>([]);
   readonly wards = signal<Ward[]>([]);
+  readonly pinCleared = signal(false);
   readonly money = TextUtils.toVnd;
   readonly fee = RoomUtils.formatFee;
-  readonly info = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)]],
-    propertyTypeId: ['', Validators.required],
-    rentalMode: ['BY_ROOM' as PropertyRentalMode, Validators.required],
-    totalFloors: this.fb.control<number | null>(null, [
-      Validators.min(0),
-      Validators.pattern(/^\d+$/),
-    ]),
-    provinceId: ['', Validators.required],
-    wardId: ['', Validators.required],
-    addressLine: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
-    latitude: this.fb.control<number | null>(null, [Validators.min(-90), Validators.max(90)]),
-    longitude: this.fb.control<number | null>(null, [Validators.min(-180), Validators.max(180)]),
-    amenityIds: this.fb.nonNullable.control<string[]>([]),
-  });
+  readonly info = this.fb.nonNullable.group(
+    {
+      name: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)]],
+      propertyTypeId: ['', Validators.required],
+      rentalMode: ['BY_ROOM' as PropertyRentalMode, Validators.required],
+      totalFloors: this.fb.control<number | null>(null, [
+        Validators.min(0),
+        Validators.pattern(/^\d+$/),
+      ]),
+      provinceId: ['', Validators.required],
+      wardId: ['', Validators.required],
+      addressLine: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
+      latitude: this.fb.control<number | null>(null, [Validators.min(-90), Validators.max(90)]),
+      longitude: this.fb.control<number | null>(null, [Validators.min(-180), Validators.max(180)]),
+      amenityIds: this.fb.nonNullable.control<string[]>([]),
+    },
+    { validators: LocationUtils.coordinatePair },
+  );
   readonly defaults = this.fb.group({
     roomTypeId: this.fb.nonNullable.control('', Validators.required),
     price: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
@@ -91,6 +103,21 @@ export class PropertyFormDialogComponent implements OnInit {
   readonly units = this.fb.array([createPropertyUnitForm(this.fb)]);
 
   ngOnInit(): void {
+    merge(
+      this.info.controls.provinceId.valueChanges,
+      this.info.controls.wardId.valueChanges,
+      this.info.controls.addressLine.valueChanges,
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (
+          this.info.controls.latitude.value != null ||
+          this.info.controls.longitude.value != null
+        ) {
+          this.setLocation(null);
+          this.pinCleared.set(true);
+        }
+      });
     this.loadCatalogs();
     this.info.controls.provinceId.valueChanges
       .pipe(
@@ -111,6 +138,18 @@ export class PropertyFormDialogComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((wards) => this.wards.set(wards));
+  }
+  setLocation(point: Coordinates | null): void {
+    this.info.patchValue({
+      latitude: point?.latitude ?? null,
+      longitude: point?.longitude ?? null,
+    });
+    if (point) this.pinCleared.set(false);
+  }
+
+  usePlaceAddress(place: MapPlace): void {
+    if (place.addressLine?.trim())
+      this.info.controls.addressLine.setValue(place.addressLine.trim());
   }
 
   loadCatalogs(): void {

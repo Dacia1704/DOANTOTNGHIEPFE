@@ -26,6 +26,9 @@ export class PaymentService {
   list(page = 0) {
     return this.api.page<Payment>('payments', page);
   }
+  adminList(page = 0) {
+    return this.api.page<Payment>('payments/all', page);
+  }
   review(page = 0) {
     return this.api.page<Payment>('payments/review', page);
   }

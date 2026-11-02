@@ -20,6 +20,13 @@ export class PublicListingService {
       'rentalStatus',
       'minPrice',
       'maxPrice',
+      'latitude',
+      'longitude',
+      'radiusKm',
+      'south',
+      'north',
+      'west',
+      'east',
     ] as const) {
       const value = query[key];
       if (value != null && value !== '') params = params.set(key, value);
