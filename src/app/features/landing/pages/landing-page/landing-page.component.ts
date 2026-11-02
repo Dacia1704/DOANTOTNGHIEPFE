@@ -17,6 +17,7 @@ import { RoomRentalStatus } from '@model/room/room.model';
 import { SearchCapsuleComponent } from '../../components/search-capsule/search-capsule.component';
 import { RoomGridComponent } from '../../components/room-grid/room-grid.component';
 import { LandlordCtaComponent } from '../../components/landlord-cta/landlord-cta.component';
+import { AiRecommendationComponent } from '../../components/ai-recommendation/ai-recommendation.component';
 import { ListingMapComponent } from '../../components/listing-map/listing-map.component';
 import { LocationFilter } from '@model/maps/maps.model';
 
@@ -30,7 +31,13 @@ import { LocationFilter } from '@model/maps/maps.model';
  */
 @Component({
   selector: 'app-landing-page',
-  imports: [SearchCapsuleComponent, RoomGridComponent, LandlordCtaComponent, ListingMapComponent],
+  imports: [
+    SearchCapsuleComponent,
+    RoomGridComponent,
+    LandlordCtaComponent,
+    AiRecommendationComponent,
+    ListingMapComponent,
+  ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

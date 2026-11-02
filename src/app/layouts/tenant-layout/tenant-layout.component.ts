@@ -6,6 +6,7 @@ import { RoleCode } from '@model/auth/auth.model';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 import { SiteFooterComponent } from '@shared/components/site-footer/site-footer.component';
 import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/mobile-bottom-nav.component';
+import { AiChatComponent } from '@shared/components/ai-chat/ai-chat.component';
 
 /**
  * Shell dùng cho mọi trang public của tenant:
@@ -16,7 +17,13 @@ import { MobileBottomNavComponent } from '@shared/components/mobile-bottom-nav/m
  */
 @Component({
   selector: 'app-tenant-layout',
-  imports: [RouterOutlet, SiteHeaderComponent, SiteFooterComponent, MobileBottomNavComponent],
+  imports: [
+    RouterOutlet,
+    SiteHeaderComponent,
+    SiteFooterComponent,
+    MobileBottomNavComponent,
+    AiChatComponent,
+  ],
   templateUrl: './tenant-layout.component.html',
   styleUrl: './tenant-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

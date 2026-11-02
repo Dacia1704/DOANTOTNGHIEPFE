@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { environment } from '@environments/environment';
 import { ApiResponse } from '@model/api-response';
 import { LoginResponse } from '@model/auth/response/login-response';
@@ -17,6 +17,7 @@ const KEY = 'trotot_auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private refreshRequest$: Observable<void> | null = null;
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly api = `${environment.apiUrl}/auth`;
@@ -96,8 +97,9 @@ export class AuthService {
 
   /** Refresh access token dùng trong interceptor. */
   refresh(): Observable<void> {
+    if (this.refreshRequest$) return this.refreshRequest$;
     const refreshToken = this.refreshToken;
-    return this.http
+    this.refreshRequest$ = this.http
       .post<ApiResponse<RefreshTokenResponse>>(`${this.api}/refresh`, { refreshToken })
       .pipe(
         map(res => res.data),
@@ -112,7 +114,10 @@ export class AuthService {
           this.persistSession(next);
         }),
         map(() => void 0),
+        finalize(() => this.refreshRequest$ = null),
+        shareReplay({ bufferSize: 1, refCount: false }),
       );
+    return this.refreshRequest$;
   }
 
   logout(): void {

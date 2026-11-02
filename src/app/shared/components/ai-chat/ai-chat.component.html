@@ -1,0 +1,44 @@
+@if (auth.hasPermission('ROLE_TENANT')) {
+  @if (!opened()) {
+    <button class="launcher" type="button" (click)="opened.set(true)" aria-controls="ai-chat-panel" aria-expanded="false">
+      <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span> Trợ lý tìm phòng
+    </button>
+  } @else {
+    <section id="ai-chat-panel" class="panel" aria-label="Trợ lý tìm phòng" (keydown.escape)="close()">
+      <header>
+        <strong>Trợ lý tìm phòng</strong>
+        <button type="button" (click)="reset()">Hội thoại mới</button>
+        <button type="button" (click)="close()" aria-label="Đóng trợ lý">✕</button>
+      </header>
+      <div class="messages" aria-live="polite" aria-relevant="additions text">
+        @if (!entries().length) {
+          <p>Cho mình biết khu vực, ngân sách và tiện ích bạn cần nhé.</p>
+          <p class="hint">Ví dụ: Tìm phòng dưới 3 triệu ở phường Cầu Giấy, có Wifi.</p>
+        }
+        @for (entry of entries(); track entry.key) {
+          <p class="question">{{ entry.question }}</p>
+          <p class="reply">{{ entry.reply || (entry.status === 'pending' ? 'Đang tìm phòng…' : '') }}</p>
+          <app-ai-listing-cards [items]="entry.listings" (selected)="clicked(entry, $event)" />
+          @if (entry.error) { <p class="error" role="status">{{ entry.error }}</p> }
+          @if (entry.status === 'failed') {
+            <button type="button" [disabled]="busy()" (click)="send(entry.question)">Gửi lại câu hỏi</button>
+          }
+          @if (entry.messageId) {
+            <div class="feedback" aria-label="Đánh giá câu trả lời">
+              <button type="button" [attr.aria-pressed]="entry.rating === 'UP'" (click)="feedback(entry, 'UP')">Hữu ích</button>
+              <button type="button" [attr.aria-pressed]="entry.rating === 'DOWN'" (click)="feedback(entry, 'DOWN')">Chưa phù hợp</button>
+            </div>
+          }
+        }
+      </div>
+      <form (ngSubmit)="send()">
+        <label for="ai-question" class="hint">Nhu cầu tìm phòng</label>
+        <textarea id="ai-question" name="question" [(ngModel)]="draft" maxlength="2000" rows="2" [disabled]="busy()" placeholder="Khu vực, giá, diện tích…"></textarea>
+        <div class="actions">
+          @if (busy()) { <button type="button" (click)="stop()">Dừng</button> }
+          <button type="submit" [disabled]="busy() || !draft.trim()">Gửi câu hỏi</button>
+        </div>
+      </form>
+    </section>
+  }
+}
