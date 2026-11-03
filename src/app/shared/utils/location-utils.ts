@@ -24,13 +24,15 @@ export class LocationUtils {
   ): string {
     const point = this.point(latitude, longitude);
     const url = new URL(
-      point ? 'https://www.google.com/maps/dir/' : 'https://www.google.com/maps/search/',
+      point ? 'https://www.openstreetmap.org/directions' : 'https://www.openstreetmap.org/search',
     );
-    url.searchParams.set('api', '1');
-    url.searchParams.set(
-      point ? 'destination' : 'query',
-      point ? `${point.latitude},${point.longitude}` : address,
-    );
+    if (point) {
+      url.searchParams.set('engine', 'fossgis_osrm_car');
+      url.searchParams.set('route', `;${point.latitude},${point.longitude}`);
+      url.hash = `map=16/${point.latitude}/${point.longitude}`;
+    } else {
+      url.searchParams.set('query', address);
+    }
     return url.toString();
   }
   static readonly coordinatePair: ValidatorFn = (control: AbstractControl) => {

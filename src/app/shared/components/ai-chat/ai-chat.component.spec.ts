@@ -6,12 +6,13 @@ import { AuthService } from '@services/auth/auth.service';
 import { AiChatComponent } from './ai-chat.component';
 
 describe('AI chat launcher', () => {
-  async function setup() {
+  async function setup(role: string | null = 'ROLE_TENANT') {
     TestBed.configureTestingModule({
       imports: [AiChatComponent],
       providers: [
         { provide: AuthService, useValue: {
-          session: signal({ id: 'tenant' }), hasPermission: () => true,
+          session: signal(role ? { id: role, roles: [role] } : null),
+          hasPermission: (permission: string) => permission === role,
         } },
         { provide: AiService, useValue: {} },
       ],
@@ -30,6 +31,16 @@ describe('AI chat launcher', () => {
     }
     return { fixture, button, pointer, component: fixture.componentInstance };
   }
+
+  it.each([null, 'ROLE_TENANT', 'ROLE_LANDLORD', 'ROLE_ADMIN'])(
+    'shows and opens the AI launcher for session role %s', async (role) => {
+      const { fixture, button } = await setup(role);
+      expect(button).toBeTruthy();
+      button.click();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.querySelector('#ai-chat-panel')).toBeTruthy();
+    },
+  );
 
   it('opens on a tap without treating small hand movement as dragging', async () => {
     const { fixture, button, pointer } = await setup();

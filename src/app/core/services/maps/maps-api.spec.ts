@@ -2,8 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { FormControl, FormGroup } from '@angular/forms';
-import { GoogleMapsService, GOOGLE_MAPS_CONFIG } from './google-maps.service';
-import { MapsWindow } from '@model/maps/maps.model';
+import { MapTilerService, MAPTILER_CONFIG } from './maptiler.service';
 import { PropertyService } from '../property/property.service';
 import { PublicListingService } from '../listing/public-listing.service';
 import { PropertyResponse } from '@model/property/response/property-response';
@@ -64,8 +63,8 @@ describe('Location data and API contracts', () => {
     form.controls.longitude.setValue(0);
     expect(form.valid).toBe(true);
     const directions = new URL(LocationUtils.directions(0, 0, 'ignored'));
-    expect(directions.searchParams.get('destination')).toBe('0,0');
-    expect(directions.searchParams.get('api')).toBe('1');
+    expect(directions.searchParams.get('route')).toBe(';0,0');
+    expect(directions.hostname).toBe('www.openstreetmap.org');
     const search = new URL(LocationUtils.directions(null, null, '12 A & B, Hà Nội'));
     expect(search.searchParams.get('query')).toBe('12 A & B, Hà Nội');
     expect(search.searchParams.has('destination')).toBe(false);
@@ -130,64 +129,92 @@ describe('Location data and API contracts', () => {
   });
 });
 
-describe('Lazy Google Maps loader', () => {
-  const target = window as MapsWindow;
-  afterEach(() => {
-    delete target.google;
-    delete target.__trototMapsReady;
-    delete target.gm_authFailure;
-    document
-      .querySelectorAll('script[src^="https://maps.googleapis.com/maps/api/js"]')
-      .forEach((script) => script.remove());
-    vi.useRealTimers();
-  });
+describe('MapTiler configuration and geocoding', () => {
+  afterEach(() => vi.unstubAllGlobals());
   function setup(apiKey = 'browser-test-key') {
     TestBed.configureTestingModule({
-      providers: [{ provide: GOOGLE_MAPS_CONFIG, useValue: { apiKey, mapId: 'test-map' } }],
+      providers: [
+        { provide: MAPTILER_CONFIG, useValue: { apiKey, style: 'streets-v2', language: 'vi' } },
+      ],
     });
-    return TestBed.inject(GoogleMapsService);
+    return TestBed.inject(MapTilerService);
   }
-  it('does not fetch the SDK until requested and shares a single in-flight load', async () => {
-    const service = setup();
-    expect(document.querySelector('script[src*="maps.googleapis.com"]')).toBeNull();
-    const first = service.load();
-    expect(service.load()).toBe(first);
-    const scripts = document.querySelectorAll<HTMLScriptElement>(
-      'script[src^="https://maps.googleapis.com/maps/api/js"]',
-    );
-    expect(scripts).toHaveLength(1);
-    expect(new URL(scripts[0].src).searchParams.get('loading')).toBe('async');
-    const api = { importLibrary: vi.fn() };
-    target.google = { maps: api };
-    target.__trototMapsReady?.();
-    await expect(first).resolves.toBe(api);
-  });
-  it('keeps missing configuration recoverable without loading an invalid SDK', async () => {
+  it('rejects a missing key without loading a remote SDK', async () => {
     const service = setup('');
     await expect(service.load()).rejects.toThrow('chưa sẵn sàng');
     expect(document.querySelector('script[src*="maps.googleapis.com"]')).toBeNull();
   });
-  it('cleans up a failed load and permits retry', async () => {
+  it('encodes style keys and searches Vietnamese places without attaching backend authorization', async () => {
     const service = setup();
-    const first = service.load();
-    const failure = expect(first).rejects.toThrow('Không tải được');
-    document.querySelector('script[src*="maps.googleapis.com"]')!.dispatchEvent(new Event('error'));
-    await failure;
-    const second = service.load();
-    expect(second).not.toBe(first);
-    target.google = { maps: { importLibrary: vi.fn() } };
-    target.__trototMapsReady?.();
-    await second;
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        features: [
+          {
+            center: [0, 0],
+            text: 'Phố A',
+            address: '12',
+            place_name: '12 Phố A, Hà Nội',
+            place_type: ['address'],
+          },
+          { center: [106, 10], text: 'Quán B', place_type: ['poi'] },
+          { center: [200, 100], text: 'Invalid' },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const results = await service.search('Phố A & B');
+    const url = fetcher.mock.calls[0][0] as URL;
+    expect(decodeURIComponent(url.pathname)).toContain('Phố A & B.json');
+    expect(url.searchParams.get('language')).toBe('vi');
+    expect(url.searchParams.get('country')).toBe('vn');
+    expect(fetcher.mock.calls[0][1]).not.toHaveProperty('headers');
+    expect(results).toHaveLength(2);
+    expect(results[0]).toEqual({
+      latitude: 0,
+      longitude: 0,
+      name: 'Phố A',
+      address: '12 Phố A, Hà Nội',
+      addressLine: '12 Phố A',
+    });
+    expect(results[1].addressLine).toBeUndefined();
+    expect(new URL(service.styleUrl()).pathname).toBe('/maps/streets-v2/style.json');
   });
-  it('times out a stalled SDK request and surfaces authentication errors', async () => {
-    vi.useFakeTimers();
+  it('reports provider errors and supports cancellation', async () => {
     const service = setup();
-    const timeout = expect(service.load()).rejects.toThrow('Không tải được');
-    await vi.advanceTimersByTimeAsync(20000);
-    await timeout;
-    const authentication = expect(service.load()).rejects.toThrow('Không tải được');
-    target.gm_authFailure?.();
-    await authentication;
-    expect(service.authError()).not.toBe('');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    await expect(service.search('Test')).rejects.toThrow('Không tìm được');
+    const controller = new AbortController();
+    const fetcher = vi.fn().mockImplementation(
+      (_url, options) =>
+        new Promise((_resolve, reject) => {
+          options.signal.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError')),
+          );
+        }),
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const pending = service.search('Test', controller.signal);
+    controller.abort();
+    await expect(pending).rejects.toThrow('Aborted');
+  });
+  it('localizes name labels while leaving icons alone', () => {
+    const service = setup();
+    const map = {
+      getStyle: () => ({
+        layers: [
+          { id: 'places', type: 'symbol', layout: { 'text-field': ['get', 'name:latin'] } },
+          { id: 'icons', type: 'symbol', layout: { 'icon-image': 'hospital' } },
+        ],
+      }),
+      setLayoutProperty: vi.fn(),
+    };
+    service.localize(map as never);
+    expect(map.setLayoutProperty).toHaveBeenCalledExactlyOnceWith('places', 'text-field', [
+      'coalesce',
+      ['get', 'name:vi'],
+      ['get', 'name'],
+      '',
+    ]);
   });
 });

@@ -3,7 +3,7 @@ import { CAMPUS_TAGS, CampusTag } from '../../data/landing.mock';
 
 /**
  * Section "Bản đồ thông minh" — copy layout từ landing-page.html.
- * Ảnh map là static background — khi BE có Google Maps thật sẽ thay bằng embed.
+ * Ảnh nền trang giới thiệu; bản đồ tương tác dùng ListingMapComponent (MapLibre).
  */
 @Component({
   selector: 'app-map-finder',

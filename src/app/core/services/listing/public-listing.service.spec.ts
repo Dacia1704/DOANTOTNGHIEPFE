@@ -6,6 +6,24 @@ import { RoomRentalStatus } from '@model/room/room.model';
 import { PublicListingResponse } from '@model/public-listing/response/public-listing-response';
 
 describe('Public listing API', () => {
+  it('reveals the phone only through an explicit POST and handles a missing phone', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const service = TestBed.inject(PublicListingService);
+    const http = TestBed.inject(HttpTestingController);
+    let phone: string | null = null;
+    service.revealPhone('post').subscribe((value) => (phone = value));
+    const request = http.expectOne('/api/listings/post/reveal-phone');
+    expect(request.request.method).toBe('POST');
+    request.flush({ data: { phone: '0901234567' } });
+    expect(phone).toBe('0901234567');
+    service.revealPhone('no-phone').subscribe((value) => (phone = value));
+    http.expectOne('/api/listings/no-phone/reveal-phone').flush({ data: { phone: null } });
+    expect(phone).toBeNull();
+    http.verify();
+  });
+
   it('loads the public listing endpoint with filters and maps its actual title and room', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

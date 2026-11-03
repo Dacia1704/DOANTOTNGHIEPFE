@@ -1,5 +1,7 @@
 # Tích hợp Google Maps: backend và kế hoạch frontend
 
+> Tài liệu kế hoạch cũ. Frontend hiện đã chuyển sang MapTiler + MapLibre GL JS; xem [hướng dẫn bản đồ hiện tại](maps.md). Các hợp đồng tọa độ backend bên dưới vẫn áp dụng.
+
 ## Backend đã triển khai
 
 Vị trí thuộc bất động sản (Property). Các phòng và tin của cùng cơ sở dùng chung địa chỉ, vĩ độ và kinh độ. Backend lưu tọa độ người dùng chọn, trả dữ liệu vị trí qua API và truy vấn tin trong database; phạm vi này không cần Google API key ở backend, không gọi geocoding hoặc tính tuyến đường.
