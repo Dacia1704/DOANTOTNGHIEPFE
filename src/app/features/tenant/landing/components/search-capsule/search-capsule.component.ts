@@ -88,6 +88,10 @@ export class SearchCapsuleComponent implements OnInit {
     );
   }
 
+  onAvailabilityChange(available: boolean): void {
+    this.onRentalStatusChange(available ? RoomRentalStatus.AVAILABLE : '');
+  }
+
   onRentalStatusChange(value: string): void {
     this.rentalStatus.set(value === RoomRentalStatus.AVAILABLE ? RoomRentalStatus.AVAILABLE : '');
   }

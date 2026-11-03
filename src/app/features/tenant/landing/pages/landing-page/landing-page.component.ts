@@ -24,8 +24,8 @@ import { LocationFilter } from '@model/maps/maps.model';
 /**
  * Trang landing page của tenant.
  * Cấu trúc:
- *  - Hero (badge + h1 + p + search capsule)
- *  - One search form with a hierarchical room-type picker
+ *  - Search summary and active filter chips
+ *  - Sidebar filters with a hierarchical room-type picker
  *  - Published listing results
  *  - Landlord CTA
  */
@@ -51,6 +51,7 @@ export class LandingPageComponent implements OnInit {
   readonly searchError = signal('');
   readonly searching = signal(false);
   readonly view = signal<'list' | 'map'>('list');
+  readonly mobileFiltersOpen = signal(false);
   readonly locationLabels = signal({ province: '', ward: '' });
   readonly activeQuery = signal<RoomQueryParams>({
     page: 0,
@@ -115,6 +116,7 @@ export class LandingPageComponent implements OnInit {
   }
 
   searchRooms(query: RoomQueryParams): void {
+    this.mobileFiltersOpen.set(false);
     this.activeQuery.update((current) => ({
       ...current,
       ...query,

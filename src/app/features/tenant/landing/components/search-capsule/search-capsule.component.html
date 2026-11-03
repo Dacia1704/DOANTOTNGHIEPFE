@@ -1,13 +1,32 @@
 <form
-  class="capsule"
+  class="filters"
   (submit)="onSubmit($event)"
   aria-label="Bộ lọc tìm phòng"
   [attr.aria-busy]="searching"
 >
-  <div class="capsule__fields" [class.has-ward]="provinceId() && wards().length">
+  <div class="filters__controls">
+    <header class="filters__header">
+      <h2>
+        <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>Bộ lọc tìm kiếm
+      </h2>
+      <button type="button" class="filters__reset" (click)="resetFilters()" [disabled]="searching">
+        Đặt lại
+      </button>
+    </header>
+    <div class="filters__footer">
+      <button type="submit" class="filters__apply" [disabled]="searching">
+        <span class="material-symbols-outlined" aria-hidden="true">done</span
+        >{{ searching ? 'Đang tìm…' : 'Áp dụng bộ lọc' }}
+      </button>
+    </div>
+  </div>
+  <fieldset class="filters__group">
+    <legend>
+      <span class="material-symbols-outlined" aria-hidden="true">location_on</span>Khu vực tìm kiếm
+    </legend>
     <app-filter-select
       label="Tỉnh / thành phố"
-      icon="location_on"
+      icon="location_city"
       [options]="provinceOptions()"
       [value]="provinceId()"
       (valueChange)="onProvinceChange($event)"
@@ -21,90 +40,66 @@
         (valueChange)="wardId.set($event)"
       />
     }
+    <p class="filters__hint">Chọn khu vực bạn muốn tìm phòng.</p>
+  </fieldset>
+  <fieldset class="filters__group">
+    <legend>
+      <span class="material-symbols-outlined" aria-hidden="true">payments</span>Khoảng giá thuê
+    </legend>
+    <div class="filters__prices">
+      @for (option of priceOptions; track option.value) {
+        <button
+          type="button"
+          [attr.aria-pressed]="priceRange() === option.value"
+          (click)="priceRange.set(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+    <p class="filters__hint">Ngân sách thuê phòng mỗi tháng.</p>
+  </fieldset>
+  <fieldset class="filters__group">
+    <legend>
+      <span class="material-symbols-outlined" aria-hidden="true">apartment</span>Loại hình phòng trọ
+    </legend>
     <app-category-bar
       [selectedRoomType]="roomTypeName()"
       (typeSelected)="roomTypeName.set($event)"
     />
-    <app-filter-select
-      label="Ngân sách / tháng"
-      icon="payments"
-      [options]="priceOptions"
-      [value]="priceRange()"
-      (valueChange)="priceRange.set($event)"
-    />
-    <app-filter-select
-      label="Trạng thái phòng"
-      icon="event_available"
-      [options]="statusOptions"
-      [value]="rentalStatus()"
-      (valueChange)="onRentalStatusChange($event)"
-    />
-  </div>
-  <div class="capsule__toolbar">
-    <button
-      type="button"
-      class="capsule__more"
-      [class.is-active]="showAmenities() || selectedAmenityNames().length"
-      [attr.aria-expanded]="showAmenities()"
-      aria-controls="search-amenities"
-      (click)="showAmenities.set(!showAmenities())"
+  </fieldset>
+  <fieldset class="filters__group">
+    <legend>
+      <span class="material-symbols-outlined" aria-hidden="true">room_service</span>Tiện ích nổi bật
+    </legend>
+    <div class="filters__amenities">
+      @for (amenity of amenities(); track amenity.id) {
+        <label>
+          <input
+            type="checkbox"
+            [checked]="selectedAmenityNames().includes(amenity.name)"
+            (change)="toggleAmenity(amenity.name, $any($event.target).checked)"
+          />
+          <span>{{ amenity.name }}</span>
+        </label>
+      } @empty {
+        <p class="filters__hint">
+          Chưa tải được tiện ích. Bạn vẫn có thể tìm theo các điều kiện khác.
+        </p>
+      }
+    </div>
+  </fieldset>
+  <div class="filters__availability">
+    <span class="filters__availability-title"
+      ><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Tình trạng
+      phòng</span
     >
-      <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-      Tiện ích
-      @if (selectedAmenityNames().length) {
-        <span class="capsule__count">{{ selectedAmenityNames().length }}</span>
-      }
-      <span class="material-symbols-outlined" aria-hidden="true">{{
-        showAmenities() ? 'expand_less' : 'expand_more'
-      }}</span>
-    </button>
-    <div class="capsule__actions">
-      <button type="button" class="capsule__reset" (click)="resetFilters()" [disabled]="searching">
-        Đặt lại
-      </button>
-      <button type="submit" class="capsule__cta" [disabled]="searching">
-        <span class="material-symbols-outlined" aria-hidden="true">search</span>
-        <span>{{ searching ? 'Đang tìm…' : 'Tìm phòng' }}</span>
-        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-      </button>
-    </div>
+    <label
+      ><input
+        type="checkbox"
+        [checked]="rentalStatus() !== ''"
+        (change)="onAvailabilityChange($any($event.target).checked)"
+      /><span>Chỉ hiển thị phòng còn trống</span></label
+    >
   </div>
-  @if (showAmenities()) {
-    <fieldset class="capsule__amenities" id="search-amenities">
-      <legend>Tiện ích bạn cần</legend>
-      <p>Chọn một hoặc nhiều tiện ích, sau đó nhấn “Tìm phòng”.</p>
-      <div class="capsule__amenity-list">
-        @for (amenity of amenities(); track amenity.id) {
-          <label
-            class="capsule__amenity"
-            [class.is-selected]="selectedAmenityNames().includes(amenity.name)"
-          >
-            <input
-              type="checkbox"
-              [checked]="selectedAmenityNames().includes(amenity.name)"
-              (change)="toggleAmenity(amenity.name, $any($event.target).checked)"
-            />
-            <span>{{ amenity.name }}</span>
-          </label>
-        }
-        @if (!amenities().length) {
-          <span class="capsule__empty"
-            >Chưa tải được danh sách tiện ích. Bạn vẫn có thể tìm theo các điều kiện khác.</span
-          >
-        }
-      </div>
-    </fieldset>
-  } @else if (selectedAmenityNames().length) {
-    <div class="capsule__selected" aria-label="Tiện ích đã chọn">
-      @for (name of selectedAmenityNames(); track name) {
-        <button
-          type="button"
-          (click)="toggleAmenity(name, false)"
-          [attr.aria-label]="'Bỏ tiện ích ' + name"
-        >
-          {{ name }}<span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      }
-    </div>
-  }
 </form>

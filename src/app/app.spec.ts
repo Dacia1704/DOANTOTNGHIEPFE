@@ -35,6 +35,8 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('#chat-widget')).toBeNull();
+    expect(compiled.querySelectorAll('app-ai-chat')).toHaveLength(1);
+    expect(compiled.querySelector('app-ai-chat .launcher')).toBeTruthy();
   });
 
   it('opens a guest chat prompt without opening an authenticated inbox', async () => {
