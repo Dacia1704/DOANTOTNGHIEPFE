@@ -48,4 +48,13 @@ export class PublicListingService {
       .get<ApiResponse<PublicListingResponse>>(`${this.api}/${encodeURIComponent(id)}`)
       .pipe(map((response) => PublicListingMapper.fromResponse(response.data)));
   }
+
+  revealPhone(id: string): Observable<string | null> {
+    return this.http
+      .post<ApiResponse<{ phone: string | null }>>(
+        `${this.api}/${encodeURIComponent(id)}/reveal-phone`,
+        {},
+      )
+      .pipe(map((response) => response.data.phone));
+  }
 }

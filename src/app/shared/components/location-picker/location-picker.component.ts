@@ -32,7 +32,7 @@ import { MapPlaceSearchComponent } from '../map-place-search/map-place-search.co
       (placeSelected)="selectPlace($event)"
     />
     @if (placeAddress()) {
-      <p class="hint">Địa điểm Google: {{ placeAddress() }}</p>
+      <p class="hint">Địa điểm đã chọn: {{ placeAddress() }}</p>
     }
     <div class="picker-actions">
       <button

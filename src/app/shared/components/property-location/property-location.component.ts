@@ -14,7 +14,7 @@ import { MapCanvasComponent } from '../map-canvas/map-canvas.component';
       </div>
       @if (address || point()) {
         <a class="btn-secondary" [href]="directions()" target="_blank" rel="noopener noreferrer">{{
-          point() ? 'Chỉ đường' : 'Tìm địa chỉ trên Google Maps'
+          point() ? 'Chỉ đường' : 'Tìm địa chỉ trên OpenStreetMap'
         }}</a>
       }
     </div>

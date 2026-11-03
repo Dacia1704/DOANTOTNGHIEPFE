@@ -1,0 +1,147 @@
+<section id="danh-gia" class="reviews-section" aria-labelledby="reviews-title">
+  <div class="reviews-heading">
+    <div>
+      <span class="eyebrow">TRẢI NGHIỆM TỪ NGƯỜI THUÊ</span>
+      <h2 id="reviews-title">Đánh giá & nhận xét</h2>
+    </div>
+    <span class="material-symbols-outlined heading-star" aria-hidden="true">reviews</span>
+  </div>
+  <div class="review-tabs" role="group" aria-label="Loại đánh giá">
+    <button
+      type="button"
+      [class.active]="target() === 'ROOM'"
+      [attr.aria-pressed]="target() === 'ROOM'"
+      (click)="target.set('ROOM')"
+    >
+      Đánh giá phòng
+    </button>
+    <button
+      type="button"
+      [class.active]="target() === 'LANDLORD'"
+      [attr.aria-pressed]="target() === 'LANDLORD'"
+      (click)="target.set('LANDLORD')"
+    >
+      Đánh giá chủ trọ
+    </button>
+  </div>
+  <p class="scope-note">
+    {{
+      target() === 'ROOM'
+        ? 'Trải nghiệm của người thuê tại ' + roomLabel() + '.'
+        : 'Nhận xét về chủ trọ từ người thuê tại các cơ sở đang quản lý.'
+    }}
+  </p>
+  @if (current().data; as data) {
+    <div class="rating-overview">
+      <div class="overall-rating">
+        <span class="score"
+          >{{
+            data.summary.averageRating === null
+              ? '—'
+              : (data.summary.averageRating | number: '1.1-2')
+          }}<small>/ 5</small></span
+        >
+        <div
+          class="rating-stars"
+          [attr.aria-label]="
+            data.summary.averageRating === null
+              ? 'Chưa có điểm đánh giá'
+              : data.summary.averageRating + ' trên 5 sao'
+          "
+        >
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <span
+              class="material-symbols-outlined"
+              [class.filled]="star <= (data.summary.averageRating || 0)"
+              aria-hidden="true"
+              >star</span
+            >
+          }
+        </div>
+        <strong>{{ data.summary.totalReviews }} đánh giá</strong>
+        <span>Điểm trung bình từ người thuê</span>
+      </div>
+      <div class="rating-distribution" aria-label="Phân bố điểm đánh giá">
+        @for (bucket of data.summary.distribution; track bucket.stars) {
+          <div class="rating-row">
+            <span>{{ bucket.stars }} <span aria-hidden="true">★</span></span>
+            <div
+              class="rating-track"
+              role="meter"
+              [attr.aria-label]="bucket.stars + ' sao'"
+              aria-valuemin="0"
+              [attr.aria-valuemax]="data.summary.totalReviews || 1"
+              [attr.aria-valuenow]="bucket.count"
+            >
+              <span
+                [style.width.%]="
+                  data.summary.totalReviews ? (bucket.count * 100) / data.summary.totalReviews : 0
+                "
+              ></span>
+            </div>
+            <span>{{ bucket.count }}</span>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="review-list">
+      @for (review of data.reviews.data; track review.id) {
+        <article class="review-card">
+          <header>
+            <div class="review-author">
+              <span class="review-avatar" aria-hidden="true">{{
+                review.authorName.slice(0, 1).toUpperCase()
+              }}</span>
+              <div>
+                <h3>{{ review.authorName }}</h3>
+                <time>{{ review.createdAt | date: 'dd/MM/yyyy' }}</time>
+              </div>
+            </div>
+            <span class="review-score"
+              ><span class="material-symbols-outlined" aria-hidden="true">star</span
+              >{{ review.rating }}.0</span
+            >
+          </header>
+          <p class="review-comment">
+            {{ review.comment || 'Người thuê đã chấm điểm và chưa để lại nhận xét.' }}
+          </p>
+          @if (review.verifiedStay) {
+            <span class="verified-stay"
+              ><span class="material-symbols-outlined" aria-hidden="true">verified</span>Người thuê
+              có hợp đồng</span
+            >
+          }
+          @if (review.landlordReply) {
+            <div class="landlord-reply">
+              <strong>Phản hồi từ chủ trọ</strong>
+              <p>{{ review.landlordReply }}</p>
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="empty-reviews">
+          <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+          <h3>Chưa có đánh giá {{ target() === 'ROOM' ? 'cho phòng này' : 'về chủ trọ' }}</h3>
+          <p>Nhận xét của người thuê sẽ được hiển thị tại đây.</p>
+        </div>
+      }
+    </div>
+  }
+  @if (current().loading) {
+    <div class="review-loading" role="status">Đang tải đánh giá…</div>
+  }
+  @if (current().error) {
+    <div class="review-error" role="alert">
+      <p>{{ current().error }}</p>
+      <button type="button" (click)="loadMore()">Thử lại</button>
+    </div>
+  }
+  @if (current().data; as data) {
+    @if (data.reviews.currentPage + 1 < data.reviews.totalPages && !current().error) {
+      <button type="button" class="load-more" [disabled]="current().loading" (click)="loadMore()">
+        {{ current().loading ? 'Đang tải…' : 'Xem thêm đánh giá' }}
+        <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+      </button>
+    }
+  }
+</section>

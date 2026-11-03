@@ -1,58 +1,85 @@
 import { TestBed } from '@angular/core/testing';
-import { SimpleChange, signal } from '@angular/core';
+import { SimpleChange } from '@angular/core';
 import { vi } from 'vitest';
-import { GoogleMapsService } from '@services/maps/google-maps.service';
+import { MapTilerService } from '@services/maps/maptiler.service';
 import { GeolocationService } from '@services/maps/geolocation.service';
 import { MapCanvasComponent } from './map-canvas/map-canvas.component';
 import { MapPlaceSearchComponent } from './map-place-search/map-place-search.component';
 import { PropertyLocationComponent } from './property-location/property-location.component';
 import { LocationPickerComponent } from './location-picker/location-picker.component';
 import { ListingMapComponent } from '../../features/tenant/landing/components/listing-map/listing-map.component';
-import { Coordinates, LocationFilter, MapsMarker, MapsPlaceResult } from '@model/maps/maps.model';
+import { Coordinates, LocationFilter } from '@model/maps/maps.model';
 import { PublicListing } from '@model/public-listing/public-listing.model';
 
 describe('Map rendering and selection', () => {
   async function setup(editable = false) {
-    const callbacks: Record<string, (event?: unknown) => void> = {};
-    const removed = vi.fn();
+    const callbacks: Record<string, (event?: any) => void> = {};
+    const source = { setData: vi.fn() };
+    let hasSource = false;
     const map = {
-      addListener: vi.fn((event: string, callback: (event?: unknown) => void) => {
+      on: vi.fn((event: string, callback: (event?: any) => void) => {
         callbacks[event] = callback;
-        return { remove: removed };
       }),
       setCenter: vi.fn(),
       setZoom: vi.fn(),
-      getBounds: () => ({ toJSON: () => ({ south: 0, north: 1, west: 170, east: -170 }) }),
+      remove: vi.fn(),
+      resize: vi.fn(),
+      addControl: vi.fn(),
+      isStyleLoaded: () => true,
+      getBounds: () => ({
+        getSouth: () => 0,
+        getNorth: () => 1,
+        getWest: () => 170,
+        getEast: () => 190,
+      }),
+      getSource: () => (hasSource ? source : undefined),
+      addSource: vi.fn(() => {
+        hasSource = true;
+      }),
+      addLayer: vi.fn(),
     };
-    const markers: MapsMarker[] = [];
-    const popup = { setContent: vi.fn(), open: vi.fn(), close: vi.fn() };
+    const markers: any[] = [];
+    const popup: any = { remove: vi.fn() };
+    popup.setDOMContent = vi.fn(() => popup);
+    popup.setLngLat = vi.fn(() => popup);
+    popup.addTo = vi.fn(() => popup);
     const library = {
       Map: vi.fn(function () {
         return map;
       }),
-      AdvancedMarkerElement: vi.fn(function (options: Record<string, unknown>) {
-        const marker = Object.assign(document.createElement('div'), {
-          position: options['position'],
-          map: options['map'],
-        }) as MapsMarker;
+      Marker: vi.fn(function (options: any) {
+        const marker: any = {
+          element: options.element,
+          options,
+          callbacks: {},
+          remove: vi.fn(),
+          getLngLat: () => ({ lat: 0, lng: 180, wrap: () => ({ lat: 0, lng: 180 }) }),
+        };
+        marker.setLngLat = vi.fn(() => marker);
+        marker.addTo = vi.fn(() => marker);
+        marker.on = vi.fn((event, callback) => {
+          marker.callbacks[event] = callback;
+          return marker;
+        });
         markers.push(marker);
         return marker;
       }),
-      InfoWindow: vi.fn(function () {
+      Popup: vi.fn(function () {
         return popup;
       }),
-      Circle: vi.fn(function () {
-        return { setMap: vi.fn() };
-      }),
+      NavigationControl: vi.fn(function () {}),
+      FullscreenControl: vi.fn(function () {}),
+      ScaleControl: vi.fn(function () {}),
     };
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: GoogleMapsService,
+          provide: MapTilerService,
           useValue: {
-            libraries: vi.fn(async () => library),
-            config: { mapId: 'test-map' },
-            authError: signal(''),
+            load: vi.fn(async () => library),
+            styleUrl: () => 'https://example.test/style.json',
+            localize: vi.fn(),
+            config: { markerColor: '#006b5e', radiusColor: '#00897b' },
           },
         },
       ],
@@ -71,6 +98,8 @@ describe('Map rendering and selection', () => {
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
+    callbacks['style.load']();
+    callbacks['load']();
     return {
       fixture,
       canvas: fixture.componentInstance,
@@ -79,55 +108,68 @@ describe('Map rendering and selection', () => {
       markers,
       popup,
       library,
-      removed,
+      source,
     };
   }
-  it('renders zero coordinates, ignores missing pins and emits user selections only when editable', async () => {
+  it('renders zero coordinates, ignores missing pins and permits editing only when enabled', async () => {
     const { canvas, fixture, callbacks, markers, library } = await setup(true);
-    expect(library.Map).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ center: { lat: 0, lng: 0 } }),
-    );
+    expect(library.Map).toHaveBeenCalledWith(expect.objectContaining({ center: [0, 0], pitch: 0 }));
     expect(markers).toHaveLength(1);
     const positions: Coordinates[] = [];
     canvas.positionChange.subscribe((point) => positions.push(point));
-    callbacks['click']({ latLng: { lat: () => 0, lng: () => 106 } });
-    markers[0].position = { lat: () => 0, lng: () => 180 };
-    markers[0].dispatchEvent(new Event('gmp-dragend'));
+    callbacks['click']({ lngLat: { lat: 0, wrap: () => ({ lng: 106 }) } });
+    markers[0].callbacks['dragend']();
     expect(positions).toEqual([
       { latitude: 0, longitude: 106 },
       { latitude: 0, longitude: 180 },
     ]);
     fixture.componentRef.setInput('disabled', true);
     fixture.detectChanges();
-    callbacks['click']({ latLng: { lat: () => 1, lng: () => 2 } });
+    callbacks['click']({ lngLat: { lat: 1, wrap: () => ({ lng: 2 }) } });
     expect(positions).toHaveLength(2);
+    expect(markers.at(-1).options.draggable).toBe(false);
+    fixture.destroy();
   });
   it('keeps popup text safe and navigates from an explicit detail link', async () => {
-    const { canvas, markers, popup, callbacks } = await setup();
+    const { canvas, fixture, markers, popup, callbacks } = await setup();
     const opened: string[] = [];
     canvas.pinSelected.subscribe((id) => opened.push(id));
     const positions = vi.fn();
     canvas.positionChange.subscribe(positions);
-    callbacks['click']({ latLng: { lat: () => 1, lng: () => 2 } });
+    callbacks['click']({ lngLat: { lat: 1, lng: 2 } });
     expect(positions).not.toHaveBeenCalled();
-    markers[0].dispatchEvent(new Event('gmp-click'));
-    const content = popup.setContent.mock.calls[0][0] as HTMLElement;
+    markers[0].element.click();
+    const content = popup.setDOMContent.mock.calls[0][0] as HTMLElement;
     expect(content.textContent).toContain('<script>unsafe</script>');
     expect(content.querySelector('script')).toBeNull();
     expect(content.querySelector('img')).toBeNull();
     content.querySelector('a')!.click();
     expect(opened).toEqual(['post']);
+    fixture.destroy();
   });
-  it('publishes the viewport and removes listeners and markers when destroyed', async () => {
-    const { canvas, fixture, callbacks, removed, markers } = await setup();
+  it('normalizes dateline-crossing bounds and disposes the WebGL map and markers', async () => {
+    const { canvas, fixture, callbacks, map, markers } = await setup();
     const bounds = vi.fn();
     canvas.boundsChange.subscribe(bounds);
-    callbacks['idle']();
+    callbacks['moveend']();
     expect(bounds).toHaveBeenCalledWith({ south: 0, north: 1, west: 170, east: -170 });
     fixture.destroy();
-    expect(removed).toHaveBeenCalledTimes(2);
-    expect(markers[0].map).toBeNull();
+    expect(map.remove).toHaveBeenCalledOnce();
+    expect(markers[0].remove).toHaveBeenCalledOnce();
+  });
+  it('renders a geodesic radius and clears it when radius is removed', async () => {
+    const { fixture, source } = await setup();
+    fixture.componentRef.setInput('center', { latitude: 0, longitude: 0 });
+    fixture.componentRef.setInput('radiusKm', 3);
+    fixture.detectChanges();
+    const ring = source.setData.mock.calls.at(-1)![0].features[0].geometry.coordinates[0];
+    expect(ring[0][0]).toBeCloseTo(0);
+    expect(ring[0][1]).toBeCloseTo(((3 / 6371.0088) * 180) / Math.PI);
+    expect(ring[0]).toEqual(ring.at(-1));
+    fixture.componentRef.setInput('radiusKm', 0);
+    fixture.detectChanges();
+    expect(source.setData.mock.calls.at(-1)![0].features).toEqual([]);
+    fixture.destroy();
   });
   it('shows address and an external link without loading a map for a missing location', () => {
     const fixture = TestBed.createComponent(PropertyLocationComponent);
@@ -142,9 +184,9 @@ describe('Map rendering and selection', () => {
     fixture.componentRef.setInput('collapsible', true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-map-canvas')).toBeNull();
-    expect(
-      new URL(fixture.nativeElement.querySelector('a').href).searchParams.get('destination'),
-    ).toBe('0,0');
+    expect(new URL(fixture.nativeElement.querySelector('a').href).searchParams.get('route')).toBe(
+      ';0,0',
+    );
   });
 });
 
@@ -163,62 +205,63 @@ describe('Places autocomplete and geolocation', () => {
     });
     expect(calls).toEqual(['address', 'location']);
   });
-  it('requests only selected place fields and ignores late results from an older selection', async () => {
-    const widget = Object.assign(document.createElement('div'), { disabled: false });
-    TestBed.configureTestingModule({
-      providers: [
-        {
-          provide: GoogleMapsService,
-          useValue: {
-            places: async () => ({
-              PlaceAutocompleteElement: vi.fn(function () {
-                return widget;
-              }),
+  it('debounces geocoding, cancels old results and emits selected street addresses', async () => {
+    vi.useFakeTimers();
+    try {
+      let finishFirst!: (places: any[]) => void;
+      const search = vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finishFirst = resolve;
             }),
+        )
+        .mockResolvedValueOnce([
+          {
+            latitude: 0,
+            longitude: 0,
+            address: '12 Phố A',
+            name: 'Phố A',
+            addressLine: '12 Phố A',
           },
-        },
-      ],
-    });
-    const fixture = TestBed.createComponent(MapPlaceSearchComponent);
-    const selected = vi.fn();
-    fixture.componentInstance.placeSelected.subscribe(selected);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    let finishFirst!: () => void;
-    const first: MapsPlaceResult = {
-      location: { lat: () => 1, lng: () => 2 },
-      fetchFields: vi.fn(
-        () =>
-          new Promise<void>((resolve) => {
-            finishFirst = resolve;
-          }),
-      ),
-    };
-    const second: MapsPlaceResult = {
-      location: { lat: () => 0, lng: () => 0 },
-      formattedAddress: 'Địa chỉ Google',
-      fetchFields: vi.fn(async () => undefined),
-    };
-    widget.dispatchEvent(
-      Object.assign(new Event('gmp-select'), { placePrediction: { toPlace: () => first } }),
-    );
-    widget.dispatchEvent(
-      Object.assign(new Event('gmp-select'), { placePrediction: { toPlace: () => second } }),
-    );
-    await Promise.resolve();
-    finishFirst();
-    await Promise.resolve();
-    expect(second.fetchFields).toHaveBeenCalledWith({
-      fields: ['displayName', 'formattedAddress', 'location'],
-    });
-    expect(selected).toHaveBeenCalledExactlyOnceWith({
-      latitude: 0,
-      longitude: 0,
-      address: 'Địa chỉ Google',
-      name: '',
-    });
-    fixture.destroy();
-    expect(widget.parentElement).toBeNull();
+        ]);
+      TestBed.configureTestingModule({
+        providers: [{ provide: MapTilerService, useValue: { search } }],
+      });
+      const fixture = TestBed.createComponent(MapPlaceSearchComponent);
+      fixture.componentRef.setInput('includeStreetAddress', true);
+      fixture.detectChanges();
+      const component = fixture.componentInstance;
+      const selected = vi.fn();
+      component.placeSelected.subscribe(selected);
+      component.search('old');
+      await vi.advanceTimersByTimeAsync(350);
+      const oldSignal = search.mock.calls[0][1] as AbortSignal;
+      component.search('new');
+      expect(oldSignal.aborted).toBe(true);
+      await vi.advanceTimersByTimeAsync(349);
+      expect(search).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      finishFirst([{ latitude: 1, longitude: 2, address: 'old', name: '' }]);
+      await Promise.resolve();
+      expect(component.results()[0].address).toBe('12 Phố A');
+      component.select(component.results()[0]);
+      expect(selected).toHaveBeenCalledExactlyOnceWith({
+        latitude: 0,
+        longitude: 0,
+        address: '12 Phố A',
+        name: 'Phố A',
+        addressLine: '12 Phố A',
+      });
+      expect(component.results()).toEqual([]);
+      component.search('pending');
+      fixture.destroy();
+      await vi.advanceTimersByTimeAsync(350);
+      expect(search).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('ignores a geolocation response after the form address has changed', async () => {
     let resolve!: (point: Coordinates) => void;
