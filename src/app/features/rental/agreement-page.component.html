@@ -1,112 +1,389 @@
-<section class="rental-page">
-  <a [routerLink]="backLink">Yêu cầu thuê</a>
-  <header>
-    <h1>Hợp đồng thuê phòng</h1>
-    <button class="btn-secondary" [disabled]="loading() || busy()" (click)="load()">Tải lại</button>
+<section class="rental-page agreement-page" [attr.aria-busy]="loading()">
+  <a class="back-link" [routerLink]="backLink">
+    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+    {{ owner ? 'Quản lý đặt phòng' : 'Yêu cầu thuê của tôi' }}
+  </a>
+
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">HỒ SƠ THUÊ PHÒNG</p>
+      <h1>Hợp đồng thuê phòng</h1>
+      <p class="page-description">Kiểm tra thông tin thuê và theo dõi tiến trình xác nhận.</p>
+    </div>
+    <button class="btn-secondary refresh-button" [disabled]="loading() || busy()" (click)="load()">
+      <span class="material-symbols-outlined" [class.is-spinning]="loading()" aria-hidden="true"
+        >refresh</span
+      >
+      Tải lại
+    </button>
   </header>
+
   @if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
+    <div class="notice notice-error" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
+      <p>{{ error() }}</p>
+      <button class="text-button" [disabled]="loading()" (click)="load()">Thử lại</button>
+    </div>
   }
-  @if (loading()) {
-    <p role="status">Đang cập nhật hợp đồng…</p>
-  }
+
   @if (agreement(); as a) {
-    <article class="contract">
-      <span class="badge">{{ labels[a.status] || a.status }}</span>
-      <h2>{{ a.agreementCode }}</h2>
-      <p>{{ a.propertyName }} · Phòng {{ a.roomNumber }}</p>
-      <dl>
-        <div>
-          <dt>Chủ trọ</dt>
-          <dd>{{ a.landlordName }}</dd>
+    <div class="agreement-banner" [attr.data-status]="a.status">
+      <span class="banner-icon material-symbols-outlined" aria-hidden="true">
+        {{
+          a.status === 'ACTIVE'
+            ? 'verified'
+            : a.status === 'PENDING_CONFIRMATION'
+              ? 'hourglass_top'
+              : 'description'
+        }}
+      </span>
+      <div class="banner-copy">
+        <span class="status-badge" [attr.data-status]="a.status">{{
+          labels[a.status] || a.status
+        }}</span>
+        <p>
+          @if (a.status === 'PENDING_CONFIRMATION') {
+            {{
+              owner
+                ? 'Phòng đang được giữ để người thuê xem và xác nhận hợp đồng.'
+                : 'Hãy đọc tài liệu bên dưới trước khi xác nhận thuê phòng.'
+            }}
+          } @else if (a.status === 'ACTIVE') {
+            Hai bên đã xác nhận hợp đồng. Tài liệu PDF được lưu bên dưới.
+          } @else {
+            {{
+              a.cancelReason || 'Thông tin và tài liệu hợp đồng được lưu lại để bạn tiện tra cứu.'
+            }}
+          }
+        </p>
+      </div>
+      @if (a.status === 'PENDING_CONFIRMATION') {
+        <div class="banner-deadline">
+          <span>Hạn xác nhận · giờ Việt Nam</span>
+          <strong>{{ a.confirmationExpiresAt | date: 'HH:mm · dd/MM/yyyy' }}</strong>
         </div>
+      }
+    </div>
+
+    <section class="rental-overview panel" aria-label="Thông tin các bên và thời hạn thuê">
+      <div class="overview-item property-item">
+        <span class="overview-icon material-symbols-outlined" aria-hidden="true">apartment</span>
         <div>
-          <dt>Người thuê</dt>
-          <dd>{{ a.tenantName }}</dd>
+          <span>Phòng cho thuê</span><strong>{{ a.propertyName }}</strong>
+          <p>Phòng {{ a.roomNumber }}</p>
         </div>
+      </div>
+      <div class="overview-item">
+        <span class="overview-icon material-symbols-outlined" aria-hidden="true">date_range</span>
         <div>
-          <dt>Giá thuê/tháng</dt>
-          <dd>{{ utils.formatFee(a.price) }}</dd>
+          <span>Thời gian thuê</span><strong>{{ a.startDate | date: 'dd/MM/yyyy' }}</strong>
+          <p>đến {{ a.endDate | date: 'dd/MM/yyyy' }}</p>
         </div>
+      </div>
+      <div class="overview-item">
+        <span class="overview-icon material-symbols-outlined" aria-hidden="true"
+          >person_outline</span
+        >
         <div>
-          <dt>Tiền cọc</dt>
-          <dd>{{ utils.formatFee(a.deposit) }}</dd>
+          <span>Bên A · Chủ trọ</span><strong>{{ a.landlordName }}</strong>
+          <p>{{ owner ? 'Bạn là bên cho thuê' : 'Bên cho thuê phòng' }}</p>
         </div>
+      </div>
+      <div class="overview-item">
+        <span class="overview-icon material-symbols-outlined" aria-hidden="true"
+          >person_outline</span
+        >
         <div>
-          <dt>Điện</dt>
-          <dd>{{ utils.formatFee(a.electricityPrice) }}</dd>
+          <span>Bên B · Người thuê</span><strong>{{ a.tenantName }}</strong>
+          <p>{{ owner ? 'Bên thuê phòng' : 'Bạn là bên thuê' }}</p>
         </div>
-        <div>
-          <dt>Nước</dt>
-          <dd>{{ utils.formatFee(a.waterPrice) }}</dd>
+      </div>
+    </section>
+
+    <div class="agreement-layout">
+      <section class="document-panel panel" aria-labelledby="document-title">
+        <div class="document-heading">
+          <div class="section-title">
+            <span class="section-icon material-symbols-outlined" aria-hidden="true"
+              >description</span
+            >
+            <div>
+              <h2 id="document-title">Tài liệu hợp đồng</h2>
+              <p class="contract-code">{{ a.agreementCode }}</p>
+            </div>
+          </div>
+          @if (pdfBlob()) {
+            <button class="document-download" (click)="download()" aria-label="Tải hợp đồng PDF">
+              <span class="material-symbols-outlined" aria-hidden="true">download</span
+              ><span>Tải PDF</span>
+            </button>
+          }
         </div>
-        <div>
-          <dt>Dịch vụ</dt>
-          <dd>{{ utils.formatFee(a.serviceFee) }}</dd>
-        </div>
-        <div>
-          <dt>Thời gian thuê</dt>
-          <dd>{{ a.startDate | date: 'dd/MM/yyyy' }} → {{ a.endDate | date: 'dd/MM/yyyy' }}</dd>
-        </div>
-        <div>
-          <dt>Chủ trọ chấp nhận</dt>
-          <dd>{{ a.landlordConfirmedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
-        </div>
-        @if (a.status === 'PENDING_CONFIRMATION') {
-          <div>
-            <dt>Hạn xác nhận</dt>
-            <dd>{{ a.confirmationExpiresAt | date: 'dd/MM/yyyy HH:mm' }} (giờ Việt Nam)</dd>
+
+        @if (pdfLoading()) {
+          <div class="document-state" role="status">
+            <div class="document-state-icon is-loading">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            </div>
+            <h3>Đang mở tài liệu…</h3>
+            <p>Đang tải và kiểm tra phiên bản PDF của bạn.</p>
+          </div>
+        } @else if (pdfBlob(); as blob) {
+          <app-contract-pdf-viewer [source]="blob" (ready)="pdfRendered.set($event)" />
+          <div class="document-footer">
+            <span
+              ><span class="material-symbols-outlined" aria-hidden="true">lock</span>Tài liệu dành
+              riêng cho các bên tham gia</span
+            >
+            <a [href]="pdfLink()" target="_blank" rel="noopener"
+              >Mở PDF<span class="material-symbols-outlined" aria-hidden="true"
+                >open_in_new</span
+              ></a
+            >
+          </div>
+        } @else if (a.pdfStatus === 'PENDING' || a.pdfStatus === 'PROCESSING') {
+          <div class="document-state" role="status">
+            <div class="document-state-icon is-loading">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            </div>
+            <span class="eyebrow">ĐANG CHUẨN BỊ TÀI LIỆU</span>
+            <h3>Đang tạo hợp đồng PDF</h3>
+            <p>Thông tin thuê đã được lưu. Tài liệu sẽ xuất hiện tại đây khi sẵn sàng.</p>
+            <span class="state-footnote"
+              >Trang tự cập nhật trong 2 phút. Bạn cũng có thể bấm Tải lại.</span
+            >
+          </div>
+        } @else if (a.pdfStatus === 'FAILED') {
+          <div class="document-state" role="status">
+            <div class="document-state-icon warning-icon">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            </div>
+            <h3>Chưa thể tạo hợp đồng</h3>
+            <p>
+              Hệ thống sẽ thử tạo lại tài liệu. Vui lòng tải lại trang sau ít phút hoặc liên hệ hỗ
+              trợ nếu lỗi vẫn tiếp diễn.
+            </p>
+            <button class="btn-secondary" [disabled]="loading()" (click)="load()">
+              <span class="material-symbols-outlined" aria-hidden="true">refresh</span>Kiểm tra lại
+            </button>
+          </div>
+        } @else {
+          <div class="document-state">
+            <div class="document-state-icon">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            </div>
+            <h3>{{ a.canDownloadPdf ? 'Chưa mở được tài liệu' : 'Tài liệu chưa sẵn sàng' }}</h3>
+            <p>
+              {{
+                a.canDownloadPdf
+                  ? 'Hãy thử tải lại tài liệu để tiếp tục xem hợp đồng.'
+                  : 'Bạn có thể quay lại xem khi hợp đồng được phát hành.'
+              }}
+            </p>
+            @if (a.canDownloadPdf) {
+              <button class="btn-secondary" (click)="loadPdf(a)">Tải lại PDF</button>
+            }
           </div>
         }
-        @if (a.tenantConfirmedAt) {
-          <div>
-            <dt>Người thuê xác nhận</dt>
-            <dd>{{ a.tenantConfirmedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+      </section>
+
+      <aside class="agreement-sidebar" aria-label="Chi phí và xác nhận hợp đồng">
+        <section class="confirmation-panel panel">
+          <div class="section-title">
+            <span class="section-icon material-symbols-outlined" aria-hidden="true">{{
+              a.status === 'ACTIVE' ? 'verified_user' : 'task_alt'
+            }}</span>
+            <h2>
+              @if (a.canConfirm || (!owner && a.status === 'PENDING_CONFIRMATION')) {
+                Xác nhận hợp đồng
+              } @else if (a.status === 'ACTIVE') {
+                Hợp đồng đã xác nhận
+              } @else {
+                Trạng thái hợp đồng
+              }
+            </h2>
           </div>
-        }
-      </dl>
-      @if (a.cancelReason) {
-        <p>{{ a.cancelReason }}</p>
-      }
-      @if (a.pdfStatus === 'PENDING' || a.pdfStatus === 'PROCESSING') {
-        <div class="pdf-state" role="status">
-          Đang tạo hợp đồng PDF. Trang tự kiểm tra tối đa 2 phút; bạn có thể bấm Tải lại.
-        </div>
-      }
-      @if (a.pdfStatus === 'FAILED') {
-        <div class="pdf-state">
-          Chưa thể tạo hợp đồng, hệ thống sẽ thử lại có giới hạn. Nếu vẫn lỗi, vui lòng liên hệ hỗ
-          trợ.
-        </div>
-      }
-      @if (pdfLoading()) {
-        <p role="status">Đang tải và kiểm tra phiên bản PDF…</p>
-      }
-      @if (pdfUrl(); as url) {
-        <iframe [src]="url" title="Nội dung hợp đồng thuê phòng PDF"></iframe>
-        <div class="actions">
-          <button class="btn-secondary" (click)="download()">Tải hợp đồng PDF</button>
-        </div>
-      }
-      @if (a.canConfirm) {
-        <label class="consent"
-          ><input type="checkbox" [(ngModel)]="accepted" [disabled]="busy() || !pdfUrl()" />Tôi đã
-          đọc và đồng ý với nội dung hợp đồng số {{ a.agreementCode }}.</label
-        ><button class="btn-primary" [disabled]="!canConfirm" (click)="action('confirm')">
-          {{ busy() ? 'Đang xử lý…' : 'Xác nhận thuê' }}
-        </button>
-      }
-      @if (a.canDecline) {
-        <button class="btn-secondary" [disabled]="busy() || loading()" (click)="action('decline')">
-          Từ chối hợp đồng
-        </button>
-      }
-      @if (a.canCheckout) {
-        <button class="btn-primary" [disabled]="busy() || loading()" (click)="action('checkout')">
-          Xác nhận hoàn tất trả phòng
-        </button>
-      }
-      <p>Thao tác xác nhận ghi nhận đồng ý điện tử trong ứng dụng. PDF giữ nguyên sau phát hành.</p>
-    </article>
+
+          @if (a.canConfirm) {
+            <p class="section-description">
+              Đọc kỹ tài liệu và kiểm tra thông tin trước khi xác nhận.
+            </p>
+            <label class="consent">
+              <input type="checkbox" [(ngModel)]="accepted" [disabled]="busy() || !pdfRendered()" />
+              <span
+                >Tôi đã đọc và đồng ý với nội dung hợp đồng số <strong>{{ a.agreementCode }}</strong
+                >.</span
+              >
+            </label>
+            <button
+              class="btn-primary full-width"
+              [disabled]="!canConfirm"
+              (click)="action('confirm')"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">check_circle</span
+              >{{ busy() ? 'Đang xử lý…' : 'Xác nhận thuê' }}
+            </button>
+          } @else if (a.status === 'PENDING_CONFIRMATION') {
+            <div class="waiting-message">
+              <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+              <p>{{ owner ? 'Chờ người thuê xác nhận' : 'Chờ tài liệu sẵn sàng' }}</p>
+            </div>
+            <p class="section-description">
+              {{
+                owner
+                  ? 'Người thuê sẽ xem tài liệu và xác nhận trong thời hạn giữ phòng.'
+                  : 'Bạn có thể xác nhận thuê ngay sau khi hợp đồng PDF được tạo xong.'
+              }}
+            </p>
+          } @else if (a.status === 'ACTIVE') {
+            <p class="section-description">
+              Hợp đồng đã được hai bên xác nhận. Hãy lưu một bản PDF để tiện theo dõi trong thời
+              gian thuê.
+            </p>
+          } @else {
+            <p class="section-description">
+              {{ labels[a.status] || a.status }}. Bạn có thể xem lại thông tin hợp đồng tại đây.
+            </p>
+          }
+          @if (a.canDecline) {
+            <button
+              class="text-button decline-button"
+              [disabled]="busy() || loading()"
+              (click)="action('decline')"
+            >
+              Từ chối hợp đồng
+            </button>
+          }
+          @if (a.canCheckout) {
+            <div class="checkout-action">
+              <p>Đã hoàn tất bàn giao và nhận lại phòng?</p>
+              <button
+                class="btn-secondary full-width"
+                [disabled]="busy() || loading()"
+                (click)="action('checkout')"
+              >
+                Xác nhận hoàn tất trả phòng
+              </button>
+            </div>
+          }
+          <p class="confirmation-note">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>Xác nhận ghi nhận
+            đồng ý điện tử trong ứng dụng. PDF giữ nguyên sau phát hành.
+          </p>
+        </section>
+
+        <section class="cost-panel panel" aria-labelledby="cost-title">
+          <div class="section-title">
+            <span class="section-icon material-symbols-outlined" aria-hidden="true"
+              >account_balance_wallet</span
+            >
+            <h2 id="cost-title">Chi phí thuê phòng</h2>
+          </div>
+          <div class="rent-price">
+            <strong>{{ utils.formatFee(a.price) }}</strong
+            ><span>/ tháng</span>
+          </div>
+          <dl class="cost-breakdown">
+            <div class="deposit-row">
+              <dt>Tiền đặt cọc</dt>
+              <dd>{{ utils.formatFee(a.deposit) }}</dd>
+            </div>
+            <div>
+              <dt>
+                <span class="material-symbols-outlined" aria-hidden="true">bolt</span>Tiền điện
+              </dt>
+              <dd>{{ utils.formatFee(a.electricityPrice) }}</dd>
+            </div>
+            <div>
+              <dt>
+                <span class="material-symbols-outlined" aria-hidden="true">water_drop</span>Tiền
+                nước
+              </dt>
+              <dd>{{ utils.formatFee(a.waterPrice) }}</dd>
+            </div>
+            <div>
+              <dt>
+                <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>Phí
+                dịch vụ
+              </dt>
+              <dd>{{ utils.formatFee(a.serviceFee) }}</dd>
+            </div>
+          </dl>
+          <p class="cost-footnote">
+            Đơn vị tính điện, nước và kỳ thanh toán theo thỏa thuận trong hợp đồng.
+          </p>
+        </section>
+
+        <section class="timeline-panel panel" aria-labelledby="timeline-title">
+          <div class="section-title">
+            <span class="section-icon material-symbols-outlined" aria-hidden="true">history</span>
+            <h2 id="timeline-title">Tiến trình hợp đồng</h2>
+          </div>
+          <ol class="contract-timeline">
+            <li [class.is-complete]="!!a.landlordConfirmedAt">
+              <span class="timeline-dot"
+                ><span class="material-symbols-outlined" aria-hidden="true">check</span></span
+              >
+              <div>
+                <strong>Chủ trọ chấp nhận</strong
+                ><span>{{
+                  (a.landlordConfirmedAt | date: 'HH:mm · dd/MM/yyyy') || 'Chưa xác nhận'
+                }}</span>
+              </div>
+            </li>
+            <li [class.is-complete]="a.pdfStatus === 'READY'">
+              <span class="timeline-dot"
+                ><span class="material-symbols-outlined" aria-hidden="true">{{
+                  a.pdfStatus === 'READY' ? 'check' : 'more_horiz'
+                }}</span></span
+              >
+              <div>
+                <strong>Phát hành hợp đồng</strong
+                ><span>{{
+                  a.pdfStatus === 'READY'
+                    ? 'Tài liệu PDF đã sẵn sàng'
+                    : a.pdfStatus === 'FAILED'
+                      ? 'Đang chờ tạo lại tài liệu'
+                      : 'Đang chuẩn bị tài liệu'
+                }}</span>
+              </div>
+            </li>
+            <li
+              [class.is-complete]="!!a.tenantConfirmedAt"
+              [class.is-current]="a.status === 'PENDING_CONFIRMATION'"
+            >
+              <span class="timeline-dot"
+                ><span class="material-symbols-outlined" aria-hidden="true">{{
+                  a.tenantConfirmedAt ? 'check' : 'schedule'
+                }}</span></span
+              >
+              <div>
+                <strong>Người thuê xác nhận</strong
+                ><span>{{
+                  a.tenantConfirmedAt
+                    ? (a.tenantConfirmedAt | date: 'HH:mm · dd/MM/yyyy')
+                    : a.status === 'PENDING_CONFIRMATION'
+                      ? 'Đang chờ xác nhận'
+                      : 'Chưa xác nhận'
+                }}</span>
+              </div>
+            </li>
+          </ol>
+        </section>
+      </aside>
+    </div>
+  } @else if (loading()) {
+    <div class="loading-layout" role="status" aria-label="Đang tải hợp đồng">
+      <div class="skeleton skeleton-banner"></div>
+      <div class="skeleton skeleton-document"></div>
+      <span>Đang tải hợp đồng…</span>
+    </div>
+  } @else if (!error()) {
+    <div class="empty-state panel">
+      <span class="material-symbols-outlined" aria-hidden="true">description</span>
+      <h2>Chưa có thông tin hợp đồng</h2>
+      <p>Quay lại danh sách để chọn hợp đồng bạn muốn xem.</p>
+      <a class="btn-primary" [routerLink]="backLink">Về danh sách</a>
+    </div>
   }
 </section>

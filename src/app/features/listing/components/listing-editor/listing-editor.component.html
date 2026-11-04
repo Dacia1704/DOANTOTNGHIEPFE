@@ -8,16 +8,23 @@
     <div class="notice error" role="alert">
       {{ error() }}
       @if (!data.listing) {
-        <button (click)="loadProperties()" [disabled]="loading()">Tải lại cơ sở</button>
+        <button (click)="loadProperties()" [disabled]="loading()">Tải lại dữ liệu</button>
       }
     </div>
   }
   @if (loading()) {
-    <p class="loading" role="status">Đang tải cơ sở của bạn…</p>
+    <p class="loading" role="status">Đang tải cơ sở và gói ưu tiên của bạn…</p>
   }
   <form id="listing-form" [formGroup]="form" (ngSubmit)="save()" class="stack">
     @if (data.reject) {
       <p>{{ data.listing?.title }}</p>
+      <p class="notice warning">
+        {{
+          data.listing?.initialReview
+            ? 'Đây là lần duyệt đầu: từ chối sẽ hoàn đúng lượt đăng và lượt ưu tiên đã dùng cho tin này về gói tương ứng.'
+            : 'Tin đã qua lần duyệt đầu, đã ẩn hoặc đã hết hạn: từ chối lần này không hoàn lượt đăng hoặc lượt ưu tiên.'
+        }}
+      </p>
       <label class="field"
         >Lý do từ chối<textarea formControlName="reason" maxlength="2000" required></textarea>
       </label>
@@ -53,6 +60,142 @@
       <label class="field"
         >Nội dung<textarea formControlName="description" maxlength="20000"></textarea>
       </label>
+      @if (!data.listing) {
+        <fieldset class="priority-section" [disabled]="loading() || busy()">
+          <legend>Ưu tiên tin đăng</legend>
+          <p class="muted">Chọn ưu tiên ngay bây giờ. Tin bắt đầu hiển thị sau khi admin duyệt.</p>
+          <div class="priority-sources">
+            <label
+              class="source-option"
+              [class.selected]="form.controls.prioritySource.value === 'package'"
+            >
+              <input type="radio" formControlName="prioritySource" value="package" />
+              <span
+                ><strong>Gói dịch vụ</strong
+                ><small>{{ current()?.rights?.packageName || 'Gói hiện tại' }}</small></span
+              >
+            </label>
+            <label
+              class="source-option"
+              [class.selected]="form.controls.prioritySource.value === 'boost'"
+            >
+              <input type="radio" formControlName="prioritySource" value="boost" />
+              <span
+                ><strong>Gói Boost đã mua</strong
+                ><small>{{ boosts().length }} gói còn hiệu lực</small></span
+              >
+            </label>
+          </div>
+          @if (form.controls.prioritySource.value === 'package') {
+            <label class="field"
+              >Mức ưu tiên theo gói dịch vụ
+              <select formControlName="priorityLevel">
+                <option [ngValue]="0">Mặc định theo gói · không dùng lượt ưu tiên riêng</option>
+                <option [ngValue]="2" [disabled]="!current()?.rights?.highPrioritySlots">
+                  Ưu tiên cao · dùng 1 lượt
+                </option>
+                <option
+                  [ngValue]="1"
+                  [disabled]="
+                    !current()?.rights?.lowPrioritySlots &&
+                    current()?.rights?.defaultPriorityLevel !== 1
+                  "
+                >
+                  {{
+                    current()?.rights?.defaultPriorityLevel === 1
+                      ? 'Ưu tiên thấp · có sẵn trong gói'
+                      : 'Ưu tiên thấp · dùng 1 lượt'
+                  }}
+                </option>
+              </select>
+            </label>
+          } @else {
+            <label class="field"
+              >Gói Boost
+              <select formControlName="boostSubscriptionId" (change)="selectBoost()">
+                <option value="">Chọn gói Boost đã mua</option>
+                @for (boost of boosts(); track boost.subscription.id) {
+                  <option
+                    [value]="boost.subscription.id"
+                    [disabled]="
+                      boost.remainingHighPrioritySlots <= 0 && boost.remainingLowPrioritySlots <= 0
+                    "
+                  >
+                    {{ boost.subscription.packageNameSnapshot }} · còn
+                    {{ boost.remainingHighPrioritySlots }} cao /
+                    {{ boost.remainingLowPrioritySlots }} thấp · hết hạn
+                    {{ ui.date(boost.subscription.endAt) }}
+                  </option>
+                }
+              </select>
+            </label>
+            @if (selectedBoost(); as boost) {
+              <label class="field"
+                >Mức ưu tiên Boost
+                <select formControlName="boostPriorityLevel">
+                  <option [ngValue]="2" [disabled]="boostRemaining(2) <= 0">
+                    Ưu tiên cao · còn {{ boostRemaining(2) }} lượt
+                  </option>
+                  <option [ngValue]="1" [disabled]="boostRemaining(1) <= 0">
+                    Ưu tiên thấp · còn {{ boostRemaining(1) }} lượt
+                  </option>
+                </select>
+              </label>
+              <div class="boost-summary" aria-live="polite">
+                <strong>{{ boost.subscription.packageNameSnapshot }}</strong>
+                <span
+                  >Sau khi đăng: còn
+                  {{
+                    boostRemaining(form.controls.boostPriorityLevel.value) > 0
+                      ? boostRemaining(form.controls.boostPriorityLevel.value) - 1
+                      : 0
+                  }}
+                  lượt
+                  {{
+                    form.controls.boostPriorityLevel.value === 2 ? 'ưu tiên cao' : 'ưu tiên thấp'
+                  }}.</span
+                >
+                <small
+                  >Hạn gói: {{ ui.date(boost.subscription.endAt) }}. Thời hạn gói vẫn tiếp tục trong
+                  lúc chờ duyệt.</small
+                >
+              </div>
+            }
+            @if (!loading() && !boosts().length) {
+              <p class="notice">
+                Bạn chưa có gói Boost còn hiệu lực.
+                <a routerLink="/boost" target="_blank" rel="noopener">Xem và mua gói Boost</a>, sau
+                đó tải lại dữ liệu để chọn gói.
+              </p>
+              <button type="button" (click)="loadProperties()">Tải lại gói đã mua</button>
+            }
+          }
+        </fieldset>
+        <div class="posting-summary" aria-live="polite">
+          <strong>Khi nhấn đăng tin</strong>
+          <span
+            >Trừ 1 lượt đăng tin{{
+              form.controls.prioritySource.value === 'boost'
+                ? ' và 1 lượt từ gói Boost đã chọn'
+                : form.controls.priorityLevel.value === 2 ||
+                    (form.controls.priorityLevel.value === 1 &&
+                      current()?.rights?.defaultPriorityLevel !== 1)
+                  ? ' và 1 lượt ưu tiên theo gói dịch vụ'
+                  : ''
+            }}.</span
+          >
+          <p>
+            Chỉ hoàn khi admin từ chối ở lần duyệt đầu tiên. Ẩn tin, hết hạn, bỏ ưu tiên hoặc gửi
+            duyệt lại đều không được hoàn lượt đã dùng.
+          </p>
+        </div>
+        @if (current() && !current()?.canSubmitListings) {
+          <p class="notice warning">
+            Gói dịch vụ hiện tại chưa cho phép đăng tin.
+            <a routerLink="/goi-dich-vu" target="_blank" rel="noopener">Kiểm tra gói dịch vụ</a>.
+          </p>
+        }
+      }
       <p class="notice">
         {{
           data.listing
@@ -65,7 +208,21 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end"
   ><button [mat-dialog-close]="false" [disabled]="busy()">Hủy</button
-  ><button class="primary" form="listing-form" type="submit" [disabled]="busy() || loading()">
+  ><button
+    class="primary"
+    form="listing-form"
+    type="submit"
+    [disabled]="
+      busy() ||
+      loading() ||
+      (!data.listing &&
+        !data.reject &&
+        (!current()?.canSubmitListings ||
+          !properties().length ||
+          (form.controls.prioritySource.value === 'boost' &&
+            (!selectedBoost() || boostRemaining(form.controls.boostPriorityLevel.value) <= 0))))
+    "
+  >
     {{
       busy()
         ? 'Đang gửi…'

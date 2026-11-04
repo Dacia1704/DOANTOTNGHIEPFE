@@ -65,12 +65,12 @@
                 ><strong
                   >{{ group.usedHighPrioritySlots }} /
                   {{ group.subscription.highPrioritySlotsSnapshot }}</strong
-                >Suất cao đang dùng · còn {{ group.remainingHighPrioritySlots }}</span
+                >Lượt cao đã dùng · còn {{ group.remainingHighPrioritySlots }}</span
               ><span
                 ><strong
                   >{{ group.usedLowPrioritySlots }} /
                   {{ group.subscription.lowPrioritySlotsSnapshot }}</strong
-                >Suất thấp đang dùng · còn {{ group.remainingLowPrioritySlots }}</span
+                >Lượt thấp đã dùng · còn {{ group.remainingLowPrioritySlots }}</span
               >
             </div>
             <div class="list">
@@ -110,7 +110,7 @@
         } @empty {
           <div class="empty">
             <h2>Chưa có gói Boost đang dùng</h2>
-            <p>Mua gói ngay cả khi chưa có tin đăng; bạn có thể phân bổ sau khi tin được duyệt.</p>
+            <p>Mua gói ngay cả khi chưa có tin đăng; chọn Boost khi tạo tin hoặc phân bổ cho tin đang chờ duyệt, đang hiển thị.</p>
             <button class="primary" (click)="switchTab('catalog')">Xem gói Boost</button>
           </div>
         }
@@ -140,7 +140,7 @@
             <ul class="benefits">
               <li>{{ pkg.highPrioritySlots }} suất ưu tiên cao</li>
               <li>{{ pkg.lowPrioritySlots }} suất ưu tiên thấp</li>
-              <li>Gán, đổi hoặc thu hồi suất khi cần</li>
+              <li>Gán hoặc đổi Boost sẽ dùng lượt; bỏ Boost không hoàn lượt</li>
               <li>Dùng đồng thời với các gói đã mua</li>
             </ul>
             <button class="primary" [disabled]="busy()" (click)="buy(pkg)">Mua gói Boost</button>

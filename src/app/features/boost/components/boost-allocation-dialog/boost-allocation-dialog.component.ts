@@ -57,7 +57,7 @@ export class BoostAllocationDialogComponent {
     this.groups().find((item) => item.subscription.id === this.selectedGroupId()),
   );
   readonly eligibleListings = computed(() =>
-    this.listings().filter((item) => BillingUtils.published(item)),
+    this.listings().filter((item) => this.canAssign(item)),
   );
   constructor() {
     this.form.controls.listingId.valueChanges
@@ -107,6 +107,12 @@ export class BoostAllocationDialogComponent {
       (existing?.boostSubscriptionId === group.subscription.id && existing.level === level)
     );
   }
+  private canAssign(listing: Listing): boolean {
+    return (
+      BillingUtils.published(listing) ||
+      (listing.status === 'PENDING' && BillingUtils.future(listing.pendingExpiresAt))
+    );
+  }
   save(): void {
     const { listingId, boostSubscriptionId, level } = this.form.getRawValue();
     if (
@@ -114,7 +120,7 @@ export class BoostAllocationDialogComponent {
       this.form.invalid ||
       !this.canUse(level) ||
       !this.selectedListing() ||
-      !BillingUtils.published(this.selectedListing()!)
+      !this.canAssign(this.selectedListing()!)
     ) {
       this.form.markAllAsTouched();
       return;

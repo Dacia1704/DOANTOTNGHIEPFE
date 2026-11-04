@@ -13,6 +13,6 @@ http.createServer((req,res)=>{
   const pathname=decodeURIComponent(new URL(req.url,'http://local').pathname);
   let file=path.resolve(root,'.'+pathname);
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||fs.statSync(file).isDirectory())file=path.join(root,'index.html');
-  const type={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'}[path.extname(file)]||'application/octet-stream';
+  const type={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'}[path.extname(file)]||'application/octet-stream';
   res.writeHead(200,{'Content-Type':type});fs.createReadStream(file).pipe(res);
 }).listen(port,'127.0.0.1',()=>console.log(`Rental production preview: http://127.0.0.1:${port}`));

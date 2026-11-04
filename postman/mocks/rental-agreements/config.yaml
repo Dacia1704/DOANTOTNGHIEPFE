@@ -1,0 +1,10 @@
+version: 1
+name: rental-agreements
+slug: rental-agreements
+protocol: http
+port: 4517
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

@@ -80,4 +80,25 @@ describe('Billing Boost allocations', () => {
     component.save();
     expect(api.allocate).not.toHaveBeenCalled();
   });
+  it('allows Boost on a live pending listing and blocks it when the review deadline passes', () => {
+    const { component, api } = setup();
+    component.listings.set([
+      {
+        ...component.listings()[0],
+        status: 'PENDING',
+        expiresAt: null,
+        pendingExpiresAt: new Date(Date.now() + 86400000),
+      },
+    ]);
+    expect(component.eligibleListings()).toHaveLength(1);
+    component.save();
+    expect(api.allocate).toHaveBeenCalledOnce();
+    api.allocate.mockClear();
+    component.busy.set(false);
+    component.listings.set([
+      { ...component.listings()[0], pendingExpiresAt: new Date(Date.now() - 1) },
+    ]);
+    component.save();
+    expect(api.allocate).not.toHaveBeenCalled();
+  });
 });

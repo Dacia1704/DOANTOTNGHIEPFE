@@ -89,10 +89,10 @@ export class ListingPageComponent {
           message:
             `${listing.title}\n` +
             (action === 'hide'
-              ? 'Tin ngừng hiển thị và giải phóng suất đang giữ. Hạn gói Boost vẫn tiếp tục tính.'
+              ? 'Tin ngừng hiển thị. Lượt đăng và lượt ưu tiên đã dùng không được hoàn. Hạn gói Boost vẫn tiếp tục tính.'
               : action === 'approve'
                 ? 'Tin được kiểm tra lại quyền và hiển thị trong một tháng kể từ lúc duyệt.'
-                : 'Tin quay về chờ duyệt và giữ quota trong tối đa 7 ngày.'),
+                : 'Tin quay về chờ duyệt tối đa 7 ngày. Lượt đã dùng trong cùng kỳ được giữ; nếu đã được hoàn hoặc sang kỳ mới, hệ thống trừ lượt đăng của kỳ hiện tại.'),
         },
       })
       .afterClosed()

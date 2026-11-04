@@ -30,4 +30,7 @@ export interface SaveListingRequest {
   propertyId: string;
   title: string;
   description: string;
+  priorityLevel?: number;
+  boostSubscriptionId?: string;
+  boostPriorityLevel?: 1 | 2;
 }

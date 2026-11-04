@@ -1,0 +1,74 @@
+<div class="pdf-toolbar" role="group" aria-label="Điều khiển xem hợp đồng PDF">
+  <div class="page-controls">
+    <button
+      type="button"
+      (click)="changePage(-1)"
+      [disabled]="loading() || rendering() || page() === 1"
+      aria-label="Trang PDF trước"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </button>
+    <span class="page-label" aria-live="polite"
+      >Trang <strong>{{ page() }}</strong
+      ><span>/ {{ pages() || '…' }}</span></span
+    >
+    <button
+      type="button"
+      (click)="changePage(1)"
+      [disabled]="loading() || rendering() || page() >= pages()"
+      aria-label="Trang PDF tiếp theo"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    </button>
+  </div>
+  <div class="zoom-controls">
+    <button
+      type="button"
+      (click)="changeZoom(-0.25)"
+      [disabled]="loading() || rendering() || zoom() <= 0.75"
+      aria-label="Thu nhỏ PDF"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+    </button>
+    <span class="zoom-label">{{ zoom() * 100 }}%</span>
+    <button
+      type="button"
+      (click)="changeZoom(0.25)"
+      [disabled]="loading() || rendering() || zoom() >= 2"
+      aria-label="Phóng to PDF"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">add</span>
+    </button>
+    <button
+      type="button"
+      class="fit-button"
+      (click)="fitWidth()"
+      [disabled]="loading() || rendering()"
+      aria-label="Vừa chiều rộng trang"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">fit_screen</span
+      ><span>Vừa trang</span>
+    </button>
+  </div>
+</div>
+<div #stage class="pdf-stage" [attr.aria-busy]="loading() || rendering()">
+  @if (loading()) {
+    <div class="viewer-message" role="status">
+      <span class="material-symbols-outlined" aria-hidden="true">description</span>Đang hiển thị tài
+      liệu…
+    </div>
+  }
+  @if (error()) {
+    <div class="viewer-message" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>{{ error() }}
+    </div>
+  }
+  <div class="canvas-wrap" [hidden]="loading() || !!error()">
+    <canvas
+      #canvas
+      role="img"
+      [attr.aria-label]="'Trang ' + page() + ' của hợp đồng thuê phòng'"
+    ></canvas>
+  </div>
+</div>
+<p class="sr-only">{{ pageText() }}</p>

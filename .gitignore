@@ -51,4 +51,7 @@ Thumbs.db
 /.angular/property-*
 /.angular/listing-*
 /.rental-checks/
+/.angular/ui-tools/
+/.angular/agreement-*
+/.angular/rental-ui-*
 /*.log

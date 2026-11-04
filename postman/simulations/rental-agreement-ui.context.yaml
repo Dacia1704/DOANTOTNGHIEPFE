@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: Local RentalAgreementResponse API and private PDF download with synthetic identities.
+  unblocks: Visual and interaction checks of production Angular agreement/list views for TENANT and LANDLORD without a database or Cloudinary account.
+assumptions:
+  - id: agreement-response-contract
+    status: supported
+    claim: The UI uses the existing agreement fields and server capability flags without adding API fields or changing endpoint shapes.
+    reason: The fixture is derived from the checked-in Java record and Angular service. Owner/tenant flags are modeled solely to exercise presentation.
+    verification: On 2026-11-01, production Angular and headless Edge ran through the local simulation on 4917 and preview on 4227. Both role views, agreement list, processing/failed states, confirmation/cancel/checkout and 390px reflow passed. The NDJSON request events confirm GET detail/PDF, POST confirm with the displayed hash and POST landlord checkout. This supports caller behavior against the fixture only.
+    source: ../DOANTOTNGHIEPBE/src/main/java/com/tamdaptit/rentalmanagement/rental/dto/response/RentalAgreementResponse.java; src/app/core/services/rental.service.ts; postman/mocks/rental-agreements/default.js
+    updated_at: '2026-11-01'
+  - id: verified-pdf-presentation
+    status: supported
+    claim: In the local UI run the Jasper PDF fit the available stage, both pages rendered, zoom/fit controls worked, and download preserved the exact bytes verified before presentation.
+    reason: PDF.js renders the verified Blob locally. The worker is copied into the app assets; Angular downloads or opens the original object URL rather than re-exporting a canvas.
+    verification: Browser smoke compared downloaded bytes to contract-demo.pdf, checked page 2 text, zoomed to 125 percent and restored fit at desktop and 390px. A corrupt PDF response blocked the consent flow; after restoring bytes and retrying, the user could confirm. Screenshots inspected for both roles and mobile.
+    source: postman/simulations/rental-agreement-ui.smoke.cjs; src/app/features/rental/contract-pdf-viewer.component.ts; src/app/features/rental/agreement-page.component.ts; docs/screenshots/contract_tenant_desktop.png
+    updated_at: '2026-11-01'
+  - id: real-provider-authorization
+    status: unknown
+    claim: The real backend enforces ownership, status transitions and SHA-256 confirmation for the redesigned screens.
+    reason: Local fixture tokens model roles but are not JWTs. This UI simulation cannot establish backend authorization, concurrency or persistence.
+    verification: No real backend/database run in this UI task.
+    source: ../DOANTOTNGHIEPBE/src/test/java/com/tamdaptit/rentalmanagement/rental/RentalWorkflowTest.java
+    updated_at: '2026-11-01'
+fingerprints:
+  - id: agreement-ui-redesign
+    date: '2026-11-01'
+    commit: Uncommitted UI working tree.
+    cli: Postman CLI 1.74.0

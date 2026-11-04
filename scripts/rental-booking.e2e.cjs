@@ -45,7 +45,7 @@ async function login(email){return call('/auth/login',null,'POST',{email,passwor
     await o.waitForURL(/\/hop-dong\//);const agreementId=o.url().split('/').pop();
     const forbidden=await fetch(`${api}/rental-agreements/${agreementId}/pdf`,{headers:{Authorization:`Bearer ${stranger.accessToken}`}});assert.equal(forbidden.status,403);
     await t.getByRole('button',{name:'Tải lại',exact:true}).click();await t.getByRole('link',{name:/Xem hợp đồng/}).click();
-    await t.locator('iframe').waitFor({timeout:60000});assert.equal(await t.getByRole('button',{name:'Xác nhận thuê',exact:true}).isEnabled(),false);
+    await t.locator('app-contract-pdf-viewer canvas').waitFor({timeout:60000});assert.equal(await t.getByRole('button',{name:'Xác nhận thuê',exact:true}).isEnabled(),false);
     await t.getByRole('checkbox',{name:/Tôi đã đọc và đồng ý/}).check();
     await t.getByRole('button',{name:'Xác nhận thuê',exact:true}).click();await t.getByRole('dialog').getByRole('button',{name:'Xác nhận',exact:true}).click();
     await t.getByText('Đã xác nhận thuê',{exact:true}).waitFor();

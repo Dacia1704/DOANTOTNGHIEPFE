@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, from, switchMap } from 'rxjs';
@@ -19,30 +18,30 @@ import { AuthService } from '@services/auth.service';
 import { RoleCode } from '@model/auth/auth.model';
 import { RoomUtils } from '@shared/utils/room-utils';
 import { ConfirmRentalDialogComponent } from './confirm-rental-dialog.component';
+import { ContractPdfViewerComponent } from './contract-pdf-viewer.component';
 
 @Component({
   selector: 'app-agreement-page',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink, ContractPdfViewerComponent],
   templateUrl: './agreement-page.component.html',
-  styleUrl: './rental.scss',
+  styleUrl: './agreement-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AgreementPageComponent implements OnInit {
-  readonly backLink =
-    inject(AuthService).primaryRole() === RoleCode.LANDLORD
-      ? '/quan-ly-dat-phong'
-      : '/yeu-cau-thue';
+  readonly owner = inject(AuthService).primaryRole() === RoleCode.LANDLORD;
+  readonly backLink = this.owner ? '/quan-ly-dat-phong' : '/yeu-cau-thue';
   private readonly api = inject(RentalService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
-  private readonly sanitizer = inject(DomSanitizer);
   private readonly dialogs = inject(MatDialog);
   readonly agreement = signal<RentalAgreement | null>(null);
   readonly error = signal('');
   readonly loading = signal(false);
   readonly pdfLoading = signal(false);
   readonly busy = signal(false);
-  readonly pdfUrl = signal<SafeResourceUrl | null>(null);
+  readonly pdfBlob = signal<Blob | null>(null);
+  readonly pdfLink = signal('');
+  readonly pdfRendered = signal(false);
   readonly labels = RENTAL_LABELS;
   readonly utils = RoomUtils;
   accepted = false;
@@ -117,7 +116,8 @@ export class AgreementPageComponent implements OnInit {
           if (this.dead || generation !== this.generation) return;
           this.objectUrl = URL.createObjectURL(blob);
           this.displayedHash = a.pdfSha256 ?? '';
-          this.pdfUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl));
+          this.pdfLink.set(this.objectUrl);
+          this.pdfBlob.set(blob);
         },
         error: () => {
           if (generation === this.generation)
@@ -138,7 +138,8 @@ export class AgreementPageComponent implements OnInit {
     return (
       !!this.agreement()?.canConfirm &&
       !!this.displayedHash &&
-      !!this.pdfUrl() &&
+      !!this.pdfBlob() &&
+      this.pdfRendered() &&
       this.accepted &&
       !this.busy() &&
       !this.loading()
@@ -201,7 +202,9 @@ export class AgreementPageComponent implements OnInit {
     if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
     this.objectUrl = '';
     this.displayedHash = '';
-    this.pdfUrl.set(null);
+    this.pdfBlob.set(null);
+    this.pdfLink.set('');
+    this.pdfRendered.set(false);
     this.pdfLoading.set(false);
   }
 }

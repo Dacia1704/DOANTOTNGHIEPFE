@@ -34,6 +34,12 @@
       </select></label
     >
   }
+  @if (!admin) {
+    <p class="notice">
+      Lượt đăng và lượt ưu tiên được trừ khi sử dụng, kể cả khi ẩn tin hoặc hết hạn. Chỉ hoàn lượt
+      nếu admin từ chối tin ở lần duyệt ban đầu.
+    </p>
+  }
   @if (error()) {
     <div class="notice error" role="alert">
       {{ error() }} <button (click)="load()" [disabled]="loading() || busy()">Tải lại</button>
@@ -71,6 +77,17 @@
           <p class="mono muted">Mã tin: {{ listing.id }}</p>
           @if (listing.rejectionReason) {
             <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
+          }
+          @if (listing.boostAllocation; as boost) {
+            <p class="notice">
+              Boost đã chọn:
+              <strong>{{ boost.level === 2 ? 'Ưu tiên cao' : 'Ưu tiên thấp' }}</strong>
+              {{
+                listing.status === 'PENDING'
+                  ? '· Lượt đã trừ, áp dụng hiển thị sau khi được duyệt.'
+                  : ''
+              }}
+            </p>
           }
           <p class="muted">
             {{
@@ -117,7 +134,7 @@
                   Gửi duyệt lại
                 </button>
               }
-              @if (ui.published(listing)) {
+              @if (holding(listing)) {
                 <button class="subtle" [disabled]="busy()" (click)="allocation(listing)">
                   Phân bổ / thu hồi Boost
                 </button>
@@ -128,14 +145,15 @@
             <details class="package-priority">
               <summary>Ưu tiên theo gói dịch vụ</summary>
               <p class="muted">
-                Thao tác dùng suất của kỳ dịch vụ hiện tại. Rút suất riêng vẫn giữ mức mặc định của
-                gói; phân bổ Boost được quản lý độc lập.
+                Chọn mức ưu tiên sẽ dùng lượt của kỳ hiện tại. Bỏ ưu tiên không hoàn lượt đã dùng;
+                mức mặc định của gói vẫn áp dụng. Chọn lại cùng mức cho cùng tin trong kỳ không trừ
+                thêm.
               </p>
               <div class="actions">
                 <button [disabled]="busy()" (click)="priority(listing, 2)">Chọn suất cao</button
                 ><button [disabled]="busy()" (click)="priority(listing, 1)">Chọn suất thấp</button
                 ><button [disabled]="busy()" (click)="priority(listing, 0)">
-                  Rút suất đã chọn
+                  Bỏ ưu tiên đã chọn
                 </button>
               </div>
             </details>
@@ -145,7 +163,9 @@
         <div class="empty">
           <h2>{{ admin ? 'Không có bài đăng phù hợp' : 'Bạn chưa có tin đăng' }}</h2>
           @if (!admin) {
-            <p>Tạo tin từ cơ sở có phòng/căn còn trống, gửi duyệt và phân bổ Boost sau khi tin hiển thị.</p>
+            <p>
+              Tạo tin từ cơ sở có phòng/căn còn trống, chọn gói Boost ngay khi đăng và gửi duyệt.
+            </p>
             <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
           }
         </div>
@@ -159,4 +179,3 @@
     />
   }
 </section>
-

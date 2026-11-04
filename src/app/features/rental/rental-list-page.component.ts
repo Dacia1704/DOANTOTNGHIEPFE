@@ -18,12 +18,13 @@ import { Property } from '@model/property/property.model';
 import { RentalService } from '@services/rental.service';
 import { PropertyService } from '@services/property.service';
 import { ConfirmRentalDialogComponent } from './confirm-rental-dialog.component';
+import { RoomUtils } from '@shared/utils/room-utils';
 
 @Component({
   selector: 'app-rental-list',
   imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './rental-list-page.component.html',
-  styleUrl: './rental.scss',
+  styleUrl: './rental-list-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RentalListPageComponent implements OnInit {
@@ -36,6 +37,7 @@ export class RentalListPageComponent implements OnInit {
   private readonly destroy = inject(DestroyRef);
   readonly owner = !!this.route.snapshot.data['landlord'];
   readonly labels = RENTAL_LABELS;
+  readonly utils = RoomUtils;
   readonly requests = signal<RentalRequest[]>([]);
   readonly contracts = signal<RentalAgreement[]>([]);
   readonly properties = signal<Property[]>([]);
@@ -49,6 +51,7 @@ export class RentalListPageComponent implements OnInit {
   roomId = '';
   page = 0;
   totalPages = 0;
+  totalElements = 0;
   get rooms() {
     return this.properties().find((p) => p.id === this.propertyId)?.rooms ?? [];
   }
@@ -86,6 +89,7 @@ export class RentalListPageComponent implements OnInit {
           next: (p) => {
             this.requests.set(p.data);
             this.totalPages = p.totalPages;
+            this.totalElements = p.totalElements;
           },
           error: (e) => this.fail(e),
         });
@@ -100,6 +104,7 @@ export class RentalListPageComponent implements OnInit {
           next: (p) => {
             this.contracts.set(p.data);
             this.totalPages = p.totalPages;
+            this.totalElements = p.totalElements;
           },
           error: (e) => this.fail(e),
         });

@@ -2,6 +2,13 @@ purpose:
   stands_in_for: Local synthetic Rental Property API; see rental-property-ui.context.md for prior evidence.
   unblocks: Angular search and hierarchy picker verification without changing the production API target.
 assumptions:
+  - id: listing-create-with-boost
+    status: supported
+    claim: The Angular create dialog sends the purchased Boost subscription and level in the same listing request, previews remaining credits and displays the pending selection.
+    reason: The production Angular build was exercised against synthetic responses based on ListingRequest, ListingResponse and ActiveBoostResponse. The simulation establishes frontend HTTP wiring; backend accounting is checked separately against MySQL.
+    verification: On 2026-11-02, rental-listing-boost.smoke.cjs passed in headless Edge at 1440px and 390px. Observed subscriptions/current, boost-subscriptions/active, properties/mine and POST listings request events in .angular/listing-boost-sim.ndjson. Verified high/low selection, low fallback, 409 handling without losing input, single create payload and pending Boost display. PackageCatalogApiTest separately passed 80 API tests including refund, rollback and last-credit concurrency. The synthetic handler does not establish payment-provider behavior.
+    source: postman/simulations/rental-listing-boost.smoke.cjs; postman/mocks/rental-property/default.js; src/app/features/listing/components/listing-editor/; ../DOANTOTNGHIEPBE/src/test/java/com/tamdaptit/rentalmanagement/subscription/PackageCatalogApiTest.java
+    updated_at: "2026-11-02"
   - id: booking-availability-response
     status: supported
     claim: Room responses now expose bookingAvailability; Angular booking and available counts use that server field.

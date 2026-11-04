@@ -1,0 +1,464 @@
+@use './rental';
+
+.rental-tabs {
+  display: flex;
+  gap: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-lg);
+}
+.rental-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+  padding: 15px 4px 17px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.rental-tabs .material-symbols-outlined {
+  font-size: 20px;
+}
+.rental-tabs .is-active {
+  color: var(--primary);
+  font-weight: 650;
+}
+.rental-tabs .is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--primary);
+}
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: 18px 20px;
+}
+.filter-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-right: var(--space-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.filters label {
+  flex: 1;
+  min-width: 155px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.filters .input {
+  padding: 9px 12px;
+  margin-top: 7px;
+  font-size: 12px;
+  border-radius: var(--radius);
+}
+.list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.list-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 14px;
+}
+.list-heading > span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.result-count {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding-inline: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-lg);
+}
+.cards > .empty-state {
+  grid-column: 1 / -1;
+}
+.agreement-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding: 22px;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+.agreement-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  box-shadow: var(--shadow-hover);
+}
+.card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.contract-emblem {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 46px;
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, var(--surface));
+  border-radius: var(--radius-md);
+  font-size: 25px;
+}
+.agreement-code {
+  margin: 20px 0 var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.agreement-card h2,
+.request-card h2 {
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.room-caption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 18px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.room-caption .material-symbols-outlined {
+  font-size: 17px;
+  color: var(--primary);
+}
+.agreement-party,
+.request-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: var(--space-md);
+  border-block: 1px solid var(--border);
+}
+.person-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--background);
+  color: var(--text-secondary);
+  font-size: 20px;
+}
+.agreement-party > div,
+.request-person > div {
+  min-width: 0;
+}
+.agreement-party div > span,
+.request-person div > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.agreement-party strong,
+.request-person strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.agreement-facts {
+  display: grid;
+  gap: 18px;
+  margin: 20px 0;
+}
+.agreement-facts dt {
+  margin-bottom: 6px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.agreement-facts dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.7;
+}
+.agreement-facts .monthly-price {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+  color: var(--primary);
+}
+.date-separator {
+  margin-inline: var(--space-sm);
+  color: var(--text-placeholder);
+}
+.contract-reminder {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 var(--space-md);
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.contract-reminder .material-symbols-outlined {
+  font-size: 16px;
+  margin-top: 2px;
+}
+.view-contract {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding: 12px var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 650;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.view-contract:hover {
+  background: var(--primary);
+  color: var(--on-primary-container);
+}
+.view-contract .material-symbols-outlined {
+  font-size: 19px;
+}
+.request-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.property-thumbnail {
+  display: block;
+  width: 100%;
+  height: 165px;
+  object-fit: cover;
+}
+.card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px;
+}
+.card-date {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.request-card h2 {
+  margin-top: var(--space-md);
+}
+.request-person {
+  margin-bottom: var(--space-md);
+  padding-block: 12px;
+}
+.request-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) 12px;
+  margin-bottom: var(--space-md);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.request-facts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.request-facts .material-symbols-outlined {
+  font-size: 16px;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding-top: var(--space-sm);
+}
+.card-actions .btn-primary,
+.card-actions .btn-secondary {
+  padding-inline: 12px;
+}
+.resolution-note {
+  margin: 0 0 var(--space-md);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.request-detail {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+}
+.request-detail header,
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.section-title .material-symbols-outlined {
+  color: var(--primary);
+}
+.request-detail h3 {
+  margin: var(--space-md) 0;
+  font-size: 17px;
+}
+.request-detail h3 > span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.request-detail dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-lg);
+  margin-block: var(--space-lg);
+}
+.request-detail dt {
+  margin-bottom: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.request-detail dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.request-message {
+  background: var(--background);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+.request-message > span {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.request-message p {
+  margin: var(--space-sm) 0 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+.pagination > span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.skeleton-card {
+  height: 385px;
+}
+.loading-caption {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+@media (max-width: 1050px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filter-heading {
+    width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .cards {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  .list-heading > span {
+    display: none;
+  }
+  .filters {
+    gap: var(--space-md);
+    padding: var(--space-md);
+  }
+  .filters label {
+    min-width: 0;
+    flex-basis: calc(50% - 8px);
+  }
+  .filters label:first-of-type {
+    flex-basis: 100%;
+  }
+  .rental-tabs {
+    gap: var(--space-lg);
+  }
+  .rental-tabs button {
+    font-size: 12px;
+  }
+  .agreement-card,
+  .card-body,
+  .request-detail {
+    padding: 20px;
+  }
+  .agreement-facts {
+    grid-template-columns: 1fr;
+  }
+  .request-detail dl {
+    grid-template-columns: 1fr;
+  }
+  .request-detail header {
+    align-items: flex-start;
+  }
+  .request-detail header > .text-button {
+    font-size: 0;
+    padding: 0;
+  }
+  .request-detail header > .text-button .material-symbols-outlined {
+    font-size: 20px;
+  }
+  .pagination {
+    gap: var(--space-sm);
+  }
+  .pagination > .btn-secondary {
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+}

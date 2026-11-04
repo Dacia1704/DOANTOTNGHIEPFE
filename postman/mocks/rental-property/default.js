@@ -56,13 +56,34 @@ http.createServer(async (req,res) => {
  }
  const expandPost = post => { const property=properties.find(p=>p.id===post.propertyId); return {...post,property,propertyName:property?.name,rentalMode:property?.rentalMode,landlordName:'Nguyễn An'}; };
  const published = post => post.status==='PUBLISHED' && new Date(post.expiresAt)>new Date();
+ // Listing-create fixtures follow ListingRequest and ActiveBoostResponse. Accounting is verified by MySQL API tests.
+ const boostSubscriptions = [
+   {id:'ui-boost-high',packageNameSnapshot:'Boost linh hoạt',highPrioritySlotsSnapshot:1,lowPrioritySlotsSnapshot:3},
+   {id:'ui-boost-low',packageNameSnapshot:'Boost chỉ còn lượt thấp',highPrioritySlotsSnapshot:0,lowPrioritySlotsSnapshot:2},
+ ].map(b=>({...b,status:'ACTIVE',startAt:stamp,endAt:new Date(Date.now()+30*86400000).toISOString()}));
+ let boostUses=await pm.state.get('rental-property.listingBoostUses')||[];
+ if(path==='/subscriptions/current' && req.method==='GET')return send({subscriptionId:null,free:true,canSubmitListings:true,currentPeriod:null,nextPeriod:null,rights:{packageCode:'FREE',packageName:'Free',maxListings:3,highPrioritySlots:0,lowPrioritySlots:0,defaultPriorityLevel:0,hasStats:false}});
+ if(path==='/boost-subscriptions/active' && req.method==='GET')return send(boostSubscriptions.map(subscription=>{
+   const uses=boostUses.filter(a=>a.boostSubscriptionId===subscription.id),high=uses.filter(a=>a.level===2).length,low=uses.filter(a=>a.level===1).length;
+   return {subscription,usedHighPrioritySlots:high,usedLowPrioritySlots:low,remainingHighPrioritySlots:subscription.highPrioritySlotsSnapshot-high,remainingLowPrioritySlots:subscription.lowPrioritySlotsSnapshot-low,allocations:uses};
+ }));
+ if(path==='/test/listing-boost-fail-next' && req.method==='POST'){await pm.state.set('rental-property.listingBoostFailNext',true);return send(null);}
+ if(path==='/test/listing-boost-reset' && req.method==='POST'){await pm.state.set('rental-property.listingBoostUses',[]);await pm.state.set('rental-property.listingBoostFailNext',false);await pm.state.set('rental-property.posts',null);return send(null);}
  if(path==='/listings/admin') return send(page(posts.filter(post=>!query.status||post.status===query.status).map(expandPost),query));
  if(path==='/listings/mine') return send(page(posts.map(expandPost),query));
  if(path==='/listings' && req.method==='POST') {
    const b=req.body; const property=properties.find(p=>p.id===b.propertyId);
+   if(await pm.state.get('rental-property.listingBoostFailNext')){await pm.state.set('rental-property.listingBoostFailNext',false);return send(null,409,'Gói Boost đã hết lượt ưu tiên cao. Chọn mức thấp hoặc gói khác.');}
    if(!property || !b.title?.trim())return send(null,400,'Cơ sở hoặc tiêu đề không hợp lệ');
    if(posts.some(post=>post.propertyId===property.id&&(published(post)||(post.status==='PENDING'&&new Date(post.pendingExpiresAt)>new Date()))))return send(null,409,'Cơ sở đã có bài đăng đang hiển thị hoặc chờ duyệt');
-   const post={id:crypto.randomUUID(),propertyId:property.id,landlordId:'owner',title:b.title.trim(),description:b.description||'',status:'PENDING',priorityLevel:0,packagePriorityLevel:0,submittedAt:stamp,createdAt:stamp,pendingExpiresAt:new Date(Date.now()+7*86400000).toISOString()};
+   const post={id:crypto.randomUUID(),propertyId:property.id,landlordId:'owner',title:b.title.trim(),description:b.description||'',status:'PENDING',priorityLevel:0,packagePriorityLevel:b.priorityLevel||0,initialReview:true,submittedAt:stamp,createdAt:stamp,pendingExpiresAt:new Date(Date.now()+7*86400000).toISOString()};
+   if(b.boostSubscriptionId){
+     const boost=boostSubscriptions.find(s=>s.id===b.boostSubscriptionId),level=b.boostPriorityLevel;
+     if(!boost||![1,2].includes(level)||b.priorityLevel)return send(null,400,'Lựa chọn Boost không hợp lệ');
+     const used=boostUses.filter(a=>a.boostSubscriptionId===boost.id&&a.level===level).length;
+     if(used>=(level===2?boost.highPrioritySlotsSnapshot:boost.lowPrioritySlotsSnapshot))return send(null,409,'Gói Boost đã hết lượt');
+     post.boostAllocation={listingId:post.id,boostSubscriptionId:boost.id,level};boostUses.push(post.boostAllocation);await pm.state.set('rental-property.listingBoostUses',boostUses);
+   }
    posts.unshift(post);await pm.state.set('rental-property.posts',posts);return send(expandPost(post));
  }
  if(path==='/listings') {
@@ -76,7 +97,12 @@ http.createServer(async (req,res) => {
  }
  if(path.startsWith('/listings/') && req.method==='POST' && path.endsWith('/approve')) {
    const post=posts.find(p=>p.id===path.split('/')[2]);if(!post)return send(null,404,'Tin không tồn tại');
-   post.status='PUBLISHED';post.publishedAt=stamp;post.expiresAt=new Date(Date.now()+30*86400000).toISOString();await pm.state.set('rental-property.posts',posts);return send(expandPost(post));
+   post.status='PUBLISHED';post.initialReview=false;post.priorityLevel=post.boostAllocation?.level||post.packagePriorityLevel;post.publishedAt=stamp;post.expiresAt=new Date(Date.now()+30*86400000).toISOString();await pm.state.set('rental-property.posts',posts);return send(expandPost(post));
+ }
+ if(path.startsWith('/listings/') && req.method==='POST' && path.endsWith('/reject')) {
+   const post=posts.find(p=>p.id===path.split('/')[2]);if(!post)return send(null,404,'Tin không tồn tại');
+   if(post.initialReview){boostUses=boostUses.filter(a=>a.listingId!==post.id);await pm.state.set('rental-property.listingBoostUses',boostUses);}
+   post.status='REJECTED';post.initialReview=false;post.rejectionReason=req.body.reason;post.boostAllocation=null;await pm.state.set('rental-property.posts',posts);return send(expandPost(post));
  }
  if(path.startsWith('/listings/')) {const post=posts.find(p=>p.id===path.split('/').pop());return post&&published(post)?send(expandPost(post)):send(null,404,'Tin đăng không còn hiệu lực');}
  if(path==='/provinces') return send([{id:'p',code:'HN',name:'Hà Nội'}]);
@@ -109,7 +135,7 @@ http.createServer(async (req,res) => {
   if(!units.length || (b.rentalMode==='WHOLE' && units.length!==1))return send(null,400,'Số đơn vị không hợp lệ');
   if(new Set(units.map(r=>r.roomNumber.trim().toLowerCase())).size!==units.length)return send(null,409,'Số phòng bị trùng');
   const id=crypto.randomUUID();const base={...location,provinceId:b.provinceId,wardId:b.wardId,addressLine:b.addressLine,latitude:b.latitude??null,longitude:b.longitude??null};
-  const records=units.map(r=>{const merged={};for(const key of ['roomTypeId','price','areaM2','maxOccupants','electricityPrice','waterPrice','serviceFee','defaultDeposit'])merged[key]=r[key]??b.defaultRoom?.[key]??null;return {...merged,...base,id:crypto.randomUUID(),propertyId:id,roomNumber:r.roomNumber,floorNumber:r.floorNumber,roomTypeName:roomTypes.find(t=>t.id===merged.roomTypeId)?.name,amenities:amenities.filter(a=>r.amenityIds?.includes(a.id)),images:[],rentalStatus:'AVAILABLE',createdAt:stamp,updatedAt:stamp};});
+  const records=units.map(r=>{const merged={};for(const key of ['roomTypeId','price','areaM2','maxOccupants','electricityPrice','waterPrice','serviceFee','defaultDeposit'])merged[key]=r[key]??b.defaultRoom?.[key]??null;return {...merged,...base,id:crypto.randomUUID(),propertyId:id,roomNumber:r.roomNumber,floorNumber:r.floorNumber,roomTypeName:roomTypes.find(t=>t.id===merged.roomTypeId)?.name,amenities:amenities.filter(a=>r.amenityIds?.includes(a.id)),images:[],rentalStatus:'AVAILABLE',bookingAvailability:'AVAILABLE',createdAt:stamp,updatedAt:stamp};});
   if(records.some(r=>!r.roomTypeName||!(r.price>0)||!(r.areaM2>0)||!(r.maxOccupants>0)))return send(null,400,'Thông tin phòng không hợp lệ');
   const record={...base,id,name:b.name,rentalMode:b.rentalMode,totalFloors:b.totalFloors,propertyTypeId:b.propertyTypeId,propertyTypeName:catalog.find(t=>t.id===b.propertyTypeId)?.name,amenities:amenities.filter(a=>b.amenityIds?.includes(a.id)),images:[],rooms:records,createdAt:stamp,updatedAt:stamp};properties.unshift(record);await pm.state.set('rental-property.properties',properties);return send(record);
  }

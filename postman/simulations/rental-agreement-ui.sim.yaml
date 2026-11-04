@@ -1,0 +1,6 @@
+simulation: rental-agreement-ui
+routing: path
+mocks:
+  - name: rental-agreements
+    routeKey: api
+    path: ../mocks/rental-agreements/config.yaml

@@ -1,30 +1,57 @@
-<section class="rental-page">
-  <header>
-    <p class="eyebrow">THUÊ PHÒNG</p>
-    <h1>{{ owner ? 'Quản lý yêu cầu đặt phòng' : 'Yêu cầu thuê của tôi' }}</h1>
-    <p>Theo dõi yêu cầu và xác nhận hợp đồng tại một nơi.</p>
+<section class="rental-page" [attr.aria-busy]="loading()">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">{{ owner ? 'KHÔNG GIAN CHỦ TRỌ' : 'HÀNH TRÌNH THUÊ NHÀ' }}</p>
+      <h1>
+        {{
+          tab === 'agreements'
+            ? owner
+              ? 'Hợp đồng cho thuê'
+              : 'Hợp đồng của tôi'
+            : owner
+              ? 'Quản lý yêu cầu đặt phòng'
+              : 'Yêu cầu thuê của tôi'
+        }}
+      </h1>
+      <p class="page-description">
+        {{
+          owner
+            ? 'Theo dõi yêu cầu, quản lý hợp đồng và kết nối với người thuê.'
+            : 'Từ yêu cầu thuê đến hợp đồng, mọi thông tin đều ở đây.'
+        }}
+      </p>
+    </div>
+    <button class="btn-secondary refresh-button" [disabled]="loading() || busy()" (click)="load()">
+      <span class="material-symbols-outlined" [class.is-spinning]="loading()" aria-hidden="true"
+        >refresh</span
+      >Tải lại
+    </button>
   </header>
-  <nav class="actions">
+
+  <nav class="rental-tabs" aria-label="Yêu cầu và hợp đồng">
     <button
-      class="btn-secondary"
+      [class.is-active]="tab === 'requests'"
       [disabled]="loading() || busy()"
       (click)="setTab('requests')"
       [attr.aria-pressed]="tab === 'requests'"
     >
-      Yêu cầu thuê</button
-    ><button
-      class="btn-secondary"
+      <span class="material-symbols-outlined" aria-hidden="true">inbox</span>Yêu cầu thuê
+    </button>
+    <button
+      [class.is-active]="tab === 'agreements'"
       [disabled]="loading() || busy()"
       (click)="setTab('agreements')"
       [attr.aria-pressed]="tab === 'agreements'"
     >
-      Hợp đồng</button
-    ><button class="btn-secondary" [disabled]="loading() || busy()" (click)="load()">
-      Tải lại
+      <span class="material-symbols-outlined" aria-hidden="true">description</span>Hợp đồng
     </button>
   </nav>
+
   @if (owner && tab === 'requests') {
-    <div class="filters">
+    <div class="filters panel">
+      <span class="filter-heading"
+        ><span class="material-symbols-outlined" aria-hidden="true">tune</span>Bộ lọc</span
+      >
       <label
         >Trạng thái<select
           class="input"
@@ -32,7 +59,7 @@
           (ngModelChange)="filter()"
           [disabled]="loading() || busy()"
         >
-          <option value="">Tất cả</option>
+          <option value="">Tất cả trạng thái</option>
           <option value="PENDING">Chờ xử lý</option>
           <option value="ACCEPTED">Đã chấp nhận</option>
           <option value="REJECTED">Từ chối</option>
@@ -68,103 +95,238 @@
       >
     </div>
   }
+
   @if (error()) {
-    <div class="error" role="alert">
-      {{ error() }} <button class="btn-secondary" (click)="load()">Thử lại</button>
+    <div class="notice notice-error" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
+      <p>{{ error() }}</p>
+      <button class="text-button" (click)="load()">Thử lại</button>
     </div>
   }
+
+  <div class="list-heading">
+    <h2>
+      {{ tab === 'agreements' ? 'Danh sách hợp đồng' : 'Danh sách yêu cầu' }}
+      <span class="result-count">{{ totalElements }}</span>
+    </h2>
+    <span>{{
+      owner ? 'Quản lý rõ ràng, cho thuê an tâm' : 'Cập nhật theo từng bước thuê phòng'
+    }}</span>
+  </div>
+
   @if (loading()) {
-    <p role="status">Đang tải…</p>
+    <div class="cards" role="status" aria-label="Đang tải danh sách">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="skeleton skeleton-card"></div>
+      }
+      <span class="loading-caption">Đang tải…</span>
+    </div>
   } @else if (tab === 'requests') {
-    <div class="cards">
+    <div class="cards request-cards">
       @for (r of requests(); track r.id) {
-        <article>
+        <article class="request-card panel">
           @if (r.thumbnailUrl) {
             <img class="property-thumbnail" [src]="r.thumbnailUrl" alt="" loading="lazy" />
           }
-          <span class="badge">{{ labels[r.status] || r.status }}</span>
-          <h2>{{ r.propertyName }} · {{ r.roomNumber || 'Yêu cầu cũ' }}</h2>
-          @if (owner) {
-            <p>Khách thuê: {{ r.tenantName }}</p>
-          }
-          <p>
-            Gửi {{ r.createdAt | date: 'dd/MM/yyyy HH:mm' }} · Ngày vào:
-            {{ r.proposedMoveInDate | date: 'dd/MM/yyyy' }}
-          </p>
-          <p>{{ r.durationMonths }} tháng · {{ r.occupantCount }} người</p>
-          @if (r.resolutionReason) {
-            <p>{{ r.resolutionReason }}</p>
-          }
-          <div class="actions">
-            <button class="btn-secondary" (click)="view(r.id)">Chi tiết</button>
-            @if (r.status === 'PENDING') {
-              @if (owner) {
-                <button class="btn-primary" [disabled]="busy()" (click)="action(r, 'accept')">
-                  Chấp nhận</button
-                ><button class="btn-secondary" [disabled]="busy()" (click)="action(r, 'reject')">
-                  Từ chối
-                </button>
-              } @else {
-                <button class="btn-secondary" [disabled]="busy()" (click)="action(r, 'cancel')">
-                  Hủy yêu cầu
-                </button>
+          <div class="card-body">
+            <div class="card-topline">
+              <span class="status-badge" [attr.data-status]="r.status">{{
+                labels[r.status] || r.status
+              }}</span
+              ><span class="card-date">{{ r.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <h2>{{ r.propertyName }}</h2>
+            <p class="room-caption">
+              <span class="material-symbols-outlined" aria-hidden="true">door_front</span
+              >{{ r.roomNumber ? 'Phòng ' + r.roomNumber : 'Yêu cầu cũ' }}
+            </p>
+            @if (owner) {
+              <div class="request-person">
+                <span class="person-avatar material-symbols-outlined" aria-hidden="true"
+                  >person</span
+                >
+                <div>
+                  <span>Khách thuê</span><strong>{{ r.tenantName }}</strong>
+                </div>
+              </div>
+            }
+            <div class="request-facts">
+              <span
+                ><span class="material-symbols-outlined" aria-hidden="true">event</span
+                >{{ r.proposedMoveInDate | date: 'dd/MM/yyyy' }}</span
+              ><span>{{ r.durationMonths }} tháng</span><span>{{ r.occupantCount }} người</span>
+            </div>
+            @if (r.resolutionReason) {
+              <p class="resolution-note">{{ r.resolutionReason }}</p>
+            }
+            <div class="card-actions">
+              <button class="btn-secondary" (click)="view(r.id)">Chi tiết</button>
+              @if (r.status === 'PENDING') {
+                @if (owner) {
+                  <button class="btn-primary" [disabled]="busy()" (click)="action(r, 'accept')">
+                    Chấp nhận</button
+                  ><button class="text-button" [disabled]="busy()" (click)="action(r, 'reject')">
+                    Từ chối
+                  </button>
+                } @else {
+                  <button class="text-button" [disabled]="busy()" (click)="action(r, 'cancel')">
+                    Hủy yêu cầu
+                  </button>
+                }
               }
-            }
-            @if (r.agreementId) {
-              <a class="btn-primary" [routerLink]="['/hop-dong', r.agreementId]"
-                >Xem hợp đồng · PDF {{ r.pdfStatus }}</a
-              >
-            }
+              @if (r.agreementId) {
+                <a class="btn-primary" [routerLink]="['/hop-dong', r.agreementId]"
+                  >Xem hợp đồng<span class="material-symbols-outlined" aria-hidden="true"
+                    >arrow_forward</span
+                  ></a
+                >
+              }
+            </div>
           </div>
         </article>
       } @empty {
-        <article>
+        <article class="empty-state panel">
+          <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
           <h2>Chưa có yêu cầu phù hợp</h2>
-          <p>Các yêu cầu thuê sẽ xuất hiện tại đây.</p>
-          <a routerLink="/">Tìm phòng</a>
+          <p>
+            {{
+              owner
+                ? 'Các yêu cầu từ người thuê sẽ xuất hiện tại đây. Bạn có thể thay đổi bộ lọc để xem yêu cầu khác.'
+                : 'Khi tìm được căn phòng ưng ý, hãy gửi yêu cầu thuê để bắt đầu.'
+            }}
+          </p>
+          @if (!owner) {
+            <a class="btn-primary" routerLink="/">Khám phá phòng trọ</a>
+          }
         </article>
       }
     </div>
   } @else {
-    <div class="cards">
+    <div class="cards agreement-cards">
       @for (a of contracts(); track a.id) {
-        <article>
-          <span class="badge">{{ labels[a.status] || a.status }}</span>
-          <h2>{{ a.propertyName }} · {{ a.roomNumber }}</h2>
-          <p>{{ a.agreementCode }}</p>
-          <p>{{ a.startDate | date: 'dd/MM/yyyy' }} → {{ a.endDate | date: 'dd/MM/yyyy' }}</p>
-          <a class="btn-primary" [routerLink]="['/hop-dong', a.id]">Xem hợp đồng</a>
+        <article class="agreement-card panel">
+          <div class="card-topline">
+            <span class="contract-emblem material-symbols-outlined" aria-hidden="true"
+              >description</span
+            ><span class="status-badge" [attr.data-status]="a.status">{{
+              labels[a.status] || a.status
+            }}</span>
+          </div>
+          <p class="agreement-code">{{ a.agreementCode }}</p>
+          <h2>{{ a.propertyName }}</h2>
+          <p class="room-caption">
+            <span class="material-symbols-outlined" aria-hidden="true">door_front</span>Phòng
+            {{ a.roomNumber }}
+          </p>
+          <div class="agreement-party">
+            <span class="person-avatar material-symbols-outlined" aria-hidden="true">person</span>
+            <div>
+              <span>{{ owner ? 'Người thuê' : 'Chủ trọ' }}</span
+              ><strong>{{ owner ? a.tenantName : a.landlordName }}</strong>
+            </div>
+          </div>
+          <dl class="agreement-facts">
+            <div>
+              <dt>Tiền thuê hàng tháng</dt>
+              <dd class="monthly-price">{{ utils.formatFee(a.price) }}</dd>
+            </div>
+            <div>
+              <dt>Thời gian thuê</dt>
+              <dd>
+                {{ a.startDate | date: 'dd/MM/yyyy' }}<span class="date-separator">→</span
+                >{{ a.endDate | date: 'dd/MM/yyyy' }}
+              </dd>
+            </div>
+          </dl>
+          @if (a.status === 'PENDING_CONFIRMATION') {
+            <p class="contract-reminder">
+              <span class="material-symbols-outlined" aria-hidden="true">schedule</span>Xác nhận
+              trước {{ a.confirmationExpiresAt | date: 'HH:mm · dd/MM/yyyy' }}
+            </p>
+          }
+          <a class="view-contract" [routerLink]="['/hop-dong', a.id]"
+            ><span>Xem hợp đồng</span
+            ><span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a
+          >
         </article>
       } @empty {
-        <article>Chưa có hợp đồng.</article>
+        <article class="empty-state panel">
+          <span class="material-symbols-outlined" aria-hidden="true">description</span>
+          <h2>Chưa có hợp đồng</h2>
+          <p>
+            {{
+              owner
+                ? 'Hợp đồng được tạo sau khi bạn chấp nhận yêu cầu thuê phòng.'
+                : 'Hợp đồng sẽ xuất hiện khi chủ trọ chấp nhận yêu cầu thuê của bạn.'
+            }}
+          </p>
+          <button class="btn-secondary" (click)="setTab('requests')">Xem yêu cầu thuê</button>
+        </article>
       }
     </div>
   }
+
   @if (detail(); as r) {
-    <article class="detail" aria-label="Chi tiết yêu cầu">
-      <button class="btn-secondary" (click)="detail.set(null)">Đóng chi tiết</button>
-      <h2>{{ r.tenantName }} · {{ r.roomNumber }}</h2>
-      <p>{{ r.tenantPhone }} · {{ r.tenantEmail }}</p>
-      <p>Giấy tờ: {{ r.maskedCitizenId }}</p>
-      <p>Địa chỉ: {{ r.permanentAddress }}</p>
-      <p>Thời gian thuê: {{ r.proposedMoveInDate }} → {{ r.endDate }}</p>
-      <p class="note">{{ r.message || 'Không có lời nhắn' }}</p>
+    <article class="request-detail panel" aria-label="Chi tiết yêu cầu">
+      <header>
+        <div class="section-title">
+          <span class="material-symbols-outlined" aria-hidden="true">person_outline</span>
+          <h2>Chi tiết yêu cầu thuê</h2>
+        </div>
+        <button class="text-button" (click)="detail.set(null)">
+          Đóng chi tiết<span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+      <h3>
+        {{ r.tenantName }} <span>· Phòng {{ r.roomNumber }}</span>
+      </h3>
+      <dl>
+        <div>
+          <dt>Điện thoại</dt>
+          <dd>{{ r.tenantPhone }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ r.tenantEmail }}</dd>
+        </div>
+        <div>
+          <dt>Giấy tờ</dt>
+          <dd>{{ r.maskedCitizenId }}</dd>
+        </div>
+        <div>
+          <dt>Địa chỉ thường trú</dt>
+          <dd>{{ r.permanentAddress }}</dd>
+        </div>
+        <div>
+          <dt>Thời gian thuê</dt>
+          <dd>
+            {{ r.proposedMoveInDate | date: 'dd/MM/yyyy' }} → {{ r.endDate | date: 'dd/MM/yyyy' }}
+          </dd>
+        </div>
+      </dl>
+      <div class="request-message">
+        <span>Lời nhắn từ người thuê</span>
+        <p>{{ r.message || 'Không có lời nhắn' }}</p>
+      </div>
     </article>
   }
-  <div class="actions pagination">
-    <button
-      class="btn-secondary"
-      [disabled]="page === 0 || loading() || busy()"
-      (click)="page = page - 1; load()"
-    >
-      Trang trước</button
-    ><span>Trang {{ page + 1 }} / {{ totalPages || 1 }}</span
-    ><button
-      class="btn-secondary"
-      [disabled]="page + 1 >= totalPages || loading() || busy()"
-      (click)="page = page + 1; load()"
-    >
-      Trang sau
-    </button>
-  </div>
+  @if (totalPages > 1) {
+    <nav class="pagination" aria-label="Phân trang">
+      <button
+        class="btn-secondary"
+        [disabled]="page === 0 || loading() || busy()"
+        (click)="page = page - 1; load()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>Trang trước</button
+      ><span
+        >Trang <strong>{{ page + 1 }}</strong> / {{ totalPages }}</span
+      ><button
+        class="btn-secondary"
+        [disabled]="page + 1 >= totalPages || loading() || busy()"
+        (click)="page = page + 1; load()"
+      >
+        Trang sau<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+      </button>
+    </nav>
+  }
 </section>

@@ -16,14 +16,14 @@
     }
     @if (!eligibleListings().length) {
       <p class="notice warning">
-        Chưa có tin đang hiển thị còn hạn để gán Boost. Bạn vẫn có thể mua gói trước và phân bổ khi
-        có tin.
+        Chưa có tin chờ duyệt hoặc đang hiển thị còn hạn để gán Boost. Bạn vẫn có thể mua gói trước
+        và phân bổ khi có tin.
       </p>
     }
     <form [formGroup]="form" class="stack" (ngSubmit)="save()" id="allocation-form">
       <label class="field"
         >Tin đăng<select formControlName="listingId">
-          <option value="">Chọn tin đang hiển thị</option>
+          <option value="">Chọn tin chờ duyệt hoặc đang hiển thị</option>
           @for (listing of eligibleListings(); track listing.id) {
             <option [value]="listing.id">{{ listing.title }}</option>
           }
@@ -31,7 +31,11 @@
       >
       @if (selectedListing(); as listing) {
         <p class="muted">
-          Hạn tin: {{ ui.date(listing.expiresAt) }} · Mức hiển thị thực tế:
+          {{ listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn tin' }}:
+          {{
+            ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt)
+          }}
+          · Mức hiển thị thực tế:
           {{
             listing.priorityLevel === 2 ? 'Cao' : listing.priorityLevel === 1 ? 'Thấp' : 'Thường'
           }}
@@ -39,8 +43,9 @@
       }
       @if (existing(); as allocation) {
         <p class="notice">
-          Tin đang giữ một suất {{ allocation.level === 2 ? 'cao' : 'thấp' }}. Lưu lựa chọn mới sẽ
-          thay thế phân bổ cũ; nếu gói đích hết suất, phân bổ cũ được giữ nguyên.
+          Tin đã dùng một lượt {{ allocation.level === 2 ? 'cao' : 'thấp' }}. Đổi phân bổ sẽ dùng
+          lượt ở mức hoặc gói mới, không hoàn lượt cũ. Nếu gói đích hết lượt, phân bổ cũ được giữ
+          nguyên.
         </p>
       }
       <label class="field"
@@ -72,14 +77,17 @@
       >
       <p class="notice warning">
         Boost không tăng hạn tin hoặc số tin được đăng. Mức hiển thị cuối cùng là mức cao hơn giữa
-        quyền gói dịch vụ và Boost được gán.
+        quyền gói dịch vụ và Boost được gán. Bỏ Boost, ẩn tin hoặc hết hạn không hoàn lượt ưu tiên
+        đã dùng. Chỉ hoàn khi admin từ chối ở lần duyệt đầu tiên.
       </p>
     </form>
   }
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   @if (existing()) {
-    <button class="danger" (click)="release()" [disabled]="busy()">Thu hồi suất</button>
+    <button class="danger" (click)="release()" [disabled]="busy()">
+      Bỏ Boost (không hoàn lượt)
+    </button>
   }
   <button [mat-dialog-close]="false" [disabled]="busy()">Đóng</button>
   <button
