@@ -1,5 +1,5 @@
 <div class="nav-sidebar" [class.is-collapsed]="collapsed">
-  <nav class="nav-sidebar__list" aria-label="Điều hướng quản trị">
+  <nav class="nav-sidebar__list" [attr.aria-label]="label">
     @for (item of menu; track item.route) {
       <a
         class="nav-sidebar__item"

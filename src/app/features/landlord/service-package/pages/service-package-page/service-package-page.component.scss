@@ -1,0 +1,5 @@
+@use '../../../../../shared/styles/billing';
+@use '../../../../../shared/styles/management';
+.current-package {
+  margin-top: var(--space-lg);
+}

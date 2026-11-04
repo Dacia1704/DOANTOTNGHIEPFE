@@ -7,6 +7,12 @@
   margin: 0 auto;
   padding: var(--space-2xl) var(--space-lg) 96px;
 }
+:host-context(.dashboard-layout) .billing-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
 .eyebrow {
   color: var(--primary);
   font-size: 12px;

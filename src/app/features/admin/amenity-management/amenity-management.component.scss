@@ -1,3 +1,4 @@
+@use '../../../shared/styles/management';
 .amenities-page {
   display: flex;
   flex-direction: column;
@@ -66,12 +67,14 @@
   box-shadow: var(--shadow-card);
 }
 
-.th-icon, .td-icon {
+.th-icon,
+.td-icon {
   width: 80px;
   text-align: center;
 }
 
-.th-actions, .td-actions {
+.th-actions,
+.td-actions {
   width: 170px;
   text-align: right;
 }
@@ -169,7 +172,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .pagination-bar {
@@ -184,4 +189,22 @@
     font-weight: 500;
     color: var(--text-secondary);
   }
+}
+
+.amenities-page.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-filters {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.tabs a[aria-current='page'] {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary);
 }

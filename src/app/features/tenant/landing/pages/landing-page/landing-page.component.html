@@ -1,0 +1,110 @@
+<div class="landing">
+  <section class="search-summary" aria-labelledby="landing-title">
+    <div class="search-summary__inner">
+      <div class="search-summary__heading">
+        <div>
+          <span class="search-summary__eyebrow">KHÁM PHÁ KHÔNG GIAN SỐNG CỦA BẠN</span>
+          <h1 id="landing-title">
+            @if (searching()) {
+              Đang tìm phòng trọ phù hợp…
+            } @else if (rooms(); as result) {
+              Tìm thấy <span>{{ result.total }}</span> tin đăng cho thuê
+            } @else {
+              Tìm phòng trọ, chọn nơi an cư
+            }
+          </h1>
+          <p>Chọn khu vực, ngân sách và tiện ích để tìm nơi ở hợp với bạn.</p>
+        </div>
+        <div class="result-view" aria-label="Cách xem kết quả">
+          <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
+            <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách
+          </button>
+          <button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+          </button>
+        </div>
+      </div>
+      @if (filterChips().length) {
+        <div class="applied-filters" aria-label="Bộ lọc đang áp dụng">
+          <span class="applied-filters__label"
+            ><span class="material-symbols-outlined" aria-hidden="true">tune</span>Đang lọc
+            theo:</span
+          >
+          @for (chip of filterChips(); track chip.key) {
+            <button
+              type="button"
+              [attr.aria-label]="'Bỏ lọc ' + chip.label"
+              (click)="removeFilter(chip.key)"
+            >
+              {{ chip.label
+              }}<span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+          }
+          <button type="button" class="applied-filters__clear" (click)="resetFilters()">
+            Xóa tất cả bộ lọc
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+  <div class="landing__inner">
+    <div class="landing__layout">
+      <aside
+        class="landing__filters"
+        [class.is-open]="mobileFiltersOpen()"
+        aria-label="Bộ lọc tìm kiếm"
+      >
+        <button
+          type="button"
+          class="mobile-filter-toggle"
+          [attr.aria-expanded]="mobileFiltersOpen()"
+          aria-controls="landing-filter-panel"
+          (click)="mobileFiltersOpen.set(!mobileFiltersOpen())"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+          Bộ lọc tìm kiếm
+          @if (filterChips().length) {
+            <span class="mobile-filter-toggle__count">{{ filterChips().length }}</span>
+          }
+          <span class="material-symbols-outlined mobile-filter-toggle__arrow" aria-hidden="true">{{
+            mobileFiltersOpen() ? 'expand_less' : 'expand_more'
+          }}</span>
+        </button>
+        <app-search-capsule
+          id="landing-filter-panel"
+          [appliedFilters]="activeQuery()"
+          [searching]="searching()"
+          (locationLabels)="locationLabels.set($event)"
+          (search)="searchRooms($event)"
+        />
+      </aside>
+      <div class="landing__results">
+        @if (searchError()) {
+          <p class="landing__error" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span
+            >{{ searchError() }}
+          </p>
+        }
+        @if (view() === 'map') {
+          <app-listing-map
+            [result]="rooms()"
+            [query]="activeQuery()"
+            [loading]="searching()"
+            (locationFilter)="applyLocationFilter($event)"
+            (listingSelected)="openRoom($event)"
+            (pageChange)="loadMapPage($event)"
+          />
+        } @else {
+          <app-room-grid
+            [result]="rooms()"
+            [loading]="searching()"
+            (loadMore)="loadMore()"
+            (roomSelected)="openRoom($event)"
+          />
+        }
+        <app-ai-recommendation />
+        <app-landlord-cta />
+      </div>
+    </div>
+  </div>
+</div>

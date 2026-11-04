@@ -123,6 +123,13 @@ export interface ActiveBoost {
 export interface Listing {
   initialReview?: boolean;
   boostAllocation?: BoostAllocation | null;
+  property?: {
+    latitude?: number | null;
+    longitude?: number | null;
+    addressLine?: string;
+    wardName?: string;
+    provinceName?: string;
+  };
   landlordName?: string;
   propertyName?: string;
   id: string;

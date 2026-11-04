@@ -1,0 +1,44 @@
+@mixin trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 78px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--on-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+
+  &:hover,
+  &:focus-visible,
+  &.is-open {
+    border-color: var(--primary);
+    background: var(--primary-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 600px) {
+    min-height: 72px;
+  }
+}
+
+@mixin panel {
+  box-sizing: border-box;
+  background: var(--surface);
+  color: var(--on-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-floating);
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline-variant) transparent;
+}

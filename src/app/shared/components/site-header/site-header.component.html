@@ -1,9 +1,30 @@
-<header class="site-header">
+<header class="site-header" [class.site-header--dashboard]="landlordMode || adminMode">
   <div class="site-header__inner">
     <!-- Logo -->
-    <a class="site-header__brand" routerLink="/">
-      <img alt="Trọ Tốt" class="site-header__logo" src="logo.png" />
-    </a>
+    <div class="site-header__brand-group">
+      <button
+        type="button"
+        class="site-header__mobile-menu"
+        aria-label="Mở menu điều hướng"
+        [matMenuTriggerFor]="navigationMenu"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+      <a class="site-header__brand" routerLink="/">
+        <img alt="Trọ Tốt" class="site-header__logo" src="logo.png" />
+      </a>
+    </div>
+    <mat-menu #navigationMenu="matMenu">
+      @for (link of navLinks; track link.route) {
+        <a
+          mat-menu-item
+          [routerLink]="link.route"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: !!link.exact }"
+          >{{ link.label }}</a
+        >
+      }
+    </mat-menu>
 
     <!-- Main nav (desktop) -->
     <nav class="site-header__nav">
@@ -21,14 +42,18 @@
 
     <!-- Right actions -->
     <div class="site-header__actions">
-      <button type="button" class="site-header__cta" (click)="postListing()">
+      <button
+        type="button"
+        class="site-header__cta"
+        [attr.aria-label]="isLandlord ? 'Đăng tin phòng mới' : 'Tạo hợp đồng'"
+        (click)="postListing()"
+      >
         <span class="material-symbols-outlined">add_circle</span>
-        <span>Đăng tin mới</span>
-      </button>
-
-      <button type="button" class="site-header__currency" title="Đơn vị tiền tệ">
-        <span class="material-symbols-outlined">language</span>
-        <span>VNĐ</span>
+        @if (isLandlord) {
+          <span>Đăng tin phòng mới</span>
+        } @else {
+          <span>Tạo hợp đồng</span>
+        }
       </button>
 
       <button type="button" class="site-header__icon-btn" title="Thông báo">
@@ -50,92 +75,63 @@
 
       @if (isLoggedIn()) {
         <button
+          #avatarTrigger
           type="button"
           class="site-header__avatar-trigger"
           aria-label="Menu tài khoản"
           [matMenuTriggerFor]="userMenu"
         >
           <img [src]="userAvatar" [alt]="displayName" />
+          <span class="site-header__user-info">
+            <span class="site-header__user-name" [title]="displayName">{{ displayName }}</span>
+            <span class="site-header__user-role">{{ roleLabel() }}</span>
+          </span>
           <span class="material-symbols-outlined">expand_more</span>
         </button>
 
-        <mat-menu #userMenu="matMenu" class="site-header__user-menu">
-          <a mat-menu-item [routerLink]="profileUrl">
-            <span class="material-symbols-outlined mi">person</span>
-            Hồ sơ cá nhân
-          </a>
-          <button type="button" mat-menu-item (click)="chatWidget.openInbox()">
-            <span class="material-symbols-outlined mi" aria-hidden="true">forum</span>Tin nhắn
-          </button>
-          @if (!isAdmin) {
-            <button type="button" mat-menu-item (click)="chatWidget.openSupport()">
-              <span class="material-symbols-outlined mi" aria-hidden="true">support_agent</span>Chat
-              hỗ trợ
+        <mat-menu
+          #userMenu="matMenu"
+          class="site-header__user-menu"
+          xPosition="before"
+          [overlapTrigger]="false"
+        >
+          <div
+            class="site-header__user-menu-items"
+            [style.width.px]="avatarTrigger.getBoundingClientRect().width - 2"
+            [style.min-width.px]="landlordMode || adminMode ? 240 : null"
+          >
+            <a mat-menu-item [routerLink]="profileUrl">
+              <span class="material-symbols-outlined mi">person</span>
+              Hồ sơ cá nhân
+            </a>
+            @if (isAdmin) {
+              <a mat-menu-item routerLink="/admin">
+                <span class="material-symbols-outlined mi" aria-hidden="true"
+                  >admin_panel_settings</span
+                >
+                Trang quản trị
+              </a>
+            } @else if (isLandlord) {
+              <a mat-menu-item routerLink="/phong-cua-toi">
+                <span class="material-symbols-outlined mi" aria-hidden="true">dashboard</span>
+                Trang quản lý
+              </a>
+              <a mat-menu-item routerLink="/cai-dat">
+                <span class="material-symbols-outlined mi">settings</span>
+                Cài đặt
+              </a>
+            } @else {
+              <a mat-menu-item routerLink="/cai-dat">
+                <span class="material-symbols-outlined mi">settings</span>
+                Cài đặt
+              </a>
+            }
+            <mat-divider />
+            <button mat-menu-item class="site-header__logout" (click)="logout()">
+              <span class="material-symbols-outlined mi">logout</span>
+              Đăng xuất
             </button>
-          }
-          @if (isAdmin) {
-            <a mat-menu-item routerLink="/admin/users">
-              <span class="material-symbols-outlined mi" aria-hidden="true">manage_accounts</span>
-              Quản lý người dùng
-            </a>
-            <a mat-menu-item routerLink="/admin/room-types">
-              <span class="material-symbols-outlined mi" aria-hidden="true">category</span>
-              Quản lý loại phòng
-            </a>
-            <a mat-menu-item routerLink="/admin/amenities">
-              <span class="material-symbols-outlined mi" aria-hidden="true"
-                >local_convenience_store</span
-              >
-              Quản lý tiện ích
-            </a>
-            <a mat-menu-item [routerLink]="adminMode ? '/' : '/admin'">
-              <span class="material-symbols-outlined mi" aria-hidden="true">{{
-                adminMode ? 'home' : 'admin_panel_settings'
-              }}</span>
-              {{ adminMode ? 'Về website' : 'Trang quản trị' }}
-            </a>
-          } @else if (isLandlord) {
-            <a mat-menu-item routerLink="/quan-ly-dat-phong"><span class="material-symbols-outlined mi">event_available</span>Yêu cầu đặt phòng & hợp đồng</a>
-            <a mat-menu-item routerLink="/goi-dich-vu"
-              ><span class="material-symbols-outlined mi">inventory_2</span>Gói dịch vụ</a
-            >
-            <a mat-menu-item routerLink="/boost"
-              ><span class="material-symbols-outlined mi">bolt</span>Gói suất Boost</a
-            >
-            <a mat-menu-item routerLink="/lich-su-thanh-toan"
-              ><span class="material-symbols-outlined mi">receipt_long</span>Lịch sử thanh toán</a
-            >
-            <a mat-menu-item routerLink="/tin-cua-toi"
-              ><span class="material-symbols-outlined mi">article</span>Tin của tôi</a
-            >
-            <a mat-menu-item routerLink="/phong-cua-toi">
-              <span class="material-symbols-outlined mi">real_estate_agent</span>
-              Cơ sở cho thuê của tôi
-            </a>
-            <a mat-menu-item routerLink="/dang-tin">
-              <span class="material-symbols-outlined mi">add_circle</span>
-              Đăng tin phòng mới
-            </a>
-            <a mat-menu-item routerLink="/cai-dat">
-              <span class="material-symbols-outlined mi">settings</span>
-              Cài đặt
-            </a>
-          } @else {
-            <a mat-menu-item routerLink="/yeu-cau-thue"><span class="material-symbols-outlined mi">key</span>Yêu cầu thuê & hợp đồng của tôi</a>
-            <a mat-menu-item routerLink="/phong-da-luu">
-              <span class="material-symbols-outlined mi">favorite</span>
-              Tin đã lưu
-            </a>
-            <a mat-menu-item routerLink="/cai-dat">
-              <span class="material-symbols-outlined mi">settings</span>
-              Cài đặt
-            </a>
-          }
-          <mat-divider />
-          <button mat-menu-item class="site-header__logout" (click)="logout()">
-            <span class="material-symbols-outlined mi">logout</span>
-            Đăng xuất
-          </button>
+          </div>
         </mat-menu>
       } @else {
         <a class="site-header__login-btn" routerLink="/login">Đăng nhập</a>

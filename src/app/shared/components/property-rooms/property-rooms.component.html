@@ -1,0 +1,194 @@
+@if (property().rentalMode === 'WHOLE') {
+  @if (property().rooms[0]; as house) {
+    <section class="whole-house" aria-label="Thông tin căn nhà">
+      <header class="units-heading">
+        <h2>Thông tin căn nhà</h2>
+        <span class="badge" [class]="utils.getStatusBadgeClass(house.rentalStatus)">{{
+          utils.bookingLabel(house)
+        }}</span>
+      </header>
+      <dl class="house-facts">
+        <div>
+          <dt>Giá thuê nguyên căn / tháng</dt>
+          <dd class="price">{{ house.price.toLocaleString('vi-VN') }} đ</dd>
+        </div>
+        <div>
+          <dt>Diện tích căn nhà</dt>
+          <dd>{{ house.areaM2 }} m²</dd>
+        </div>
+        <div>
+          <dt>Số người tối đa</dt>
+          <dd>{{ house.maxOccupants }} người</dd>
+        </div>
+        <div>
+          <dt>Loại căn cho thuê</dt>
+          <dd>{{ house.roomTypeName }}</dd>
+        </div>
+        <div>
+          <dt>Tiền cọc</dt>
+          <dd>{{ utils.formatFee(house.defaultDeposit) }}</dd>
+        </div>
+        <div>
+          <dt>Giá điện</dt>
+          <dd>{{ utils.formatFee(house.electricityPrice) }}</dd>
+        </div>
+        <div>
+          <dt>Giá nước</dt>
+          <dd>{{ utils.formatFee(house.waterPrice) }}</dd>
+        </div>
+        <div>
+          <dt>Phí dịch vụ</dt>
+          <dd>{{ utils.formatFee(house.serviceFee) }}</dd>
+        </div>
+      </dl>
+      @if (house.amenities.length) {
+        <div class="house-extras">
+          <span class="subtext">Tiện ích bổ sung</span>
+          @for (amenity of house.amenities; track amenity.id) {
+            <span class="badge">{{ amenity.name }}</span>
+          }
+        </div>
+      }
+      @if (readOnly()) {
+        <button type="button" class="btn-secondary" (click)="viewRoom.emit(house)">
+          Xem ảnh và thông tin căn nhà
+        </button>
+      } @else {
+        <div class="actions">
+          <button type="button" class="btn-secondary" (click)="manageImages.emit(house)">
+            Quản lý ảnh căn nhà</button
+          ><button type="button" class="btn-primary" (click)="editRoom.emit(house)">
+            Chỉnh sửa thông tin căn nhà
+          </button>
+        </div>
+      }
+    </section>
+  }
+} @else {
+  <section class="units-section">
+    <app-management-table
+      [rows]="pagedRooms()"
+      [columns]="roomColumns"
+      [rowKey]="roomKey"
+      caption="Danh sách phòng cho thuê"
+      [pagination]="pagination()"
+      [pageSize]="pageSize()"
+      (pageChange)="page.set($event)"
+      (pageSizeChange)="pageSize.set($event)"
+      emptyMessage="Không có phòng phù hợp với bộ lọc."
+    >
+      <div tableToolbar>
+        <header class="units-heading">
+          <div>
+            <h2>Phòng cho thuê riêng</h2>
+            <p>{{ filtered().length }} / {{ property().rooms.length }} phòng tại cơ sở này</p>
+          </div>
+          @if (!readOnly() && property().rentalMode === 'BY_ROOM') {
+            <button type="button" class="btn-primary" (click)="addRoom.emit()">
+              <span aria-hidden="true" class="material-symbols-outlined">add</span> Thêm phòng
+            </button>
+          }
+        </header>
+        <div class="unit-filters">
+          <label class="search-field"
+            ><span aria-hidden="true" class="material-symbols-outlined">search</span
+            ><input
+              class="input"
+              type="search"
+              aria-label="Tìm số phòng hoặc loại phòng"
+              placeholder="Tìm số phòng, loại phòng…"
+              [ngModel]="search()"
+              (ngModelChange)="search.set($event)" /></label
+          ><select
+            class="input status-filter"
+            aria-label="Lọc trạng thái phòng"
+            [ngModel]="status()"
+            (ngModelChange)="status.set($event)"
+          >
+            <option value="">Tất cả trạng thái</option>
+            @for (value of statuses; track value) {
+              <option [value]="value">{{ labels[value] }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <ng-template [appTableCell]="pagedRooms()" column="name" let-room>
+        <button type="button" class="room-name" (click)="viewRoom.emit(room)">
+          {{ room.displayName }}
+        </button>
+        <span class="subtext">{{ room.roomTypeName }}</span>
+      </ng-template>
+      <ng-template [appTableCell]="pagedRooms()" column="price" let-room>
+        <strong class="price">{{ room.price.toLocaleString('vi-VN') }} đ</strong>
+        <span class="subtext">Cọc: {{ utils.formatFee(room.defaultDeposit) }}</span>
+      </ng-template>
+      <ng-template [appTableCell]="pagedRooms()" column="capacity" let-room>
+        <span>{{ room.areaM2 }} m²</span>
+        <span class="subtext">Tối đa {{ room.maxOccupants }} người</span>
+      </ng-template>
+      <ng-template [appTableCell]="pagedRooms()" column="status" let-room>
+        <span class="badge" [class]="utils.getStatusBadgeClass(room.rentalStatus)">{{
+          utils.bookingLabel(room)
+        }}</span>
+      </ng-template>
+      <ng-template [appTableCell]="pagedRooms()" column="actions" let-room>
+        <div class="actions room-actions">
+          <button
+            type="button"
+            class="btn-icon"
+            [attr.aria-label]="'Chi tiết ' + room.displayName"
+            title="Chi tiết"
+            (click)="viewRoom.emit(room)"
+          >
+            <span aria-hidden="true" class="material-symbols-outlined">visibility</span>
+          </button>
+          @if (!readOnly()) {
+            <button
+              type="button"
+              class="btn-icon"
+              [attr.aria-label]="'Ảnh ' + room.displayName"
+              title="Quản lý ảnh riêng"
+              (click)="manageImages.emit(room)"
+            >
+              <span aria-hidden="true" class="material-symbols-outlined"
+                >photo_library</span
+              ></button
+            ><button
+              type="button"
+              class="btn-icon"
+              [attr.aria-label]="'Sửa ' + room.displayName"
+              title="Sửa phòng"
+              (click)="editRoom.emit(room)"
+            >
+              <span aria-hidden="true" class="material-symbols-outlined">edit</span></button
+            ><button
+              type="button"
+              class="btn-icon danger"
+              [attr.aria-label]="'Xóa ' + room.displayName"
+              [disabled]="
+                property().rooms.length <= 1 ||
+                property().rentalMode === 'WHOLE' ||
+                room.bookingAvailability === 'HELD' ||
+                room.bookingAvailability === 'RENTED'
+              "
+              [title]="
+                property().rooms.length <= 1 ? 'Cần giữ ít nhất một đơn vị cho thuê' : 'Xóa phòng'
+              "
+              (click)="deleteRoom.emit(room)"
+            >
+              <span aria-hidden="true" class="material-symbols-outlined">delete</span>
+            </button>
+          }
+        </div>
+      </ng-template>
+      <button
+        tableEmpty
+        type="button"
+        class="btn-secondary"
+        (click)="search.set(''); status.set('')"
+      >
+        Xóa bộ lọc
+      </button>
+    </app-management-table>
+  </section>
+}

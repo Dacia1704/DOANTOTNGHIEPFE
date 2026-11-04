@@ -1,0 +1,100 @@
+.management-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.management-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+.management-filters label {
+  display: flex;
+  flex: 1 1 180px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.management-filters .filter-search {
+  flex: 2 1 240px;
+}
+.management-filters input,
+.management-filters select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+.management-filters button {
+  min-height: 44px;
+}
+.cell-title {
+  display: block;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.cell-subtext {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.cell-content {
+  min-width: 200px;
+  max-width: 440px;
+  overflow-wrap: anywhere;
+}
+.cell-content summary {
+  margin-top: 10px;
+  cursor: pointer;
+  color: var(--primary);
+}
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+}
+.table-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 var(--space-lg);
+}
+.table-tabs button[aria-pressed='true'] {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: var(--primary);
+}
+.table-thumbnail {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+@media (max-width: 600px) {
+  .management-filters {
+    align-items: stretch;
+  }
+  .management-filters label,
+  .management-filters .filter-search {
+    flex-basis: 100%;
+  }
+  .management-filters > button {
+    width: 100%;
+  }
+}

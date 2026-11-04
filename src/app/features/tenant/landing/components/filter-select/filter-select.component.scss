@@ -1,0 +1,126 @@
+@use '../filter-dropdown' as filter;
+
+app-filter-select {
+  display: block;
+  min-width: 0;
+}
+
+.landing-filter-select.mat-mdc-select {
+  display: block;
+  width: 100%;
+  color: var(--on-surface);
+  font: inherit;
+
+  .mat-mdc-select-trigger {
+    @include filter.trigger;
+  }
+
+  .mat-mdc-select-value {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  &.is-open .mat-mdc-select-trigger {
+    border-color: var(--primary);
+    background: var(--primary-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 12px;
+  }
+
+  .mat-mdc-select-arrow-wrapper {
+    display: none;
+  }
+
+  mat-select-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .landing-filter-select__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    height: 36px;
+    color: var(--primary);
+    font-size: 23px;
+  }
+
+  .landing-filter-select__field {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .landing-filter-select__label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+  }
+
+  .landing-filter-select__value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .landing-filter-select__chevron {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    font-size: 18px;
+    transition: transform var(--transition-fast);
+  }
+
+  &.is-open .landing-filter-select__chevron {
+    transform: rotate(180deg);
+  }
+}
+
+div.landing-filter-panel.mat-mdc-select-panel {
+  @include filter.panel;
+  max-height: min(320px, calc(100dvh - 32px));
+  padding: 6px;
+
+  .mat-mdc-option {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--on-surface);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+
+    &:hover,
+    &.mat-mdc-option-active,
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background: var(--primary-subtle);
+      color: var(--primary);
+    }
+
+    &.mdc-list-item--selected .mdc-list-item__primary-text {
+      color: var(--primary);
+      font-weight: 600;
+    }
+  }
+
+  .mat-pseudo-checkbox-minimal.mat-pseudo-checkbox-checked::after {
+    color: var(--primary);
+  }
+}
+
+.mat-mdc-select-panel-above div.landing-filter-panel.mat-mdc-select-panel {
+  border-radius: 12px;
+}

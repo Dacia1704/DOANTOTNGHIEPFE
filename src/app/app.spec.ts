@@ -1,14 +1,18 @@
 import { TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
-import { ChatWidgetService } from './core/services/chat-widget.service';
+import { ChatWidgetService } from './core/services/chat/chat-widget.service';
+
+@Component({ template: '<p data-testid="route-content">Trang đang mở</p>' })
+class RoutedTestPage {}
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideHttpClient(), provideRouter([])],
+      providers: [provideHttpClient(), provideRouter([{ path: '', component: RoutedTestPage }])],
     }).compileComponents();
   });
 
@@ -18,11 +22,21 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
+  it('renders the active routed page in the application shell', async () => {
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/');
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('[data-testid="route-content"]')?.textContent).toContain('Trang đang mở');
+  });
+
   it('keeps the chat window closed until requested', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('#chat-widget')).toBeNull();
+    expect(compiled.querySelectorAll('app-ai-chat')).toHaveLength(1);
+    expect(compiled.querySelector('app-ai-chat .launcher')).toBeTruthy();
   });
 
   it('opens a guest chat prompt without opening an authenticated inbox', async () => {

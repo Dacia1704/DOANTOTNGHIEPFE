@@ -1,0 +1,223 @@
+<section class="property-page" [attr.aria-busy]="loading()">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">KHÔNG GIAN CHO THUÊ CỦA BẠN</p>
+      <h1>{{ selectedId() ? selected()?.name || 'Chi tiết cơ sở' : 'Cơ sở cho thuê của tôi' }}</h1>
+      <p class="muted">
+        {{
+          selectedId()
+            ? selected()?.rentalMode === 'WHOLE'
+              ? 'Thông tin và chi phí thuê toàn bộ căn nhà.'
+              : 'Thông tin cơ sở và các phòng cho thuê riêng bên trong.'
+            : 'Chọn một cơ sở để xem chi tiết và quản lý cho thuê.'
+        }}
+      </p>
+    </div>
+    @if (!selectedId()) {
+      <div class="heading-actions">
+        <button class="btn-primary" type="button" (click)="openCreate()">
+          <span aria-hidden="true" class="material-symbols-outlined">add</span> Tạo cơ sở mới
+        </button>
+      </div>
+    }
+  </header>
+  @if (success()) {
+    <div class="notice success" role="status">
+      <span aria-hidden="true" class="material-symbols-outlined">check_circle</span>{{ success()
+      }}<button class="btn-icon" aria-label="Đóng thông báo" (click)="success.set('')">
+        <span aria-hidden="true" class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  }
+  @if (loading()) {
+    <div class="state-panel" role="status">
+      <div class="spinner"></div>
+      <p>Đang tải cơ sở và phòng của bạn…</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-panel" role="alert">
+      <span aria-hidden="true" class="material-symbols-outlined">cloud_off</span>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else {
+    @if (!selectedId()) {
+      @if (result(); as data) {
+        <app-management-table
+          class="property-list"
+          [rows]="data.items"
+          [columns]="propertyColumns"
+          [rowKey]="propertyKey"
+          caption="Danh sách cơ sở cho thuê"
+          [pagination]="data"
+          [pageSize]="pageSize()"
+          (pageSizeChange)="changePageSize($event)"
+          emptyMessage="Bắt đầu từ cơ sở đầu tiên"
+          emptyDescription="Thêm địa chỉ một lần, nhập giá mặc định và tạo các phòng của bạn."
+          (pageChange)="load($event)"
+        >
+          <form
+            tableToolbar
+            class="property-filters"
+            aria-label="Bộ lọc cơ sở"
+            (submit)="$event.preventDefault()"
+          >
+            <label class="filter-field filter-field--search">
+              <span>Tìm cơ sở</span>
+              <div class="filter-search">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input
+                  class="input"
+                  type="search"
+                  name="keyword"
+                  placeholder="Tên cơ sở, địa chỉ…"
+                />
+              </div>
+            </label>
+            <label class="filter-field">
+              <span>Loại cơ sở</span>
+              <select class="input" name="propertyType">
+                <option value="">Tất cả loại cơ sở</option>
+                <option value="boarding-house">Nhà trọ</option>
+                <option value="apartment">Căn hộ</option>
+                <option value="house">Nhà nguyên căn</option>
+              </select>
+            </label>
+            <label class="filter-field">
+              <span>Hình thức thuê</span>
+              <select class="input" name="rentalMode">
+                <option value="">Tất cả hình thức</option>
+                <option value="BY_ROOM">Cho thuê từng phòng</option>
+                <option value="WHOLE">Cho thuê nguyên căn</option>
+              </select>
+            </label>
+            <label class="filter-field">
+              <span>Tình trạng</span>
+              <select class="input" name="availability">
+                <option value="">Tất cả tình trạng</option>
+                <option value="available">Còn chỗ trống</option>
+                <option value="unavailable">Không còn chỗ trống</option>
+              </select>
+            </label>
+            <button type="reset" class="btn-secondary filter-reset">
+              <span class="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>
+              Xóa bộ lọc
+            </button>
+          </form>
+          <ng-template [appTableCell]="data.items" column="name" let-property>
+            <button type="button" class="property-name" (click)="select(property)">
+              <span class="material-symbols-outlined" aria-hidden="true">{{
+                property.rentalMode === 'WHOLE' ? 'home_work' : 'apartment'
+              }}</span>
+              {{ property.name }}
+            </button>
+          </ng-template>
+          <ng-template [appTableCell]="data.items" column="availability" let-property>
+            <span class="badge" [class.badge-success]="property.availableCount > 0">
+              {{
+                property.rentalMode === 'WHOLE'
+                  ? property.availableCount
+                    ? 'Còn trống'
+                    : 'Chưa sẵn sàng'
+                  : property.availableCount + ' phòng trống'
+              }}
+            </span>
+          </ng-template>
+          <ng-template [appTableCell]="data.items" column="actions" let-property>
+            <button
+              type="button"
+              class="btn-secondary"
+              [attr.aria-label]="'Quản lý ' + property.name"
+              (click)="select(property)"
+            >
+              Quản lý
+              <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </button>
+          </ng-template>
+          <button tableEmpty type="button" class="btn-primary" (click)="openCreate()">
+            Tạo cơ sở cho thuê
+          </button>
+        </app-management-table>
+      }
+    }
+    @if (selected(); as property) {
+      <section class="property-detail" aria-label="Chi tiết cơ sở đã chọn">
+        <header class="detail-heading">
+          <div>
+            <span class="eyebrow">CƠ SỞ ĐANG QUẢN LÝ</span>
+            <h2>Thông tin chung</h2>
+            <p class="address">
+              <span aria-hidden="true" class="material-symbols-outlined">location_on</span
+              >{{ property.fullAddress }}
+            </p>
+          </div>
+          <div class="detail-tags">
+            <button type="button" class="btn-secondary" (click)="editLocation()">
+              Sửa địa chỉ & vị trí
+            </button>
+            <span class="badge badge-primary">{{ property.propertyTypeName }}</span
+            ><span class="badge">{{ property.rentalModeLabel }}</span>
+            @if (property.totalFloors !== null) {
+              <span class="badge">{{ property.totalFloors }} tầng</span>
+            }
+          </div>
+        </header>
+        <app-property-location
+          [latitude]="property.latitude"
+          [longitude]="property.longitude"
+          [address]="property.fullAddress"
+          [collapsible]="true"
+        />
+        @if (property.rentalMode === 'BY_ROOM') {
+          <div class="overview-stats">
+            <div>
+              <span>Tổng số phòng</span><strong>{{ property.rooms.length }}</strong>
+            </div>
+            <div>
+              <span>Còn trống</span><strong class="available">{{ property.availableCount }}</strong>
+            </div>
+            <div>
+              <span>Đã cho thuê</span><strong>{{ property.rentedCount }}</strong>
+            </div>
+            <div>
+              <span>Đang bảo trì</span><strong>{{ property.maintenanceCount }}</strong>
+            </div>
+          </div>
+        }
+        <div class="shared-amenities">
+          <span class="muted">{{
+            property.rentalMode === 'WHOLE' ? 'Tiện ích căn nhà' : 'Tiện ích chung'
+          }}</span>
+          @for (amenity of property.amenities; track amenity.id) {
+            <span class="amenity-chip"
+              ><span aria-hidden="true" class="material-symbols-outlined">{{ amenity.icon }}</span
+              >{{ amenity.name }}</span
+            >
+          } @empty {
+            <span class="muted">Chưa khai báo tiện ích</span>
+          }
+        </div>
+        @if (property.images.length) {
+          <div class="shared-images" aria-label="Ảnh chung của cơ sở">
+            @for (image of property.images; track image.id) {
+              <a [href]="image.url" target="_blank" rel="noopener"
+                ><img
+                  [src]="imageUtils.toImageSrc(image.url)"
+                  [alt]="'Ảnh chung ' + property.name"
+                  loading="lazy"
+              /></a>
+            }
+          </div>
+        }
+      </section>
+      <app-property-rooms
+        [property]="property"
+        (addRoom)="openAddRoom()"
+        (editRoom)="edit($event)"
+        (viewRoom)="detail($event)"
+        (manageImages)="images($event)"
+        (deleteRoom)="remove($event)"
+      />
+    }
+  }
+</section>

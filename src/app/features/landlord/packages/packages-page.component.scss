@@ -1,0 +1,10 @@
+@use '../../../shared/styles/billing';
+@use '../../../shared/styles/management';
+.package-tab {
+  padding-top: var(--space-lg);
+  min-width: 0;
+}
+mat-tab-group {
+  width: 100%;
+  min-width: 0;
+}

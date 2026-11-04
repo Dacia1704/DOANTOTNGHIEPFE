@@ -1,0 +1,76 @@
+<section class="billing-page management-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Tài khoản chủ trọ</p>
+      <h1>Lịch sử thanh toán</h1>
+      <p class="description">Theo dõi giao dịch và hóa đơn của bạn.</p>
+    </div>
+    <div class="actions">
+      <a class="button" routerLink="/goi-dich-vu">Gói dịch vụ</a
+      ><a class="button" routerLink="/boost">Boost</a>
+    </div>
+  </header>
+
+  <app-management-table
+    [rows]="items()"
+    [columns]="columns"
+    [rowKey]="paymentKey"
+    caption="Lịch sử thanh toán"
+    [loading]="loading()"
+    [error]="error()"
+    [pagination]="pagination()"
+    [pageSize]="pageSize()"
+    (pageChange)="load($event)"
+    (pageSizeChange)="changePageSize($event)"
+    (retry)="load(page())"
+    emptyMessage="Chưa có giao dịch"
+    emptyDescription="Giao dịch gói dịch vụ và Boost sẽ xuất hiện tại đây."
+  >
+    <form
+      tableToolbar
+      class="management-filters"
+      aria-label="Bộ lọc thanh toán"
+      (submit)="$event.preventDefault()"
+    >
+      <label class="filter-search"
+        >Mã giao dịch<input type="search" name="order" placeholder="Nhập mã giao dịch…"
+      /></label>
+      <label
+        >Loại giao dịch<select name="type">
+          <option value="">Tất cả loại giao dịch</option>
+          <option value="SERVICE_PACKAGE">Gói dịch vụ</option>
+          <option value="BOOST_PACKAGE">Gói Boost</option>
+        </select></label
+      >
+      <label
+        >Trạng thái<select name="status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="PENDING">Chờ thanh toán</option>
+          <option value="SUCCESS">Thành công</option>
+          <option value="FAILED">Thất bại</option>
+          <option value="EXPIRED">Hết hạn</option>
+        </select></label
+      >
+      <label>Từ ngày<input type="date" name="from" /></label>
+      <label>Đến ngày<input type="date" name="to" /></label>
+      <button type="reset">Xóa bộ lọc</button>
+    </form>
+    <ng-template [appTableCell]="items()" column="amount" let-payment>
+      <strong>{{ payment.amount | currency: 'VND' : 'symbol' : '1.0-2' : 'vi' }}</strong>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="status" let-payment>
+      <app-billing-status [status]="payment.status" />
+      @if (payment.requiresReview) {
+        <app-billing-status status="REQUIRES_REVIEW" />
+      }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="date" let-payment>
+      {{ ui.date(payment.paidAt || payment.expiresAt) }}
+      <span class="cell-subtext">{{ payment.paidAt ? 'Đã thanh toán' : 'Hạn thanh toán' }}</span>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="actions" let-payment>
+      <a class="button" [routerLink]="['/thanh-toan', payment.id]">Chi tiết</a>
+    </ng-template>
+    <a tableEmpty class="button primary" routerLink="/goi-dich-vu">Xem gói dịch vụ</a>
+  </app-management-table>
+</section>

@@ -1,0 +1,17 @@
+@if (auth.hasPermission('ROLE_TENANT')) {
+  <section class="ai-rec" aria-label="Gợi ý phòng dành cho bạn" [attr.aria-busy]="loading()">
+    <div class="ai-rec__head">
+      <div>
+        <h2 class="ai-rec__title">Gợi ý phòng dành cho bạn</h2>
+        <p class="ai-rec__sub">Tham khảo theo nhu cầu và những tin bạn đã quan tâm.</p>
+      </div>
+      <button type="button" (click)="retry()" [disabled]="loading()">Làm mới gợi ý</button>
+    </div>
+    @if (loading()) { <p role="status">Đang tìm phòng phù hợp…</p> }
+    @if (error()) { <p role="alert">{{ error() }}</p> }
+    @if (!loading() && !error() && !items().length) {
+      <p>Chưa có phòng phù hợp để gợi ý. Bạn có thể tìm bằng bộ lọc phía trên.</p>
+    }
+    <app-ai-listing-cards [items]="items()" (selected)="recordClick($event)" />
+  </section>
+}

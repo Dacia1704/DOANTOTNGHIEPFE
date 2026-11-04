@@ -1,0 +1,206 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.filters {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 3px 16px #0b1c3004;
+}
+.filters__controls {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: -18px -18px 0;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 5px 10px -8px #0b1c3020;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.filters__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  background: var(--surface-container-low);
+}
+.filters__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 700;
+}
+.filters__header .material-symbols-outlined {
+  color: var(--primary);
+  font-size: 21px;
+}
+.filters__reset {
+  flex-shrink: 0;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+.filters__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+}
+.filters__group legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+.filters__group legend .material-symbols-outlined {
+  color: var(--primary);
+  font-size: 19px;
+}
+.filters__hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.filters__prices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.filters__prices button {
+  min-height: 40px;
+  padding: 8px 5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--surface-container-low);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+.filters__prices button:hover {
+  border-color: var(--primary);
+}
+.filters__prices button[aria-pressed='true'] {
+  background: var(--primary);
+  color: white;
+}
+.filters__amenities {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.filters label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--on-surface);
+  font-size: 12px;
+  line-height: 1.6;
+  cursor: pointer;
+}
+.filters input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin: 2px 0 0;
+  accent-color: var(--primary);
+}
+.filters__availability {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  background: var(--surface-container-low);
+}
+.filters__availability-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.filters__availability-title .material-symbols-outlined {
+  font-size: 18px;
+}
+.filters__footer {
+  padding: 12px 0 0;
+  background: var(--surface);
+}
+.filters__apply {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 30px;
+  background: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px #00685f18;
+}
+.filters__apply:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+.filters__apply .material-symbols-outlined {
+  font-size: 19px;
+}
+@media (max-width: 600px) {
+  .filters__controls {
+    position: static;
+  }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .filters__controls {
+    grid-column: 1 / -1;
+    position: static;
+  }
+  .filters__group,
+  .filters__availability {
+    margin-top: 0;
+  }
+}

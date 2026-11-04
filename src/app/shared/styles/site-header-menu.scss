@@ -1,0 +1,81 @@
+// MatMenu panels render in the CDK overlay, outside the header's scoped styles.
+.site-header__user-menu.mat-mdc-menu-panel {
+  width: max-content;
+  min-width: 0;
+  max-width: calc(100vw - 24px);
+  margin-top: 8px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-floating);
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+
+  .site-header__user-menu-items {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 6px;
+  }
+
+  .mat-mdc-menu-item {
+    min-height: 44px;
+    padding: 10px;
+    border-radius: 10px;
+    color: var(--on-surface);
+    font-family: inherit;
+
+    .mat-mdc-menu-item-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.6;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    &:hover,
+    &:focus,
+    &.cdk-program-focused,
+    &.cdk-keyboard-focused {
+      background: var(--primary-subtle);
+      color: var(--primary);
+    }
+  }
+
+  .mi {
+    flex: 0 0 20px;
+    color: var(--on-surface-variant);
+    font-size: 20px;
+  }
+
+  .mat-mdc-menu-item:hover .mi,
+  .mat-mdc-menu-item:focus .mi {
+    color: var(--primary);
+  }
+
+  .mat-divider {
+    margin: 6px 4px;
+    border-top-color: var(--border);
+  }
+
+  .site-header__logout,
+  .site-header__logout .mi {
+    color: var(--error);
+  }
+
+  .site-header__logout:hover,
+  .site-header__logout:focus {
+    background: var(--error-bg);
+    color: var(--error);
+
+    .mi {
+      color: var(--error);
+    }
+  }
+}

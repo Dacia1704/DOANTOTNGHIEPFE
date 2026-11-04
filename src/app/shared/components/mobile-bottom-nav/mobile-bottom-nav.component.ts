@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ChatWidgetService } from '@services/chat-widget.service';
+import { ChatWidgetService } from '@services/chat/chat-widget.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface BottomNavItem {
