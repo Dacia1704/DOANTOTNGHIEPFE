@@ -56,10 +56,7 @@
         }
       </button>
 
-      <button type="button" class="site-header__icon-btn" title="Thông báo">
-        <span class="material-symbols-outlined">notifications</span>
-        <span class="site-header__dot"></span>
-      </button>
+      @if (isLoggedIn()) { <app-notification-center /> }
 
       <button
         type="button"

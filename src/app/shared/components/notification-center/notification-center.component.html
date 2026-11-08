@@ -1,0 +1,58 @@
+<button type="button" class="notification-bell" cdkOverlayOrigin #origin="cdkOverlayOrigin"
+  (click)="toggle()" [attr.aria-expanded]="opened()" aria-haspopup="dialog"
+  [attr.aria-label]="'Thông báo, ' + notifications.unreadCount() + ' chưa đọc'" title="Thông báo">
+  <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+  @if (notifications.unreadCount() > 0) {
+    <span class="badge" aria-hidden="true">{{ notifications.unreadCount() > 99 ? '99+' : notifications.unreadCount() }}</span>
+  }
+</button>
+<ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="opened()" [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPush]="true" [cdkConnectedOverlayViewportMargin]="12"
+  [cdkConnectedOverlayPositions]="[{ originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 12 }]"
+  (backdropClick)="opened.set(false)" (detach)="opened.set(false)"
+  (overlayKeydown)="$event.key === 'Escape' && opened.set(false)">
+  <section class="notification-panel" role="dialog" aria-modal="true" aria-label="Thông báo"
+    cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+    <header>
+      <div><h2>Thông báo</h2><p>{{ notifications.unreadCount() }} thông báo chưa đọc</p></div>
+      <button type="button" class="close" (click)="opened.set(false)" aria-label="Đóng thông báo" cdkFocusInitial>
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Lọc thông báo">
+        <button type="button" [class.active]="!unreadOnly()" [attr.aria-pressed]="!unreadOnly()" (click)="filter(false)">Tất cả</button>
+        <button type="button" [class.active]="unreadOnly()" [attr.aria-pressed]="unreadOnly()" (click)="filter(true)">Chưa đọc</button>
+      </div>
+      <button type="button" class="read-all" (click)="readAll()" [disabled]="saving() || !notifications.unreadCount()">Đọc tất cả</button>
+    </div>
+    <div class="notification-list" [attr.aria-busy]="loading()">
+      @if (error()) {
+        <div class="status error" role="alert"><p>{{ error() }}</p><button type="button" (click)="load()">Thử lại</button></div>
+      }
+      @for (item of items(); track item.id) {
+        <button type="button" class="notification-item" [class.unread]="!item.read" [disabled]="saving()"
+          (click)="select(item)" [attr.aria-label]="item.title + (item.read ? ', đã đọc' : ', chưa đọc')">
+          <span class="item-icon material-symbols-outlined" aria-hidden="true">{{ icon(item) }}</span>
+          <span class="item-content"><strong>{{ item.title }}</strong><span>{{ item.body }}</span>
+            <time [attr.datetime]="date(item.createdAt).toISOString()">{{ date(item.createdAt) | date:'dd/MM/yyyy HH:mm':'+0700' }}</time>
+          </span>
+          @if (!item.read) { <span class="unread-dot" aria-hidden="true"></span> }
+        </button>
+      }
+      @if (loading()) { <p class="status" role="status">Đang tải thông báo…</p> }
+      @else if (!items().length && !error()) {
+        <div class="status empty"><span class="material-symbols-outlined" aria-hidden="true">notifications_none</span>
+          <strong>{{ unreadOnly() ? 'Bạn đã đọc hết thông báo' : 'Chưa có thông báo' }}</strong>
+          <p>Các cập nhật thuê phòng, hợp đồng và tin đăng sẽ xuất hiện tại đây.</p>
+        </div>
+      }
+      @if (hasMore() && !loading() && !error()) {
+        <button type="button" class="load-more" (click)="load(true)">Xem thêm thông báo</button>
+      }
+    </div>
+    @if (notifications.countUnavailable()) { <p class="connection-note" role="status">Chưa cập nhật được số thông báo. Hệ thống sẽ thử lại.</p> }
+  </section>
+</ng-template>

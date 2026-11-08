@@ -6,6 +6,7 @@ import { AuthService } from '@services/auth/auth.service';
 import { ChatWidgetService } from '@services/chat/chat-widget.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoleCode } from '@model/auth/auth.model';
+import { NotificationCenterComponent } from '../notification-center/notification-center.component';
 
 interface NavLink {
   label: string;
@@ -22,7 +23,7 @@ interface NavLink {
  */
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule],
+  imports: [RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule, NotificationCenterComponent],
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
