@@ -1,0 +1,56 @@
+@use '../../styles/feedback';
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.evidence-image,
+.upload-image {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+.image-state {
+  display: grid;
+  place-content: center;
+  gap: var(--space-sm);
+  min-height: 150px;
+  font-size: 12px;
+}
+.upload-info {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  font-size: 12px;
+}
+.upload-info small {
+  color: var(--error);
+  overflow-wrap: anywhere;
+}
+.upload-zone {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: var(--space-lg);
+  margin-top: var(--space-md);
+  border: 1px dashed var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--primary-subtle);
+  text-align: center;
+}
+.upload-zone .material-symbols-outlined {
+  font-size: 30px;
+  color: var(--primary);
+}
+.upload-zone input {
+  max-width: 100%;
+  background: var(--surface);
+}

@@ -1,0 +1,193 @@
+<section class="feedback-page" [attr.aria-busy]="loading()">
+  <a class="back-link" [routerLink]="baseLink" [queryParams]="backParams"
+    ><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span
+    >{{ admin ? 'Quản lý báo cáo' : 'Báo cáo của tôi' }}</a
+  >
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Hồ sơ phản ánh</p>
+      <h1>Chi tiết báo cáo</h1>
+      <p class="description">Nội dung phản ánh và kết quả tiếp nhận từ Trọ Tốt.</p>
+    </div>
+    <button [disabled]="loading() || busy() || uploading()" (click)="load()">
+      <span class="material-symbols-outlined" aria-hidden="true">refresh</span>Tải lại
+    </button>
+  </header>
+  @if (success()) {
+    <p class="notice success" role="status">{{ success() }}</p>
+  }
+  @if (actionError()) {
+    <p class="notice error" role="alert">{{ actionError() }}</p>
+  }
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }} <button (click)="load()">Thử lại</button>
+    </div>
+  }
+  @if (loading() && !detail()) {
+    <div class="panel empty" role="status">Đang tải hồ sơ báo cáo…</div>
+  }
+  @if (detail(); as d) {
+    @let r = d.report;
+    <div class="status-banner" [attr.data-status]="r.status">
+      <span class="material-symbols-outlined" aria-hidden="true">{{
+        r.status === 'RESOLVED'
+          ? 'task_alt'
+          : r.status === 'REJECTED'
+            ? 'info'
+            : r.status === 'PROCESSING'
+              ? 'pending_actions'
+              : 'schedule'
+      }}</span>
+      <div>
+        <span class="badge" [attr.data-status]="r.status">{{ statuses[r.status] }}</span>
+        <p>
+          {{
+            r.status === 'PENDING'
+              ? 'Báo cáo đang chờ quản trị viên tiếp nhận.'
+              : r.status === 'PROCESSING'
+                ? 'Quản trị viên đang kiểm tra nội dung và minh chứng.'
+                : 'Quá trình xử lý đã kết thúc. Xem kết quả bên dưới.'
+          }}
+        </p>
+      </div>
+    </div>
+    <div class="detail-layout">
+      <div class="cards">
+        <section class="panel">
+          <h2>Nội dung báo cáo</h2>
+          <dl>
+            <div>
+              <dt>Đối tượng</dt>
+              <dd>{{ targets[r.targetType] }} · {{ r.targetName || r.targetId }}</dd>
+            </div>
+            <div>
+              <dt>Lý do</dt>
+              <dd>{{ reasons[r.reasonCode] }}</dd>
+            </div>
+            <div>
+              <dt>Ngày gửi</dt>
+              <dd>{{ r.createdAt | date: 'HH:mm · dd/MM/yyyy' }}</dd>
+            </div>
+          </dl>
+          <h3>Mô tả sự việc</h3>
+          <p class="copy">{{ r.description || 'Không có mô tả bổ sung.' }}</p>
+          @if (r.targetType === 'LISTING') {
+            <a class="button" [routerLink]="['/tro', r.targetId]"
+              >Xem tin đăng<span class="material-symbols-outlined" aria-hidden="true"
+                >open_in_new</span
+              ></a
+            >
+          }
+          <details>
+            <summary>Mã tham chiếu</summary>
+            <p class="mono">Báo cáo: {{ r.id }}</p>
+            <p class="mono">Đối tượng: {{ r.targetId }}</p>
+          </details>
+        </section>
+        <section class="panel">
+          <app-report-evidence-gallery
+            [reportId]="r.id"
+            [evidences]="d.evidences"
+            [writable]="!admin && r.status === 'PENDING' && !error()"
+            (changed)="load()"
+            (busyChange)="uploading.set($event)"
+          />
+        </section>
+      </div>
+      <aside class="cards processing">
+        <section class="panel">
+          <h2>{{ admin ? 'Xử lý báo cáo' : 'Tiến trình xử lý' }}</h2>
+          <div class="timeline-item">
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <div>
+              <strong>Đã gửi báo cáo</strong>
+              <p class="muted">{{ r.createdAt | date: 'HH:mm · dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="material-symbols-outlined" aria-hidden="true">{{
+              r.handledBy ? 'person_check' : 'schedule'
+            }}</span>
+            <div>
+              <strong>{{ r.handledBy ? 'Đã có người tiếp nhận' : 'Chờ tiếp nhận' }}</strong>
+              <p class="muted">
+                {{
+                  r.handledByName ||
+                    (r.handledBy
+                      ? 'Quản trị viên đang xử lý'
+                      : 'Quản trị viên sẽ kiểm tra phản ánh của bạn.')
+                }}
+              </p>
+            </div>
+          </div>
+          @if (r.resolvedAt) {
+            <div class="timeline-item">
+              <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+              <div>
+                <strong>{{ statuses[r.status] }}</strong>
+                <p class="muted">{{ r.resolvedAt | date: 'HH:mm · dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+          }
+          @if (admin && r.status === 'PENDING') {
+            <p class="description">Nhận báo cáo để bắt đầu kiểm tra và phản hồi.</p>
+            <button
+              class="primary full-width"
+              [disabled]="busy() || loading()"
+              (click)="action('assign')"
+            >
+              {{ busy() ? 'Đang xử lý…' : 'Nhận xử lý' }}
+            </button>
+          }
+          @if (canClose) {
+            <form (ngSubmit)="action('resolve')">
+              <label class="field"
+                >Kết quả xử lý (bắt buộc)<textarea
+                  name="note"
+                  rows="6"
+                  maxlength="5000"
+                  [(ngModel)]="note"
+                  [disabled]="busy()"
+                  placeholder="Ghi rõ kết quả kiểm tra và hướng xử lý…"
+                  required
+                ></textarea
+                ><small>{{ note.length }}/5000 ký tự</small></label
+              >
+              <div class="row">
+                <button
+                  class="primary"
+                  type="submit"
+                  [disabled]="busy() || loading() || !note.trim() || note.length > 5000"
+                >
+                  Giải quyết</button
+                ><button
+                  class="danger"
+                  type="button"
+                  [disabled]="busy() || loading() || !note.trim() || note.length > 5000"
+                  (click)="action('reject')"
+                >
+                  Từ chối
+                </button>
+              </div>
+            </form>
+          } @else if (admin && r.status === 'PROCESSING') {
+            <p class="notice">Chỉ quản trị viên đã nhận báo cáo mới có thể lưu kết quả xử lý.</p>
+          }
+        </section>
+        @if (r.resolutionNote) {
+          <section class="panel">
+            <h2>Kết quả xử lý</h2>
+            <p class="copy">{{ r.resolutionNote }}</p>
+          </section>
+        }
+        @if (admin) {
+          <p class="notice">
+            Kết quả báo cáo được gửi đến người phản ánh. Các thao tác kiểm duyệt tin hoặc tài khoản
+            thực hiện tại trang quản lý tương ứng.
+          </p>
+        }
+      </aside>
+    </div>
+  }
+</section>

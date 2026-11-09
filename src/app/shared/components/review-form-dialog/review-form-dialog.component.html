@@ -1,0 +1,72 @@
+<div class="dialog-body">
+  <div class="dialog-top">
+    <div>
+      <p class="eyebrow">Chia sẻ & tin cậy</p>
+      <h2>{{ title }}</h2>
+      <p class="description">{{ data.context }}</p>
+    </div>
+    <button type="button" [disabled]="busy()" (click)="close()" aria-label="Đóng">✕</button>
+  </div>
+  @if (data.review; as review) {
+    <app-review-card [review]="review" />
+  }
+  @if (error()) {
+    <p class="notice error" role="alert">{{ error() }}</p>
+  }
+  <form class="dialog-form" (ngSubmit)="submit()">
+    @if (data.action === 'create') {
+      <fieldset class="rating-picker" [disabled]="busy()">
+        <legend>Bạn đánh giá trải nghiệm này thế nào?</legend>
+        <div>
+          @for (star of stars; track star) {
+            <label
+              ><input
+                type="radio"
+                name="rating"
+                [value]="star"
+                [ngModel]="rating()"
+                (ngModelChange)="rating.set(+$event)"
+                [attr.aria-label]="star + ' sao'"
+              /><span [class.selected]="star <= rating()" aria-hidden="true">★</span></label
+            >
+          }
+        </div>
+        <p class="muted">{{ rating() ? rating() + '/5 sao' : 'Chọn từ 1 đến 5 sao' }}</p>
+      </fieldset>
+    }
+    @if (!(data.action === 'visibility' && data.review?.hidden)) {
+      <label class="field"
+        >{{
+          data.action === 'create'
+            ? 'Nhận xét (không bắt buộc)'
+            : data.action === 'reply'
+              ? 'Nội dung phản hồi'
+              : 'Lý do ẩn đánh giá'
+        }}
+        <textarea
+          name="text"
+          rows="4"
+          [maxlength]="maxLength"
+          [(ngModel)]="text"
+          [disabled]="busy()"
+          [required]="data.action !== 'create'"
+          placeholder="Chia sẻ thông tin cụ thể, tôn trọng người khác…"
+        ></textarea>
+        <small>{{ text.length }}/{{ maxLength }} ký tự</small>
+      </label>
+    } @else {
+      <p class="notice">Đánh giá sẽ hiển thị trở lại và được tính vào điểm tổng hợp.</p>
+    }
+    @if (data.action === 'create') {
+      <p class="muted">
+        Mỗi hợp đồng chỉ được đánh giá một lần cho mỗi loại. Hãy kiểm tra nội dung trước khi gửi.
+      </p>
+    }
+    <div class="dialog-actions">
+      <button type="button" [disabled]="busy()" (click)="close()">Đóng</button
+      ><button class="primary" type="submit" [disabled]="busy() || !valid">
+        {{ busy() ? 'Đang gửi…' : data.action === 'create' ? 'Gửi đánh giá' : 'Lưu thay đổi' }}
+      </button>
+    </div>
+  </form>
+</div>

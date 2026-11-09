@@ -1,0 +1,26 @@
+@use '../../styles/feedback';
+.intro {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  background: var(--primary-subtle);
+}
+.intro > .material-symbols-outlined {
+  font-size: 36px;
+  color: var(--primary);
+}
+.intro > div {
+  flex: 1;
+}
+.intro h2 {
+  margin-bottom: var(--space-xs);
+}
+@media (max-width: 600px) {
+  .intro {
+    flex-wrap: wrap;
+  }
+  .intro .button {
+    width: 100%;
+  }
+}

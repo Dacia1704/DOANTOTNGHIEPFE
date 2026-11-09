@@ -17,6 +17,12 @@ const dashboardRedirect =
 
 export const LANDLORD_ROUTES: Routes = [
   {
+    path: 'landlord/reviews',
+    title: 'Đánh giá & phản hồi | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/review/review-page.component').then((m) => m.ReviewPageComponent),
+  },
+  {
     path: '',
     canMatch: [isLandlord],
     children: [

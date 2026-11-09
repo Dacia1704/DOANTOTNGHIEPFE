@@ -1,0 +1,161 @@
+<section class="feedback-page" [attr.aria-busy]="loading()">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">{{ admin ? 'Kiểm duyệt cộng đồng' : 'Trải nghiệm & tin cậy' }}</p>
+      <h1>{{ admin ? 'Quản lý đánh giá' : owner ? 'Đánh giá & phản hồi' : 'Đánh giá của tôi' }}</h1>
+      <p class="description">
+        {{
+          admin
+            ? 'Xem xét nội dung và quản lý hiển thị đánh giá trên hệ thống.'
+            : owner
+              ? 'Lắng nghe người thuê và chia sẻ trải nghiệm cho thuê của bạn.'
+              : 'Những chia sẻ của bạn giúp cộng đồng tìm được nơi ở phù hợp.'
+        }}
+      </p>
+    </div>
+    <button [disabled]="loading()" (click)="load()">
+      <span class="material-symbols-outlined" aria-hidden="true">refresh</span>Tải lại
+    </button>
+  </header>
+  @if (!admin) {
+    <div class="intro panel">
+      <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+      <div>
+        <h2>{{ owner ? 'Mỗi phản hồi tạo thêm sự tin cậy' : 'Chia sẻ từ trải nghiệm thực tế' }}</h2>
+        <p class="description">
+          {{
+            owner
+              ? 'Phản hồi đánh giá phòng, chủ trọ hoặc xem lại nhận xét bạn đã gửi về người thuê.'
+              : 'Viết đánh giá phòng và chủ trọ từ hợp đồng thuê đã được hai bên xác nhận.'
+          }}
+        </p>
+      </div>
+      <a class="button" [routerLink]="owner ? '/quan-ly-dat-phong' : '/yeu-cau-thue'"
+        >Đến hợp đồng thuê</a
+      >
+    </div>
+  }
+  <nav class="tabs" aria-label="Loại đánh giá">
+    @for (t of types; track t) {
+      <button [attr.aria-pressed]="type() === t" (click)="filter(t)">
+        {{
+          owner
+            ? t === 'TENANT'
+              ? 'Đã đánh giá người thuê'
+              : 'Nhận được · ' + labels[t]
+            : !admin && t === 'TENANT'
+              ? 'Đánh giá về tôi'
+              : labels[t]
+        }}
+      </button>
+    }
+  </nav>
+  @if (admin) {
+    <div class="filters">
+      <label
+        >Trạng thái hiển thị<select [ngModel]="hidden()" (ngModelChange)="filter(type(), $event)">
+          <option value="">Tất cả đánh giá</option>
+          <option value="false">Đang hiển thị</option>
+          <option value="true">Đã ẩn</option>
+        </select></label
+      >
+    </div>
+  }
+  @if (success()) {
+    <p class="notice success" role="status">{{ success() }}</p>
+  }
+  @if (admin) {
+    <app-management-table
+      [rows]="items()"
+      [columns]="columns"
+      [rowKey]="rowKey"
+      caption="Danh sách đánh giá"
+      [loading]="loading()"
+      [error]="error()"
+      emptyMessage="Chưa có đánh giá phù hợp"
+      [pagination]="{ page: page(), total: total(), totalPages: totalPages() }"
+      [pageSize]="size()"
+      (pageSizeChange)="changeSize($event)"
+      (pageChange)="filter(type(), hidden(), $event)"
+      (retry)="load()"
+    >
+      <ng-template [appTableCell]="items()" column="review" let-r
+        ><div class="cell-content"><app-review-card [review]="r" [moderation]="true" /></div
+      ></ng-template>
+      <ng-template [appTableCell]="items()" column="context" let-r
+        ><strong>{{ r.targetName || labels[r.type] }}</strong>
+        <p class="mono">{{ r.targetId }}</p>
+        <a [routerLink]="['/hop-dong', r.agreementId]">Xem hợp đồng</a></ng-template
+      >
+      <ng-template [appTableCell]="items()" column="status" let-r
+        ><span class="badge" [class.hidden]="r.hidden" [class.visible]="!r.hidden">{{
+          r.hidden ? 'Đã ẩn' : 'Đang hiển thị'
+        }}</span></ng-template
+      >
+      <ng-template [appTableCell]="items()" column="action" let-r
+        ><button [class.danger]="!r.hidden" (click)="action(r)">
+          {{ r.hidden ? 'Khôi phục' : 'Ẩn đánh giá' }}
+        </button></ng-template
+      >
+    </app-management-table>
+  } @else {
+    @if (loading()) {
+      <div class="panel empty" role="status">Đang tải đánh giá…</div>
+    } @else if (error()) {
+      <div class="notice error" role="alert">
+        {{ error() }} <button (click)="load()">Thử lại</button>
+      </div>
+    } @else {
+      <p class="muted">
+        {{ total() }} đánh giá{{
+          (owner && type() !== 'TENANT') || (!owner && type() === 'TENANT')
+            ? ' nhận được'
+            : ' đã gửi'
+        }}
+      </p>
+      <div class="cards">
+        @for (r of items(); track r.id) {
+          <article class="panel">
+            <app-review-card [review]="r" [moderation]="true" />
+            @if (r.agreementId || r.canReply || r.hidden) {
+              <div class="row card-actions">
+                @if (r.agreementId) {
+                  <a
+                    class="button"
+                    [routerLink]="[owner ? '/landlord/agreements' : '/hop-dong', r.agreementId]"
+                    >{{ r.agreementCode || 'Xem hợp đồng' }}</a
+                  >
+                }
+                @if (r.canReply) {
+                  <button (click)="action(r)">
+                    {{ r.landlordReply ? 'Cập nhật phản hồi' : 'Viết phản hồi' }}
+                  </button>
+                }
+                @if (r.hidden) {
+                  <span class="badge hidden">Đã ẩn</span>
+                }
+              </div>
+            }
+          </article>
+        } @empty {
+          <div class="panel empty">
+            <span class="material-symbols-outlined" aria-hidden="true">reviews</span>
+            <h2>Chưa có đánh giá</h2>
+            <p>
+              {{
+                (owner && type() !== 'TENANT') || (!owner && type() === 'TENANT')
+                  ? 'Nhận xét về bạn sẽ xuất hiện tại đây khi được gửi.'
+                  : 'Bạn có thể gửi đánh giá từ hợp đồng đủ điều kiện.'
+              }}
+            </p>
+          </div>
+        }
+      </div>
+      <app-billing-pager
+        [page]="page()"
+        [totalPages]="totalPages()"
+        (changePage)="filter(type(), hidden(), $event)"
+      />
+    }
+  }
+</section>

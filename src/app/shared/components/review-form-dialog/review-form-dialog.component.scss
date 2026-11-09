@@ -1,0 +1,40 @@
+@use '../../styles/feedback';
+.rating-picker {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-lg);
+}
+legend {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+.rating-picker > div {
+  display: flex;
+  gap: var(--space-sm);
+}
+.rating-picker label {
+  position: relative;
+  cursor: pointer;
+}
+.rating-picker input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.rating-picker span {
+  color: var(--border-hover);
+  font-size: 42px;
+  line-height: 1.2;
+}
+.rating-picker .selected {
+  color: var(--secondary-light);
+}
+.rating-picker input:focus-visible + span {
+  outline: 3px solid var(--primary-focus);
+  border-radius: var(--radius-sm);
+}

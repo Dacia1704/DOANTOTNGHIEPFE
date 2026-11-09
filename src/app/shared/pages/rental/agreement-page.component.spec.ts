@@ -7,6 +7,7 @@ import { AgreementPageComponent } from './agreement-page.component';
 import { RentalService } from '@services/rental/rental.service';
 import { AuthService } from '@services/auth/auth.service';
 import { RentalAgreement } from '@model/rental/rental.model';
+import { ReviewService } from '@services/review/review.service';
 
 describe('agreement confirmation UI', () => {
   const api = { agreement: vi.fn(), pdf: vi.fn(), agreementAction: vi.fn() };
@@ -15,7 +16,24 @@ describe('agreement confirmation UI', () => {
     TestBed.configureTestingModule({
       imports: [AgreementPageComponent],
       providers: [
-        { provide: AuthService, useValue: { primaryRole: () => 'TENANT' } },
+        {
+          provide: AuthService,
+          useValue: {
+            primaryRole: () => 'TENANT',
+            hasAnyRole: (roles: string[]) => roles.includes('TENANT'),
+          },
+        },
+        {
+          provide: ReviewService,
+          useValue: {
+            eligibility: () =>
+              of({
+                ROOM: { canCreate: false },
+                LANDLORD: { canCreate: false },
+                TENANT: { canCreate: false },
+              }),
+          },
+        },
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: 'a' })) } },
         { provide: RentalService, useValue: api },

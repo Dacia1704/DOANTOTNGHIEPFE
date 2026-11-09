@@ -25,6 +25,7 @@ import {
   of,
   startWith,
   switchMap,
+  tap,
 } from 'rxjs';
 import { ChatConversation, ChatMessage } from '@model/chat/chat.model';
 import { AuthService } from '@services/auth/auth.service';
@@ -62,6 +63,7 @@ export class ChatPageComponent implements OnInit {
   private readonly destroy = inject(DestroyRef);
   private readonly selections = new Subject<ChatConversation>();
   private readonly reloads = new Subject<void>();
+  private refreshInbox = false;
   @ViewChild('messageList') private messageList?: ElementRef<HTMLElement>;
   readonly images = ImageUtils;
   readonly conversations = signal<ChatConversation[]>([]);
@@ -149,9 +151,17 @@ export class ChatPageComponent implements OnInit {
     combineLatest([targets, this.reloads.pipe(startWith(undefined))])
       .pipe(
         switchMap(([target]) => {
-          this.loading.set(true);
+          const refresh =
+            this.refreshInbox ||
+            this.conversations().length === 0 ||
+            (!!target.conversationId &&
+              !this.conversations().some((item) => item.id === target.conversationId));
+          this.loading.set(refresh);
           this.error.set('');
-          return this.chat.getConversations().pipe(
+          const inbox = refresh
+            ? this.chat.getConversations().pipe(tap(() => (this.refreshInbox = false)))
+            : of(this.conversations());
+          return inbox.pipe(
             switchMap((items) => {
               this.conversations.set(items);
               const listingId = target.listingId;
@@ -181,10 +191,11 @@ export class ChatPageComponent implements OnInit {
           if (this.compact) this.showConversation.set(false);
           return;
         }
-        this.conversations.update((items) => [
-          conversation,
-          ...items.filter((item) => item.id !== conversation.id),
-        ]);
+        this.conversations.update((items) =>
+          items.some((item) => item.id === conversation.id)
+            ? items.map((item) => (item.id === conversation.id ? conversation : item))
+            : [conversation, ...items],
+        );
         this.selections.next(conversation);
       });
 
@@ -259,6 +270,7 @@ export class ChatPageComponent implements OnInit {
   }
 
   reloadConversations(): void {
+    this.refreshInbox = true;
     this.reloads.next();
   }
 

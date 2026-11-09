@@ -12,6 +12,9 @@ import {
 import { Subscription } from 'rxjs';
 import { ListingReviews, ReviewSummary, ReviewTarget } from '@model/review/listing-review.model';
 import { ListingReviewService } from '@services/listing/listing-review.service';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '@services/auth/auth.service';
+import { RoleCode } from '@model/auth/auth.model';
 
 interface ReviewState {
   data: ListingReviews | null;
@@ -21,12 +24,15 @@ interface ReviewState {
 
 @Component({
   selector: 'app-listing-reviews',
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   templateUrl: './listing-reviews.component.html',
   styleUrl: './listing-reviews.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListingReviewsComponent {
+  readonly auth = inject(AuthService);
+  readonly tenantRole = RoleCode.TENANT;
+  readonly entireProperty = signal(false);
   readonly listingId = input.required<string>();
   readonly roomId = input<string | null>(null);
   readonly roomLabel = input('phòng đang chọn');
@@ -45,7 +51,7 @@ export class ListingReviewsComponent {
       onCleanup(() => this.requests.LANDLORD?.unsubscribe());
     });
     effect((onCleanup) => {
-      this.fetch('ROOM', this.listingId(), this.roomId(), 0);
+      this.fetch('ROOM', this.listingId(), this.entireProperty() ? null : this.roomId(), 0);
       onCleanup(() => this.requests.ROOM?.unsubscribe());
     });
   }
@@ -59,7 +65,7 @@ export class ListingReviewsComponent {
     const current = this.current();
     if (current.loading) return;
     const next = current.data ? current.data.reviews.currentPage + 1 : 0;
-    this.fetch(this.target(), this.listingId(), this.roomId(), next);
+    this.fetch(this.target(), this.listingId(), this.entireProperty() ? null : this.roomId(), next);
   }
 
   private fetch(target: ReviewTarget, id: string, roomId: string | null, page: number): void {
