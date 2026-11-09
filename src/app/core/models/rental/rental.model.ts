@@ -53,6 +53,8 @@ export interface RentalAgreement {
   propertyName: string;
   tenantName: string;
   landlordName: string;
+  tenantId?: string;
+  landlordId?: string;
   price: number;
   deposit: number | null;
   electricityPrice: number | null;

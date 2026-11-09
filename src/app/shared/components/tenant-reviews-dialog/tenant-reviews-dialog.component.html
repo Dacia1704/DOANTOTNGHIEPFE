@@ -1,0 +1,27 @@
+<div class="dialog-body">
+  <div class="dialog-top">
+    <div>
+      <p class="eyebrow">Đánh giá về người thuê</p>
+      <h2>{{ data.name }}</h2>
+      <p class="description">Nhận xét từ các chủ trọ đã cho thuê.</p>
+    </div>
+    <button (click)="ref.close()" aria-label="Đóng">✕</button>
+  </div>
+  @if (error()) {
+    <p class="notice error" role="alert">
+      {{ error() }} <button (click)="load(page())">Thử lại</button>
+    </p>
+  }
+  @if (loading()) {
+    <p role="status">Đang tải đánh giá…</p>
+  } @else if (!error()) {
+    <div class="cards">
+      @for (r of items(); track r.id) {
+        <div class="panel"><app-review-card [review]="r" /></div>
+      } @empty {
+        <p class="empty">Chưa có đánh giá về người thuê này.</p>
+      }
+    </div>
+    <app-billing-pager [page]="page()" [totalPages]="totalPages()" (changePage)="load($event)" />
+  }
+</div>

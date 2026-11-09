@@ -3,6 +3,34 @@ import { Router, Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
   {
+    path: 'roles',
+    title: 'Phân quyền & vai trò | Trọ Tốt',
+    loadComponent: () =>
+      import('./role-management/role-management').then((m) => m.RoleManagementComponent),
+  },
+  {
+    path: 'reviews',
+    title: 'Quản lý đánh giá | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/review/review-page.component').then((m) => m.ReviewPageComponent),
+  },
+  {
+    path: 'reports',
+    title: 'Quản lý báo cáo | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/report/report-list-page.component').then(
+        (m) => m.ReportListPageComponent,
+      ),
+  },
+  {
+    path: 'reports/:id',
+    title: 'Chi tiết báo cáo | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/report/report-detail-page.component').then(
+        (m) => m.ReportDetailPageComponent,
+      ),
+  },
+  {
     path: 'messages',
     loadComponent: () =>
       import('@shared/pages/chat/chat-page.component').then((m) => m.ChatPageComponent),

@@ -19,10 +19,17 @@ import { RoleCode } from '@model/auth/auth.model';
 import { RoomUtils } from '@shared/utils/room-utils';
 import { ConfirmRentalDialogComponent } from './confirm-rental-dialog.component';
 import { ContractPdfViewerComponent } from './contract-pdf-viewer.component';
+import { AgreementReviewPanelComponent } from '@shared/components/agreement-review-panel/agreement-review-panel.component';
 
 @Component({
   selector: 'app-agreement-page',
-  imports: [DatePipe, FormsModule, RouterLink, ContractPdfViewerComponent],
+  imports: [
+    DatePipe,
+    FormsModule,
+    RouterLink,
+    ContractPdfViewerComponent,
+    AgreementReviewPanelComponent,
+  ],
   templateUrl: './agreement-page.component.html',
   styleUrl: './agreement-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

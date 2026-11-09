@@ -24,10 +24,35 @@
       Đánh giá chủ trọ
     </button>
   </div>
+  @if (target() === 'ROOM' && roomId()) {
+    <div class="review-tabs" role="group" aria-label="Phạm vi đánh giá">
+      <button
+        type="button"
+        [class.active]="!entireProperty()"
+        [attr.aria-pressed]="!entireProperty()"
+        (click)="entireProperty.set(false)"
+      >
+        {{ roomLabel() }}
+      </button>
+      <button
+        type="button"
+        [class.active]="entireProperty()"
+        [attr.aria-pressed]="entireProperty()"
+        (click)="entireProperty.set(true)"
+      >
+        Toàn bộ cơ sở
+      </button>
+    </div>
+  }
+  @if (auth.hasAnyRole([tenantRole])) {
+    <p class="scope-note"><a routerLink="/yeu-cau-thue">Đến hợp đồng thuê để viết đánh giá</a></p>
+  }
   <p class="scope-note">
     {{
       target() === 'ROOM'
-        ? 'Trải nghiệm của người thuê tại ' + roomLabel() + '.'
+        ? 'Trải nghiệm của người thuê tại ' +
+          (entireProperty() || !roomId() ? 'toàn bộ cơ sở' : roomLabel()) +
+          '.'
         : 'Nhận xét về chủ trọ từ người thuê tại các cơ sở đang quản lý.'
     }}
   </p>

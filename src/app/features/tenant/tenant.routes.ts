@@ -12,6 +12,31 @@ const profileRedirect: RedirectFunction = ({ queryParams, fragment }) =>
 
 export const TENANT_ROUTES: Routes = [
   {
+    path: 'danh-gia-cua-toi',
+    title: 'Đánh giá của tôi | Trọ Tốt',
+    canActivate: [roleGuard([RoleCode.TENANT])],
+    loadComponent: () =>
+      import('@shared/pages/review/review-page.component').then((m) => m.ReviewPageComponent),
+  },
+  {
+    path: 'bao-cao-cua-toi',
+    title: 'Báo cáo của tôi | Trọ Tốt',
+    canActivate: [roleGuard([RoleCode.TENANT])],
+    loadComponent: () =>
+      import('@shared/pages/report/report-list-page.component').then(
+        (m) => m.ReportListPageComponent,
+      ),
+  },
+  {
+    path: 'bao-cao-cua-toi/:id',
+    title: 'Chi tiết báo cáo | Trọ Tốt',
+    canActivate: [roleGuard([RoleCode.TENANT])],
+    loadComponent: () =>
+      import('@shared/pages/report/report-detail-page.component').then(
+        (m) => m.ReportDetailPageComponent,
+      ),
+  },
+  {
     path: 'cam-nang',
     title: 'Cẩm nang thuê / cho thuê trọ | Trọ Tốt',
     loadComponent: () =>

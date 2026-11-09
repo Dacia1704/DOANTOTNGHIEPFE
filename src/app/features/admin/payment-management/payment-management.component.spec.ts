@@ -11,6 +11,7 @@ import { PaymentManagementComponent } from './payment-management.component';
 import { ADMIN_ROUTES } from '../admin.routes';
 import { AdminLayout } from '../../../layouts/admin-layout/admin-layout';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { AuthService } from '@services/auth/auth.service';
 
 registerLocaleData(localeVi);
 const payment: Payment = {
@@ -141,6 +142,7 @@ describe('Admin navigation', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        { provide: AuthService, useValue: { hasPermission: () => true } },
         { provide: BreakpointObserver, useValue: { observe: () => of({ breakpoints: {} }) } },
       ],
     });

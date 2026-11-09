@@ -1,0 +1,37 @@
+@use '../../styles/feedback';
+.agreement-feedback {
+  margin-top: var(--space-lg);
+}
+.options {
+  display: grid;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.option > div {
+  flex: 1;
+}
+.option-icon {
+  padding: var(--space-sm);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-radius: var(--radius-md);
+}
+.extra-actions {
+  margin-top: var(--space-md);
+}
+@media (max-width: 600px) {
+  .option {
+    flex-wrap: wrap;
+  }
+  .option button {
+    width: 100%;
+  }
+}

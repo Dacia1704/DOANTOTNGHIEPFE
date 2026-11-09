@@ -12,6 +12,7 @@ export class PropertyMapper {
     const prices = rooms.map((room) => room.price).filter(Number.isFinite);
     return {
       id: dto.id,
+      landlordId: dto.landlordId,
       name: /^Cơ sở [0-9a-f-]{36}$/i.test(dto.name) ? `Cơ sở tại ${dto.addressLine}` : dto.name,
       propertyTypeId: dto.propertyTypeId,
       propertyTypeName:

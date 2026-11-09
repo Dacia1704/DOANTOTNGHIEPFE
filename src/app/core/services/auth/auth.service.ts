@@ -11,7 +11,11 @@ import { RegisterRequest } from '@model/auth/request/register-request';
 import { RefreshTokenResponse } from '@model/auth/response/refresh-token-response';
 import { AuthMapper } from '@model/auth/auth.mapper';
 import { AuthSession, RoleCode } from '@model/auth/auth.model';
-import { EmailOtpRequest, VerifyEmailRequest, ResetPasswordRequest } from '@model/auth/request/otp-request';
+import {
+  EmailOtpRequest,
+  VerifyEmailRequest,
+  ResetPasswordRequest,
+} from '@model/auth/request/otp-request';
 
 const KEY = 'trotot_auth';
 
@@ -47,6 +51,25 @@ export class AuthService {
     return !!this._session()?.authorities?.includes(code);
   }
 
+  /** Reload effective permissions without replacing tokens or a newer login session. */
+  refreshAuthorities(): Observable<string[]> {
+    const userId = this._session()?.id;
+    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/users/me/authorities`).pipe(
+      map((response) => [...response.data]),
+      tap((authorities) => {
+        const current = this._session();
+        if (
+          current &&
+          current.id === userId &&
+          (current.authorities.length !== authorities.length ||
+            !authorities.every((authority) => current.authorities.includes(authority)))
+        ) {
+          this.persistSession({ ...current, authorities });
+        }
+      }),
+    );
+  }
+
   /**
    * Vai trò nghiệp vụ chính (TENANT / LANDLORD / ADMIN).
    * Nếu user có nhiều role, ưu tiên ADMIN > LANDLORD > TENANT.
@@ -68,31 +91,31 @@ export class AuthService {
   homeUrl(): string {
     const r = this.primaryRole();
     switch (r) {
-      case RoleCode.ADMIN: return '/';
-      case RoleCode.LANDLORD: return '/';
-      case RoleCode.TENANT: return '/';
-      default: return '/';
+      case RoleCode.ADMIN:
+        return '/';
+      case RoleCode.LANDLORD:
+        return '/';
+      case RoleCode.TENANT:
+        return '/';
+      default:
+        return '/';
     }
   }
 
   /** API: đăng nhập → trả AuthSession (Model) cho component. */
   login(request: LoginRequest): Observable<AuthSession> {
-    return this.http
-      .post<ApiResponse<LoginResponse>>(`${this.api}/login`, request)
-      .pipe(
-        map(res => AuthMapper.fromLoginResponse(res.data)),
-        tap(session => this.persistSession(session)),
-      );
+    return this.http.post<ApiResponse<LoginResponse>>(`${this.api}/login`, request).pipe(
+      map((res) => AuthMapper.fromLoginResponse(res.data)),
+      tap((session) => this.persistSession(session)),
+    );
   }
 
   /** API: đăng ký tài khoản mới (TENANT hoặc LANDLORD). */
   register(request: RegisterRequest): Observable<AuthSession> {
-    return this.http
-      .post<ApiResponse<RegisterResponse>>(`${this.api}/register`, request)
-      .pipe(
-        map(res => AuthMapper.fromRegisterResponse(res.data)),
-        tap(session => this.persistSession(session)),
-      );
+    return this.http.post<ApiResponse<RegisterResponse>>(`${this.api}/register`, request).pipe(
+      map((res) => AuthMapper.fromRegisterResponse(res.data)),
+      tap((session) => this.persistSession(session)),
+    );
   }
 
   /** Refresh access token dùng trong interceptor. */
@@ -102,8 +125,8 @@ export class AuthService {
     this.refreshRequest$ = this.http
       .post<ApiResponse<RefreshTokenResponse>>(`${this.api}/refresh`, { refreshToken })
       .pipe(
-        map(res => res.data),
-        tap(data => {
+        map((res) => res.data),
+        tap((data) => {
           const current = this._session();
           if (!current) return;
           const next: AuthSession = {
@@ -114,7 +137,7 @@ export class AuthService {
           this.persistSession(next);
         }),
         map(() => void 0),
-        finalize(() => this.refreshRequest$ = null),
+        finalize(() => (this.refreshRequest$ = null)),
         shareReplay({ bufferSize: 1, refCount: false }),
       );
     return this.refreshRequest$;
@@ -122,12 +145,10 @@ export class AuthService {
 
   logout(): void {
     const refreshToken = this.refreshToken;
-    this.http
-      .post(`${this.api}/logout`, { refreshToken })
-      .subscribe({
-        complete: () => this.clearSession(),
-        error: () => this.clearSession(),
-      });
+    this.http.post(`${this.api}/logout`, { refreshToken }).subscribe({
+      complete: () => this.clearSession(),
+      error: () => this.clearSession(),
+    });
   }
 
   forgotPassword(request: EmailOtpRequest): Observable<ApiResponse<void>> {
@@ -154,7 +175,12 @@ export class AuthService {
   }
 
   /** Đồng bộ hồ sơ, giữ nguyên token và quyền của phiên hiện tại. */
-  updateProfile(profile: Pick<AuthSession, 'id' | 'email' | 'phone' | 'fullName' | 'avatarUrl' | 'status' | 'roles'>): void {
+  updateProfile(
+    profile: Pick<
+      AuthSession,
+      'id' | 'email' | 'phone' | 'fullName' | 'avatarUrl' | 'status' | 'roles'
+    >,
+  ): void {
     const current = this._session();
     if (current && current.id === profile.id) {
       this.persistSession({ ...current, ...profile });

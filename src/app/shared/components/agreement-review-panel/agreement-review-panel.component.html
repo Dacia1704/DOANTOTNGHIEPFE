@@ -1,0 +1,54 @@
+@if (allowed) {
+  <section class="panel agreement-feedback" aria-label="Đánh giá sau khi thuê">
+    <div class="row">
+      <div>
+        <p class="eyebrow">Trải nghiệm thuê phòng</p>
+        <h2>Đánh giá từ hợp đồng</h2>
+      </div>
+      <a class="button" [routerLink]="owner ? '/landlord/reviews' : '/danh-gia-cua-toi'"
+        >Xem đánh giá của tôi</a
+      >
+    </div>
+    @if (loading()) {
+      <p class="muted" role="status">Đang kiểm tra điều kiện đánh giá…</p>
+    }
+    @if (error()) {
+      <div class="notice error" role="alert">
+        {{ error() }} <button (click)="load()">Thử lại</button>
+      </div>
+    }
+    @if (eligibility(); as permissions) {
+      <div class="options">
+        @for (type of types; track type) {
+          <div class="option">
+            <span class="material-symbols-outlined option-icon" aria-hidden="true">{{
+              type === 'ROOM' ? 'home' : 'person'
+            }}</span>
+            <div>
+              <h3>{{ labels[type] }}</h3>
+              <p class="description">{{ message(type) }}</p>
+            </div>
+            <button [disabled]="!permissions[type].canCreate" (click)="write(type)">
+              {{ permissions[type].reviewId ? 'Đã đánh giá' : 'Viết đánh giá' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+    <div class="row extra-actions">
+      @if (owner && agreement().tenantId) {
+        <button (click)="viewTenant()">Xem đánh giá về người thuê</button>
+      }
+      @if (
+        !owner &&
+        agreement().landlordId &&
+        agreement().tenantConfirmedAt &&
+        ['ACTIVE', 'EXPIRED', 'TERMINATED'].includes(agreement().status)
+      ) {
+        <button class="danger" (click)="report()">
+          <span class="material-symbols-outlined" aria-hidden="true">flag</span>Báo cáo chủ trọ
+        </button>
+      }
+    </div>
+  </section>
+}

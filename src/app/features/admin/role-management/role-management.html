@@ -1,0 +1,266 @@
+<section class="roles-page" [attr.aria-busy]="loading()">
+  <nav class="breadcrumbs" aria-label="Đường dẫn">
+    <a routerLink="/admin"
+      ><span class="material-symbols-outlined" aria-hidden="true">home</span>Trang quản trị</a
+    ><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span
+    ><span>Phân quyền & vai trò</span>
+  </nav>
+  <header class="page-heading">
+    <p class="eyebrow">Quản trị truy cập</p>
+    <h1>Phân quyền & vai trò người dùng</h1>
+    <p>Quản lý quyền truy cập của từng nhóm vai trò trong hệ thống Trọ Tốt.</p>
+  </header>
+  <aside class="access-banner">
+    <span class="banner-icon material-symbols-outlined" aria-hidden="true"
+      >admin_panel_settings</span
+    >
+    <div>
+      <div class="banner-title">
+        <h2>Kiểm soát truy cập theo vai trò</h2>
+        <span class="badge">RBAC</span>
+      </div>
+      <p>
+        Thay đổi được lưu tự động và ghi vào nhật ký phân quyền. Các ô có biểu tượng khóa được hệ
+        thống bảo vệ.
+      </p>
+    </div>
+  </aside>
+  @if (feedback()) {
+    <p
+      class="notice"
+      [class.error]="feedbackKind() === 'error'"
+      [class.success]="feedbackKind() === 'success'"
+      [attr.role]="feedbackKind() === 'error' ? 'alert' : 'status'"
+    >
+      {{ feedback() }}
+    </p>
+  }
+  <section class="matrix-panel" aria-label="Ma trận phân quyền">
+    <div class="matrix-toolbar">
+      <label class="search"
+        ><span class="material-symbols-outlined" aria-hidden="true">search</span
+        ><input
+          type="search"
+          aria-label="Tìm kiếm vai trò hoặc quyền hạn"
+          placeholder="Tìm vai trò hoặc quyền hạn…"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+      /></label>
+      <p class="toolbar-hint">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span
+        >{{
+          canEdit()
+            ? 'Chọn ô để cấp / gỡ quyền cho vai trò'
+            : 'Bạn đang xem phân quyền ở chế độ chỉ đọc'
+        }}
+      </p>
+      <span class="matrix-count"
+        >{{ matrix()?.permissions?.length ?? '—' }} quyền / {{ matrix()?.roles?.length ?? '—' }} vai
+        trò</span
+      ><button
+        type="button"
+        class="icon-button"
+        [disabled]="loading() || !!pending()"
+        (click)="load()"
+        aria-label="Tải lại phân quyền"
+        title="Tải lại phân quyền"
+      >
+        <span class="material-symbols-outlined" [class.spinning]="loading()" aria-hidden="true"
+          >refresh</span
+        >
+      </button>
+    </div>
+    @if (loading()) {
+      <div class="table-state" role="status">
+        <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+        <h2>Đang tải phân quyền…</h2>
+        <p>Đang đồng bộ vai trò và quyền truy cập hiện tại.</p>
+      </div>
+    } @else if (error()) {
+      <div class="table-state" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+        <h2>Chưa thể tải phân quyền</h2>
+        <p>{{ error() }}</p>
+        <button type="button" class="button" (click)="load()">Thử lại</button>
+      </div>
+    } @else if (visiblePermissions().length && visibleRoles().length) {
+      <div
+        class="matrix-scroll"
+        tabindex="0"
+        aria-label="Bảng quyền theo vai trò, cuộn để xem thêm"
+      >
+        <table>
+          <caption class="sr-only">
+            Ma trận cấp quyền cho các vai trò trong hệ thống
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" class="permission-heading">
+                <strong>Quyền hạn</strong
+                ><span
+                  >{{ visiblePermissions().length }} quyền / {{ visibleRoles().length }} vai
+                  trò</span
+                >
+              </th>
+              @for (role of visibleRoles(); track role.id) {
+                <th scope="col" class="role-heading">
+                  <span class="role-icon material-symbols-outlined" aria-hidden="true">badge</span
+                  ><strong>{{ role.code }}</strong
+                  ><span class="role-name">{{ role.name }}</span
+                  ><small
+                    >{{ role.permissionIds.length }} /
+                    {{ matrix()!.permissions.length }} quyền</small
+                  >
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (permission of visiblePermissions(); track permission.id) {
+              <tr>
+                <th scope="row">
+                  <code>{{ permission.code }}</code
+                  ><span class="permission-name">{{ permission.name }}</span>
+                </th>
+                @for (role of visibleRoles(); track role.id) {
+                  <td
+                    [class.granted]="has(role, permission)"
+                    [class.cell-pending]="pending() === role.id + ':' + permission.id"
+                  >
+                    <div class="permission-control">
+                      <input
+                        type="checkbox"
+                        [checked]="has(role, permission)"
+                        [disabled]="locked(role, permission) || !canEdit() || !!pending()"
+                        [attr.aria-label]="cellLabel(role, permission)"
+                        [attr.aria-busy]="pending() === role.id + ':' + permission.id"
+                        (change)="toggle(role, permission, $event)"
+                      />
+                      @if (locked(role, permission)) {
+                        <span
+                          class="material-symbols-outlined lock-icon"
+                          title="Quyền được hệ thống bảo vệ"
+                          aria-hidden="true"
+                          >lock</span
+                        >
+                      }
+                      @if (pending() === role.id + ':' + permission.id) {
+                        <span class="material-symbols-outlined spinning" aria-hidden="true"
+                          >progress_activity</span
+                        >
+                      }
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="table-state">
+        <span class="material-symbols-outlined" aria-hidden="true">manage_search</span>
+        <h2>{{ query() ? 'Không có kết quả phù hợp' : 'Chưa có dữ liệu phân quyền' }}</h2>
+        <p>
+          {{
+            query()
+              ? 'Thử tìm theo tên vai trò, mã quyền hoặc nội dung quyền hạn.'
+              : 'Vai trò và quyền hạn sẽ hiển thị khi được hệ thống cung cấp.'
+          }}
+        </p>
+        @if (query()) {
+          <button type="button" class="button" (click)="query.set('')">Xóa tìm kiếm</button>
+        }
+      </div>
+    }
+    <footer class="matrix-footer">
+      <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+      <p>
+        Chỉ các quyền đang được hệ thống hỗ trợ mới hiển thị tại đây. Thay đổi được ghi nhật ký và
+        có hiệu lực trên các API tương ứng.
+      </p>
+    </footer>
+  </section>
+  @if (matrix() && !error()) {
+    <details class="audit-panel" (toggle)="toggleAudit($event)">
+      <summary>
+        <span class="material-symbols-outlined" aria-hidden="true">history</span>
+        <div>
+          <strong>Nhật ký thay đổi phân quyền</strong
+          ><span>Theo dõi người thực hiện, vai trò và quyền đã thay đổi</span>
+        </div>
+        <span class="material-symbols-outlined expand-icon" aria-hidden="true">expand_more</span>
+      </summary>
+      @if (auditOpen()) {
+        <div class="audit-body">
+          @if (auditError()) {
+            <p class="notice error" role="alert">
+              {{ auditError() }}
+              <button type="button" class="button" (click)="loadAudit()">Thử lại</button>
+            </p>
+          } @else if (auditLoading()) {
+            <p role="status" class="audit-empty">Đang tải nhật ký…</p>
+          } @else {
+            <div class="audit-scroll">
+              <table class="audit-table">
+                <caption class="sr-only">
+                  Nhật ký thay đổi quyền hạn, mới nhất trước
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Người thực hiện</th>
+                    <th scope="col">Vai trò / quyền</th>
+                    <th scope="col">Thay đổi</th>
+                    <th scope="col">Thời gian</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (entry of audit(); track entry.id) {
+                    <tr>
+                      <td>{{ entry.actor }}</td>
+                      <td>
+                        <strong>{{ entry.role }}</strong
+                        ><code>{{ entry.permission }}</code>
+                      </td>
+                      <td>
+                        <span class="audit-badge" [class.revoked]="!entry.enabled">{{
+                          entry.enabled ? 'Đã cấp quyền' : 'Đã gỡ quyền'
+                        }}</span
+                        ><small>Phiên bản {{ entry.version }}</small>
+                      </td>
+                      <td>{{ entry.createdAt | date: 'HH:mm · dd/MM/yyyy' : '+0700' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="audit-empty">
+                        Chưa có thay đổi trong trang nhật ký này.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <div class="audit-pagination">
+            <button
+              type="button"
+              class="button"
+              [disabled]="auditLoading() || auditPage() === 0"
+              (click)="loadAudit(auditPage() - 1)"
+            >
+              Trang trước</button
+            ><span>Trang {{ auditPage() + 1 }}</span
+            ><button
+              type="button"
+              class="button"
+              [disabled]="auditLoading() || !!auditError() || audit().length < auditSize"
+              (click)="loadAudit(auditPage() + 1)"
+            >
+              Trang sau
+            </button>
+          </div>
+        </div>
+      }
+    </details>
+  }
+</section>
