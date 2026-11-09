@@ -1,0 +1,74 @@
+<div class="row">
+  <h2>Ảnh minh chứng</h2>
+  <span class="muted">{{ evidences().length }}/5 ảnh đã gửi</span>
+</div>
+<p class="description">Ảnh chỉ hiển thị với bạn và quản trị viên xử lý báo cáo.</p>
+@if (error()) {
+  <p class="notice error" role="alert">{{ error() }}</p>
+}
+<div class="evidence-grid">
+  @for (image of images(); track image.id; let index = $index) {
+    <div class="evidence-image">
+      @if (image.url) {
+        <a
+          [href]="image.url"
+          target="_blank"
+          rel="noopener"
+          [attr.aria-label]="'Mở ảnh minh chứng ' + (index + 1)"
+          ><img [src]="image.url" [alt]="'Ảnh minh chứng ' + (index + 1)"
+        /></a>
+      } @else if (image.error) {
+        <div class="image-state">
+          <span>Chưa tải được ảnh</span><button (click)="download(image.id)">Thử lại</button>
+        </div>
+      } @else {
+        <div class="image-state" role="status">Đang tải ảnh…</div>
+      }
+    </div>
+  }
+  @for (row of visibleUploads(); track row.url) {
+    <div class="upload-image">
+      <img [src]="row.url" [alt]="row.file.name" />
+      <div class="upload-info">
+        <span>{{
+          row.status === 'done'
+            ? 'Đã gửi'
+            : row.status === 'uploading'
+              ? 'Đang gửi…'
+              : row.status === 'failed'
+                ? 'Chưa gửi được'
+                : 'Chưa gửi'
+        }}</span>
+        @if (row.error) {
+          <small role="alert">{{ row.error }}</small>
+        }
+        @if (row.status === 'failed' || row.status === 'ready') {
+          <button
+            [disabled]="busy() || !writable() || evidences().length >= 5"
+            (click)="retry(row)"
+          >
+            Gửi ảnh này</button
+          ><button [disabled]="busy()" (click)="remove(row)">Bỏ ảnh chưa gửi</button>
+        }
+      </div>
+    </div>
+  }
+</div>
+@if (!evidences().length && !uploads().length) {
+  <p class="muted">Chưa có ảnh minh chứng.</p>
+}
+@if (writable()) {
+  <label class="upload-zone"
+    ><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span
+    ><strong>{{ busy() ? 'Đang kiểm tra / tải ảnh…' : 'Bổ sung ảnh minh chứng' }}</strong
+    ><span>JPEG, PNG · tối đa 5 MB/ảnh · không quá 4096 × 4096 px</span
+    ><input
+      type="file"
+      accept="image/jpeg,image/png"
+      multiple
+      [disabled]="busy() || count() >= 5"
+      (change)="select($event)"
+  /></label>
+} @else {
+  <p class="muted">Chỉ có thể bổ sung ảnh khi báo cáo đang chờ tiếp nhận.</p>
+}

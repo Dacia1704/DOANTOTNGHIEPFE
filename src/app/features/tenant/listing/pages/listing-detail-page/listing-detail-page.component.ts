@@ -25,6 +25,8 @@ import { PropertyLocationComponent } from '@shared/components/property-location/
 import { ReviewSummary } from '@model/review/listing-review.model';
 import { ListingReviewsComponent } from '../../components/listing-reviews/listing-reviews.component';
 import { ListingRatingComponent } from '../../components/listing-reviews/listing-rating.component';
+import { ReportFormDialogComponent } from '@shared/components/report-form-dialog/report-form-dialog.component';
+import { ReportTargetType } from '@model/report/report.model';
 
 const AMENITY_SUBTITLES: [RegExp, string][] = [
   [/wifi|wi-fi|internet/, 'Kết nối internet phục vụ học tập, làm việc và giải trí.'],
@@ -74,6 +76,33 @@ export class ListingDetailPageComponent implements OnInit {
   private readonly destroy = inject(DestroyRef);
   readonly auth = inject(AuthService);
   readonly tenantRole = RoleCode.TENANT;
+  get canReport(): boolean {
+    return !this.auth.isLoggedIn() || this.auth.hasAnyRole([RoleCode.TENANT]);
+  }
+  report(targetType: ReportTargetType): void {
+    const listing = this.listing();
+    if (!listing || !this.canReport) return;
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { redirect: this.router.url } });
+      return;
+    }
+    const targetId =
+      targetType === 'LISTING'
+        ? listing.id
+        : listing.property.landlordId || this.selectedRoom()?.landlordId;
+    if (!targetId) return;
+    this.dialogs.open(ReportFormDialogComponent, {
+      width: '640px',
+      maxWidth: '94vw',
+      maxHeight: '90dvh',
+      ariaLabel: 'Gửi báo cáo vi phạm',
+      data: {
+        targetType,
+        targetId,
+        targetName: targetType === 'LISTING' ? listing.listingTitle : listing.landlordName,
+      },
+    });
+  }
   get canContactSupport(): boolean {
     return !this.auth.isLoggedIn() || this.auth.hasAnyRole([RoleCode.TENANT, RoleCode.LANDLORD]);
   }

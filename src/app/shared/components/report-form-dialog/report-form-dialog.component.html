@@ -1,0 +1,72 @@
+<div class="dialog-body">
+  <div class="dialog-top">
+    <div>
+      <p class="eyebrow">Cùng giữ cộng đồng an toàn</p>
+      <h2>{{ detail() ? 'Báo cáo đã được gửi' : 'Gửi báo cáo vi phạm' }}</h2>
+      <p class="description">{{ targets[data.targetType] }} · {{ data.targetName }}</p>
+    </div>
+    <button type="button" [disabled]="busy() || uploading()" (click)="close()" aria-label="Đóng">
+      ✕
+    </button>
+  </div>
+  @if (error()) {
+    <p class="notice error" role="alert">{{ error() }}</p>
+    <button type="button" (click)="view()">Xem báo cáo của tôi</button>
+  }
+  @if (detail(); as d) {
+    <p class="notice success" role="status">
+      Báo cáo đã được lưu. Bạn có thể bổ sung ảnh minh chứng bên dưới.
+    </p>
+    <app-report-evidence-gallery
+      [reportId]="d.report.id"
+      [evidences]="d.evidences"
+      [writable]="d.report.status === 'PENDING'"
+      (changed)="refresh()"
+      (busyChange)="uploadState($event)"
+    />
+    <div class="dialog-actions">
+      <button [disabled]="uploading()" (click)="close()">Đóng</button
+      ><button class="primary" [disabled]="uploading()" (click)="view()">
+        Xem chi tiết báo cáo
+      </button>
+    </div>
+  } @else if (loading()) {
+    <p role="status">Đang tải lý do báo cáo…</p>
+  } @else if (!reasons().length) {
+    <button (click)="loadReasons()">Tải lại lý do</button>
+  } @else {
+    <p class="notice">
+      Báo cáo được gửi riêng đến quản trị viên. Sau khi gửi, bạn có thể bổ sung tối đa 5 ảnh khi báo
+      cáo còn chờ tiếp nhận.
+    </p>
+    <form class="dialog-form" (ngSubmit)="submit()">
+      <label class="field"
+        >Lý do báo cáo<select name="reason" [(ngModel)]="reason" [disabled]="busy()" required>
+          <option value="" disabled>Chọn lý do phù hợp</option>
+          @for (r of reasons(); track r) {
+            <option [value]="r">{{ reasonLabels[r] }}</option>
+          }
+        </select></label
+      >
+      <label class="field"
+        >Mô tả sự việc{{ reason === 'OTHER' ? ' (bắt buộc)' : ' (không bắt buộc)'
+        }}<textarea
+          name="description"
+          rows="5"
+          maxlength="5000"
+          [(ngModel)]="description"
+          [required]="reason === 'OTHER'"
+          [disabled]="busy()"
+          placeholder="Hãy mô tả cụ thể thông tin cần kiểm tra…"
+        ></textarea
+        ><small>{{ description.length }}/5000 ký tự</small></label
+      >
+      <div class="dialog-actions">
+        <button type="button" [disabled]="busy()" (click)="close()">Hủy</button
+        ><button class="primary" type="submit" [disabled]="busy() || !valid">
+          {{ busy() ? 'Đang gửi…' : 'Gửi báo cáo' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

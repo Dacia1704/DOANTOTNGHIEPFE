@@ -10,6 +10,11 @@
     </nav>
     @if (listing()) {
       <div class="toolbar-actions">
+        @if (canReport) {
+          <button type="button" class="share-button" (click)="report('LISTING')">
+            <span class="material-symbols-outlined" aria-hidden="true">flag</span>Báo cáo tin đăng
+          </button>
+        }
         <span class="share-feedback" role="status">{{ shareMessage() }}</span>
         <button type="button" class="share-button" (click)="share()">
           <span class="material-symbols-outlined" aria-hidden="true">ios_share</span>Chia sẻ
@@ -196,6 +201,11 @@
             [summary]="roomRating()"
             (viewReviews)="reviewsSection.show('ROOM')"
           />
+          @if (canReport && (post.property.landlordId || selectedRoom()?.landlordId)) {
+            <button type="button" class="change-room" (click)="report('LANDLORD')">
+              <span class="material-symbols-outlined" aria-hidden="true">flag</span>Báo cáo chủ trọ
+            </button>
+          }
         </header>
         @if (selectedRoom(); as room) {
           <div class="room-facts">

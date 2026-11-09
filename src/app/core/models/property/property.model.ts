@@ -3,6 +3,7 @@ import { PropertyRentalMode } from './request/create-property-request';
 
 export interface Property {
   id: string;
+  landlordId?: string;
   name: string;
   propertyTypeId: string;
   propertyTypeName: string;

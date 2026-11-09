@@ -1,0 +1,311 @@
+@use './management';
+:host {
+  display: block;
+  color: var(--text-primary);
+}
+.feedback-page {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg) var(--space-3xl);
+}
+:host-context(.dashboard-layout) .feedback-page {
+  max-width: none;
+  padding: 0;
+}
+.page-heading,
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.page-heading {
+  margin-bottom: var(--space-lg);
+}
+.eyebrow {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 12px;
+  margin: 0 0 var(--space-sm);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.4;
+  letter-spacing: -0.025em;
+}
+h2 {
+  margin: 0 0 var(--space-md);
+  font-size: 18px;
+  line-height: 1.5;
+}
+h3 {
+  margin: 0 0 var(--space-sm);
+  font-size: 15px;
+}
+p {
+  line-height: 1.7;
+}
+.description,
+.muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.description {
+  margin: var(--space-sm) 0 0;
+}
+button,
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+button:hover,
+.button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+button.primary,
+.button.primary {
+  background: var(--primary);
+  color: var(--on-primary-container);
+  border-color: var(--primary);
+}
+button.danger {
+  color: var(--error);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary-focus);
+  outline-offset: 3px;
+}
+.material-symbols-outlined {
+  font-size: 21px;
+  flex-shrink: 0;
+}
+.panel {
+  padding: var(--space-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+.notice {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--info-bg);
+  color: var(--info-text);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 var(--space-md);
+}
+.notice.error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+.notice.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.notice button {
+  margin-left: var(--space-sm);
+}
+.empty {
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+  color: var(--text-secondary);
+}
+.empty > .material-symbols-outlined {
+  display: block;
+  font-size: 40px;
+  color: var(--primary);
+  margin-bottom: var(--space-md);
+}
+.empty h2 {
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+.filters,
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+.tabs {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-md);
+}
+.tabs button[aria-pressed='true'] {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+}
+.filters label {
+  min-width: 180px;
+}
+label {
+  display: grid;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+input,
+textarea,
+select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  line-height: 1.5;
+}
+textarea {
+  resize: vertical;
+}
+.field {
+  margin-bottom: var(--space-lg);
+}
+.field small {
+  text-align: right;
+  color: var(--text-secondary);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge[data-status='PENDING'] {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+.badge[data-status='PROCESSING'] {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+.badge[data-status='RESOLVED'],
+.badge.visible {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+.badge[data-status='REJECTED'],
+.badge.hidden {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+.back-link {
+  display: inline-flex;
+  gap: var(--space-sm);
+  align-items: center;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: var(--space-lg);
+}
+.cards {
+  display: grid;
+  gap: var(--space-md);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.stats button {
+  text-align: left;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+}
+.stats strong {
+  font-size: 28px;
+  color: var(--text-primary);
+}
+.stats button[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+}
+.mono {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+}
+.copy {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dialog-body {
+  padding: var(--space-lg);
+}
+.dialog-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.dialog-top h2 {
+  margin-bottom: var(--space-sm);
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  flex-wrap: wrap;
+}
+.dialog-form {
+  margin-top: var(--space-lg);
+}
+@media (max-width: 600px) {
+  .feedback-page {
+    padding: var(--space-lg) var(--space-md) var(--space-2xl);
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+  .stats button,
+  .panel {
+    padding: var(--space-md);
+  }
+  .filters label {
+    width: 100%;
+  }
+  .dialog-body {
+    padding: var(--space-md);
+  }
+}

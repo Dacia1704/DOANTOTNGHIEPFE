@@ -1,0 +1,112 @@
+<section class="feedback-page" [attr.aria-busy]="loading()">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">{{ admin ? 'An toàn & kiểm duyệt' : 'Hỗ trợ & an toàn' }}</p>
+      <h1>{{ admin ? 'Quản lý báo cáo' : 'Báo cáo của tôi' }}</h1>
+      <p class="description">
+        {{
+          admin
+            ? 'Tiếp nhận phản ánh, kiểm tra minh chứng và phản hồi kết quả xử lý.'
+            : 'Theo dõi phản ánh của bạn và bổ sung thông tin để được hỗ trợ.'
+        }}
+      </p>
+    </div>
+    <button [disabled]="loading()" (click)="load()">
+      <span class="material-symbols-outlined" aria-hidden="true">refresh</span>Tải lại
+    </button>
+  </header>
+  @if (admin) {
+    <div class="stats">
+      @for (s of statusKeys; track s) {
+        <button [attr.aria-pressed]="status() === s" (click)="filter(status() === s ? '' : s)">
+          <span class="badge" [attr.data-status]="s">{{ statuses[s] }}</span
+          ><strong>{{ summary() ? summary()![s] : '—' }}</strong
+          ><span class="muted">báo cáo</span>
+        </button>
+      }
+    </div>
+    @if (summaryError()) {
+      <p class="notice error" role="alert">
+        {{ summaryError() }} <button (click)="loadSummary()">Thử lại</button>
+      </p>
+    }
+  } @else {
+    <div class="intro panel">
+      <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+      <div>
+        <h2>Phản ánh của bạn được tiếp nhận riêng tư</h2>
+        <p class="description">
+          Gửi báo cáo từ trang tin đăng hoặc hợp đồng thuê. Ảnh minh chứng chỉ dành cho bạn và quản
+          trị viên.
+        </p>
+      </div>
+      <a class="button" routerLink="/">Tìm phòng trọ</a>
+    </div>
+  }
+  <div class="filters">
+    <label
+      >Trạng thái<select [ngModel]="status()" (ngModelChange)="filter($event)">
+        <option value="">Tất cả trạng thái</option>
+        @for (s of statusKeys; track s) {
+          <option [value]="s">{{ statuses[s] }}</option>
+        }
+      </select></label
+    >
+    @if (admin) {
+      <label
+        >Lý do báo cáo<select [ngModel]="reason()" (ngModelChange)="filter(status(), $event)">
+          <option value="">Tất cả lý do</option>
+          @for (r of reasonKeys; track r) {
+            <option [value]="r">{{ reasons[r] }}</option>
+          }
+        </select></label
+      >
+    }
+  </div>
+  <app-management-table
+    [rows]="items()"
+    [columns]="columns"
+    [rowKey]="rowKey"
+    caption="Danh sách báo cáo vi phạm"
+    [loading]="loading()"
+    [error]="error()"
+    emptyMessage="Chưa có báo cáo phù hợp"
+    emptyDescription="Các báo cáo sẽ xuất hiện tại đây khi được gửi."
+    [pagination]="{ page: page(), total: total(), totalPages: totalPages() }"
+    [pageSize]="size()"
+    (pageSizeChange)="changeSize($event)"
+    (pageChange)="filter(status(), reason(), $event)"
+    (retry)="load()"
+  >
+    <ng-template [appTableCell]="items()" column="target" let-r
+      ><div class="cell-content">
+        <span class="cell-subtext">{{ targets[r.targetType] }}</span
+        ><strong class="cell-title">{{ r.targetName || r.targetId }}</strong
+        ><span class="mono">Mã báo cáo: {{ r.id }}</span>
+      </div></ng-template
+    >
+    <ng-template [appTableCell]="items()" column="reason" let-r>{{
+      reasons[r.reasonCode]
+    }}</ng-template>
+    <ng-template [appTableCell]="items()" column="status" let-r
+      ><span class="badge" [attr.data-status]="r.status">{{
+        statuses[r.status]
+      }}</span></ng-template
+    >
+    <ng-template [appTableCell]="items()" column="handler" let-r>{{
+      r.handledByName || r.handledBy || 'Chưa tiếp nhận'
+    }}</ng-template>
+    <ng-template [appTableCell]="items()" column="createdAt" let-r
+      ><span>{{ r.createdAt | date: 'dd/MM/yyyy' }}</span
+      ><span class="cell-subtext">{{ r.createdAt | date: 'HH:mm' }}</span></ng-template
+    >
+    <ng-template [appTableCell]="items()" column="action" let-r
+      ><a
+        class="button"
+        [routerLink]="[baseLink, r.id]"
+        [queryParams]="{ status: status() || null, reasonCode: reason() || null, page: page() }"
+        >Chi tiết<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a
+      ></ng-template
+    >
+  </app-management-table>
+</section>
