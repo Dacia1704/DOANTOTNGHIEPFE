@@ -26,6 +26,8 @@ export class ChatService {
   private readonly consumers = signal(0);
   private readonly requested = computed(() => this.consumers() > 0);
   private readonly incoming = new Subject<ChatMessage>();
+  private readonly notificationChanges = new Subject<void>();
+  private readonly realtimeReady = new Subject<void>();
   private readonly deliveryErrors = new Subject<{
     conversationId: string | null;
     message: string;
@@ -35,6 +37,8 @@ export class ChatService {
   private previousUserId = this.auth.session()?.id;
   private client?: Client;
   readonly messages$ = this.incoming.asObservable();
+  readonly notificationChanges$ = this.notificationChanges.asObservable();
+  readonly realtimeReady$ = this.realtimeReady.asObservable();
   readonly connection = signal<'connecting' | 'connected' | 'disconnected'>('disconnected');
   readonly realtimeError = signal('');
 
@@ -67,6 +71,8 @@ export class ChatService {
         onConnect: () => {
           this.realtimeError.set('');
           this.connection.set('connected');
+          client.subscribe('/user/queue/notifications', () => this.notificationChanges.next());
+          this.realtimeReady.next();
           client.subscribe('/user/queue/messages', (frame) => {
             try {
               this.incoming.next(ChatMapper.message(JSON.parse(frame.body)));

@@ -7,6 +7,8 @@ import { RoleCode } from '@model/auth/auth.model';
 import { ChatConversation } from '@model/chat/chat.model';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 import { ChatPageComponent } from '@shared/pages/chat/chat-page.component';
+import { NotificationService } from '@services/notification/notification.service';
+import { EMPTY } from 'rxjs';
 
 describe('admin header and support navigation', () => {
   const logout = vi.fn();
@@ -26,6 +28,9 @@ describe('admin header and support navigation', () => {
           },
         },
         { provide: ChatService, useValue: {} },
+        { provide: NotificationService, useValue: {
+          unreadCount: () => 0, countUnavailable: () => false, changes$: EMPTY,
+        } },
       ],
     });
   });
