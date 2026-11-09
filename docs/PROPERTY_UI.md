@@ -25,7 +25,7 @@ Tạo cơ sở gồm ba bước: thông tin chung → mặc định và từng p
 
 ## Contract BE
 
-Xem `DOANTOTNGHIEPBE/docs/PROPERTY_API.md`. FE gọi GET/POST properties, GET properties/mine, CRUD property-types và giữ PUT/multipart POST rooms hiện tại. Không bổ sung thao tác sửa/xóa Property hoặc upload ảnh chung khi BE chưa hỗ trợ. Ảnh riêng vẫn dùng các dialog Room hiện có.
+Xem `RentalManagement/docs/PROPERTY_API.md`. FE gọi GET/POST properties, GET properties/mine, CRUD property-types và giữ PUT/multipart POST rooms hiện tại. Không bổ sung thao tác sửa/xóa Property hoặc upload ảnh chung khi BE chưa hỗ trợ. Ảnh riêng vẫn dùng các dialog Room hiện có.
 
 ## Kiểm chứng (27/10/2026)
 

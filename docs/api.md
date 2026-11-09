@@ -670,7 +670,7 @@ curl -X POST "http://localhost:8080/api/rooms" \
 
 `RoomResponse` gồm: `id`, `propertyId`, `roomNumber`, `floorNumber`, `landlordId`, `roomTypeId`, `roomTypeName`, `price`, `electricityPrice`, `waterPrice`, `serviceFee`, `defaultDeposit`, `areaM2`, `maxOccupants`, `provinceId`, `provinceName`, `wardId`, `wardName`, `addressLine`, `latitude`, `longitude`, `rentalStatus`, `amenities`, `images`, `createdAt`, `updatedAt`. Tạo phòng nhận multipart gồm phần JSON `room` và field file `files` tùy chọn; endpoint tải ảnh riêng vẫn dùng được sau khi tạo.
 
-Các trường chủ trọ và địa chỉ trong response được lấy qua `Room.property`; request Room không nhận địa chỉ riêng. Tạo cơ sở và phòng lần đầu dùng `POST /api/properties` (xem [Property API](PROPERTY_API.md)).
+Các trường chủ trọ và địa chỉ trong response được lấy qua `Room.property`; request Room không nhận địa chỉ riêng. Tạo cơ sở và phòng lần đầu dùng `POST /api/properties` (xem [Property API](../../RentalManagement/docs/PROPERTY_API.md)).
 
 ---
 
@@ -1415,7 +1415,7 @@ GET `/api/listings` nhận thêm các bộ tham số tùy chọn:
 - Ví dụ bán kính: `/api/listings?latitude=10.762622&longitude=106.660172&radiusKm=3&minPrice=2000000&size=20`.
 - Ví dụ khung: `/api/listings?south=10.7&north=10.9&west=106.6&east=106.8&size=50`.
 
-Tọa độ để FE đặt ghim nằm tại `data.data[].property.latitude` và `property.longitude`; chi tiết tin tại `data.property`. API danh sách admin/chờ duyệt cũng trả cùng cấu trúc vị trí. Backend không gọi Google API. Xem [tích hợp bản đồ và kế hoạch FE](GOOGLE_MAPS_INTEGRATION.md).
+Tọa độ để FE đặt ghim nằm tại `data.data[].property.latitude` và `property.longitude`; chi tiết tin tại `data.property`. API danh sách admin/chờ duyệt cũng trả cùng cấu trúc vị trí. Backend không gọi Google API. Xem [tích hợp bản đồ và kế hoạch FE](maps.md).
 
 ### 12.3. Chọn slot ưu tiên
 
@@ -1505,4 +1505,4 @@ PUT `/api/properties/{id}/location`, JWT LANDLORD sở hữu cơ sở:
 }
 ```
 
-Thay thế địa chỉ và tọa độ trong một transaction; trả `ApiResponse<PropertyResponse>`, HTTP 200. Tỉnh/phường/địa chỉ bắt buộc và phường phải thuộc tỉnh. Hai tọa độ phải cùng có giá trị hoặc cùng null; gửi/bỏ cả hai để null sẽ xóa ghim. Vĩ độ [-90,90], kinh độ [-180,180]; 0 hợp lệ. Quy tắc cặp tọa độ cũng áp dụng khi POST tạo cơ sở. Sai dữ liệu trả 400, sai quyền/sở hữu 403, không tìm thấy cơ sở/tỉnh/phường 404. Vị trí dùng chung cho tất cả phòng và tin của cơ sở; cập nhật không đổi trạng thái duyệt tin. Xem [hợp đồng API và kế hoạch FE](GOOGLE_MAPS_INTEGRATION.md).
+Thay thế địa chỉ và tọa độ trong một transaction; trả `ApiResponse<PropertyResponse>`, HTTP 200. Tỉnh/phường/địa chỉ bắt buộc và phường phải thuộc tỉnh. Hai tọa độ phải cùng có giá trị hoặc cùng null; gửi/bỏ cả hai để null sẽ xóa ghim. Vĩ độ [-90,90], kinh độ [-180,180]; 0 hợp lệ. Quy tắc cặp tọa độ cũng áp dụng khi POST tạo cơ sở. Sai dữ liệu trả 400, sai quyền/sở hữu 403, không tìm thấy cơ sở/tỉnh/phường 404. Vị trí dùng chung cho tất cả phòng và tin của cơ sở; cập nhật không đổi trạng thái duyệt tin. Xem [hợp đồng API và kế hoạch FE](maps.md).
