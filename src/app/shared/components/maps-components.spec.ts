@@ -130,6 +130,36 @@ describe('Map rendering and selection', () => {
     expect(markers.at(-1).options.draggable).toBe(false);
     fixture.destroy();
   });
+  it('recenters on the same coordinates when the location button is pressed again', async () => {
+    const { fixture, map } = await setup();
+    fixture.componentRef.setInput('center', { latitude: 10, longitude: 106 });
+    fixture.detectChanges();
+    map.setCenter.mockClear();
+    fixture.componentRef.setInput('recenterToken', 1);
+    fixture.detectChanges();
+    expect(map.setCenter).toHaveBeenCalledWith([106, 10]);
+    fixture.destroy();
+  });
+  it('marks the actual user position separately from the search center and removes it when cleared', async () => {
+    const { fixture, markers } = await setup();
+    fixture.componentRef.setInput('userPosition', { latitude: 0, longitude: 0 });
+    fixture.detectChanges();
+    const userMarker = markers.at(-1);
+    expect(userMarker.element.getAttribute('aria-label')).toBe('Vị trí của bạn');
+    expect(userMarker.options).toEqual(
+      expect.objectContaining({ anchor: 'center', draggable: false }),
+    );
+    expect(userMarker.setLngLat).toHaveBeenCalledWith([0, 0]);
+    fixture.componentRef.setInput('center', { latitude: 20, longitude: 105 });
+    fixture.detectChanges();
+    const retained = markers.at(-1);
+    expect(retained.setLngLat).toHaveBeenCalledWith([0, 0]);
+    fixture.componentRef.setInput('userPosition', null);
+    fixture.detectChanges();
+    expect(retained.remove).toHaveBeenCalled();
+    expect(markers.at(-1).element.className).not.toContain('rental-map-user-position');
+    fixture.destroy();
+  });
   it('keeps popup text safe and navigates from an explicit detail link', async () => {
     const { canvas, fixture, markers, popup, callbacks } = await setup();
     const opened: string[] = [];
@@ -333,13 +363,32 @@ describe('Places autocomplete and geolocation', () => {
 describe('Map search modes', () => {
   afterEach(() => vi.useRealTimers());
   function setup() {
-    TestBed.configureTestingModule({ providers: [{ provide: GeolocationService, useValue: {} }] });
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: GeolocationService,
+          useValue: {
+            locate: vi.fn(async () => ({ latitude: 10, longitude: 106 })),
+          },
+        },
+      ],
+    });
     const component = TestBed.createComponent(ListingMapComponent).componentInstance;
     component.ngOnInit();
     const filters: (LocationFilter | null)[] = [];
     component.locationFilter.subscribe((filter) => filters.push(filter));
     return { component, filters };
   }
+  it('centers on my location and loads the viewport without imposing a three-kilometer radius', async () => {
+    const { component, filters } = setup();
+    const located = vi.fn();
+    component.userLocated.subscribe(located);
+    await component.locate();
+    expect(component.center()).toEqual({ latitude: 10, longitude: 106 });
+    expect(component.mode()).toBe('viewport');
+    expect(located).toHaveBeenCalledWith({ latitude: 10, longitude: 106 });
+    expect(filters).toEqual([null]);
+  });
   it('debounces map movements and never combines a stale viewport with the selected radius', async () => {
     vi.useFakeTimers();
     const { component, filters } = setup();

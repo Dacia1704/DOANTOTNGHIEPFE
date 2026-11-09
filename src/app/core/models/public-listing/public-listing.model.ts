@@ -25,3 +25,9 @@ export interface PublicListingList {
   totalPages: number;
   total: number;
 }
+export interface ListingPriceStatistics {
+  areaId: string;
+  areaName: string;
+  averagePrice: number;
+  roomCount: number;
+}

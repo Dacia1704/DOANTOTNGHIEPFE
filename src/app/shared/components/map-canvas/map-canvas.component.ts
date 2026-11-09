@@ -8,6 +8,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  SimpleChanges,
   Output,
   ViewChild,
   inject,
@@ -48,8 +49,8 @@ import { LocationUtils } from '@shared/utils/location-utils';
         overflow: hidden;
       }
       .map-host {
-        height: 420px;
-        max-height: 65dvh;
+        height: var(--map-height, 420px);
+        max-height: var(--map-max-height, 65dvh);
         min-height: 300px;
       }
       .map-host[hidden] {
@@ -91,6 +92,8 @@ export class MapCanvasComponent implements AfterViewInit, OnChanges {
   @ViewChild('host', { static: true }) host!: ElementRef<HTMLElement>;
   @Input() pins: MapPin[] = [];
   @Input() center: Coordinates | null = null;
+  @Input() userPosition: Coordinates | null = null;
+  @Input() recenterToken = 0;
   @Input() editable = false;
   @Input() disabled = false;
   @Input() radiusKm = 0;
@@ -126,7 +129,8 @@ export class MapCanvasComponent implements AfterViewInit, OnChanges {
   ngAfterViewInit(): void {
     void this.initialize();
   }
-  ngOnChanges(): void {
+  ngOnChanges(changes?: SimpleChanges): void {
+    if (changes?.['recenterToken']) this.lastCenter = '';
     if (this.map) this.update();
   }
 
@@ -272,6 +276,20 @@ export class MapCanvasComponent implements AfterViewInit, OnChanges {
         event.stopPropagation();
         if (!this.editable) this.openPopup(pin, marker);
       });
+      this.markers.push(marker);
+    }
+    const userPoint =
+      this.userPosition &&
+      LocationUtils.point(this.userPosition.latitude, this.userPosition.longitude);
+    if (userPoint) {
+      const element = this.document.createElement('div');
+      element.className = 'rental-map-user-position';
+      element.setAttribute('role', 'img');
+      element.setAttribute('aria-label', 'Vị trí của bạn');
+      element.title = 'Vị trí của bạn';
+      const marker = new this.library.Marker({ element, anchor: 'center', draggable: false })
+        .setLngLat([userPoint.longitude, userPoint.latitude])
+        .addTo(this.map);
       this.markers.push(marker);
     }
     this.updateRadius(point);

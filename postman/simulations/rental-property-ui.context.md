@@ -1,6 +1,6 @@
 # Rental Property UI simulation
 
-Created 2026-10-27 from the local BE contract in `DOANTOTNGHIEPBE/docs/PROPERTY_API.md` and its controller/DTO definitions.
+Created 2026-10-27 from the local BE contract in `RentalManagement/docs/PROPERTY_API.md` and its controller/DTO definitions.
 
 ## Purpose
 

@@ -23,7 +23,7 @@ export class GeolocationService {
           reject(
             new Error(
               error.code === 1
-                ? 'Bạn chưa cho phép định vị. Có thể tìm địa điểm hoặc chọn ghim trên bản đồ.'
+                ? 'Bạn chưa cho phép định vị. Hãy bật quyền Vị trí trong phần cài đặt trang web của trình duyệt, rồi bấm Vị trí của tôi để thử lại.'
                 : 'Chưa lấy được vị trí hiện tại. Vui lòng thử lại hoặc chọn địa điểm khác.',
             ),
           ),

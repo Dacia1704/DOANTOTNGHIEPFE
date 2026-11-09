@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { RouterLink } from '@angular/router';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { TextUtils } from '@shared/utils/text-utils';
-import { RoomCard } from '../../data/landing.mock';
+import { RoomCard } from '../../data/room-card.model';
 import { PublicListing } from '@model/public-listing/public-listing.model';
 import { ROOM_STATUS_LABELS } from '@model/room/room.model';
 

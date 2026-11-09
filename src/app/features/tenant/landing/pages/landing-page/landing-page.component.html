@@ -1,35 +1,287 @@
-<div class="landing">
-  <section class="search-summary" aria-labelledby="landing-title">
-    <div class="search-summary__inner">
-      <div class="search-summary__heading">
+﻿<div class="landing">
+  <section class="hero" aria-labelledby="landing-title">
+    <div class="hero__backdrop" aria-hidden="true">
+      <div
+        class="hero__slide-track"
+        [class.is-resetting]="heroSlideResetting()"
+        [style.transform]="'translate3d(' + -heroImageIndex() * 100 + '%, 0, 0)'"
+      >
+        @for (image of heroSlides; track $index; let index = $index) {
+          <img
+            [src]="image"
+            alt=""
+            [attr.fetchpriority]="index === 0 ? 'high' : 'low'"
+            decoding="async"
+          />
+        }
+      </div>
+    </div>
+    <div class="container hero__content">
+      <div class="eyebrow hero__badge">
+        <span class="live-dot"></span
+        ><span class="material-symbols-outlined" aria-hidden="true">verified</span>Thông tin rõ ràng
+        · Kết nối trực tiếp chủ trọ
+      </div>
+      <h1 id="landing-title">
+        Nền tảng Thuê Trọ Sinh Viên<br /><span>Minh Bạch Hàng Đầu</span> Việt Nam
+      </h1>
+      <p class="hero__description">
+        Tìm phòng trọ, studio và căn hộ phù hợp với bạn. Khám phá tin đăng đã duyệt,<br
+          class="desktop-break"
+        />
+        so sánh giá và bắt đầu hành trình tìm nơi an cư.
+      </p>
+      <nav class="hero__tabs" aria-label="Khám phá phòng cho thuê">
+        <button type="button" class="is-active" (click)="scrollTo('landing-search')">
+          <span class="material-symbols-outlined" aria-hidden="true">apartment</span>Tìm phòng trọ
+        </button>
+        <button type="button" (click)="scrollTo('near-campus')">
+          <span class="material-symbols-outlined" aria-hidden="true">school</span>Gần trường đại học
+        </button>
+        <button type="button" (click)="showMap()">
+          <span class="material-symbols-outlined" aria-hidden="true">map</span>Tìm trên bản đồ
+        </button>
+      </nav>
+      <div id="landing-search" class="hero__search">
+        <app-search-capsule
+          [appliedFilters]="activeQuery()"
+          [searching]="searching()"
+          (locationLabels)="locationLabels.set($event)"
+          (search)="searchRooms($event); scrollTo('rental-results')"
+        />
+      </div>
+      <div class="hero__metrics">
         <div>
-          <span class="search-summary__eyebrow">KHÁM PHÁ KHÔNG GIAN SỐNG CỦA BẠN</span>
-          <h1 id="landing-title">
-            @if (searching()) {
-              Đang tìm phòng trọ phù hợp…
-            } @else if (rooms(); as result) {
-              Tìm thấy <span>{{ result.total }}</span> tin đăng cho thuê
-            } @else {
-              Tìm phòng trọ, chọn nơi an cư
+          <span class="metric-icon material-symbols-outlined" aria-hidden="true">home_work</span>
+          <div>
+            <strong>{{ searching() ? '…' : (rooms()?.total ?? 0 | number) }}</strong
+            ><span>Tin phù hợp bộ lọc</span>
+          </div>
+        </div>
+        <div>
+          <span class="metric-icon metric-icon--amber material-symbols-outlined" aria-hidden="true"
+            >payments</span
+          >
+          <div>
+            <strong>{{ lowestPrice() !== null ? millions(lowestPrice()!) + ' Tr' : '—' }}</strong
+            ><span>Giá từ các tin đang xem / tháng</span>
+          </div>
+        </div>
+        <div>
+          <span class="metric-icon material-symbols-outlined" aria-hidden="true">forum</span>
+          <div><strong>Trực tiếp</strong><span>Kết nối với chủ trọ</span></div>
+        </div>
+        <div>
+          <span class="metric-icon metric-icon--blue material-symbols-outlined" aria-hidden="true"
+            >description</span
+          >
+          <div><strong>Rõ ràng</strong><span>Theo dõi yêu cầu & hợp đồng</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="market-map-section" class="market section" aria-labelledby="market-title">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow"
+            ><span class="material-symbols-outlined" aria-hidden="true">monitoring</span>KHÁM PHÁ
+            THỊ TRƯỜNG THUÊ TRỌ</span
+          >
+          <h2 id="market-title">Hiểu khu vực. Chọn đúng nơi ở.</h2>
+          <p>Xem vị trí và tham khảo giá thuê trước khi quyết định.</p>
+        </div>
+        <button type="button" class="pill-button" (click)="showMap()">
+          Khám phá bản đồ<span class="material-symbols-outlined" aria-hidden="true"
+            >north_east</span
+          >
+        </button>
+      </div>
+      <div class="market__layout">
+        <div class="market__map">
+          <div class="market__map-heading">
+            <span><span class="live-dot"></span>Bản đồ phòng trọ</span
+            ><span>{{ mapLoading() ? 'Đang tải ghim…' : mapPins().length + ' vị trí' }}</span>
+          </div>
+          <div class="market__map-canvas">
+            <app-map-canvas
+              [pins]="mapPins()"
+              [userPosition]="userPosition()"
+              [center]="mapCenter()"
+              [recenterToken]="locationRevision()"
+              (pinSelected)="openPin($event)"
+            />
+            <button type="button" class="map-locate" (click)="locate()" [disabled]="locating()">
+              <span class="material-symbols-outlined" aria-hidden="true">my_location</span>
+              {{ locating() ? 'Đang định vị…' : 'Vị trí của tôi' }}
+            </button>
+          </div>
+          @if (locationError()) {
+            <p class="map-notice" role="status">{{ locationError() }}</p>
+          }
+          @if (mapError()) {
+            <p class="map-notice" role="alert">
+              {{ mapError() }} <button type="button" (click)="reloadMap()">Thử lại</button>
+            </p>
+          }
+          <div class="market__map-footer">
+            <span
+              ><span class="material-symbols-outlined" aria-hidden="true">info</span>Ghim hiển thị
+              tất cả tin phù hợp có tọa độ, không giới hạn theo trang danh sách.</span
+            ><button type="button" (click)="showMap()">
+              Tìm theo khu vực<span class="material-symbols-outlined" aria-hidden="true"
+                >arrow_forward</span
+              >
+            </button>
+          </div>
+        </div>
+        <div class="market__insights">
+          <article class="insight-card" [attr.aria-busy]="statisticsLoading()">
+            <h3>
+              <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span>Giá thuê
+              trung bình theo khu vực
+            </h3>
+            <p>Giá phòng còn trống thuộc các tin đang công khai, tổng hợp theo khu vực.</p>
+            <div class="statistics-filters">
+              <label
+                >Tỉnh / Thành phố
+                <select
+                  [value]="statisticsProvince()"
+                  (change)="changeStatisticsProvince($any($event.target).value)"
+                >
+                  <option value="">Tất cả tỉnh / thành phố</option>
+                  @for (province of statisticsProvinces(); track province.id) {
+                    <option [value]="province.id">{{ province.name }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >Phường / Xã
+                <select
+                  [value]="statisticsWard()"
+                  [disabled]="!statisticsProvince() || statisticsWardsLoading()"
+                  (change)="changeStatisticsWard($any($event.target).value)"
+                >
+                  <option value="">
+                    {{ statisticsWardsLoading() ? 'Đang tải phường / xã…' : 'Tất cả phường / xã' }}
+                  </option>
+                  @for (ward of statisticsWards(); track ward.id) {
+                    <option [value]="ward.id">{{ ward.name }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+            @if (provinceError()) {
+              <p class="statistics-error" role="status">
+                {{ provinceError() }}
+                <button type="button" (click)="loadStatisticsProvinces()">Thử lại</button>
+              </p>
             }
-          </h1>
-          <p>Chọn khu vực, ngân sách và tiện ích để tìm nơi ở hợp với bạn.</p>
+            @if (wardError()) {
+              <p class="statistics-error" role="status">
+                {{ wardError() }}
+                <button type="button" (click)="changeStatisticsProvince(statisticsProvince())">
+                  Thử lại
+                </button>
+              </p>
+            }
+            <div class="statistics-summary" aria-live="polite">
+              <span>{{
+                statisticsLoading()
+                  ? 'Đang tổng hợp dữ liệu…'
+                  : (statisticsRoomCount() | number) + ' phòng có giá thuê'
+              }}</span>
+              <span>{{ statisticsProvince() ? 'Theo phường / xã' : 'Theo tỉnh / thành phố' }}</span>
+            </div>
+            @if (statisticsError()) {
+              <p class="statistics-error" role="alert">
+                {{ statisticsError() }}
+                <button type="button" (click)="reloadStatistics()">Thử lại</button>
+              </p>
+            }
+            <div class="price-bars" [class.is-visible]="priceAnimationReady()">
+              @for (row of priceInsights(); track row.id; let index = $index) {
+                <div class="price-row">
+                  <div>
+                    <span
+                      >{{ row.name }}<small>{{ row.count | number }} phòng</small></span
+                    ><strong>{{ millions(row.average) }} Tr<span>/tháng</span></strong>
+                  </div>
+                  <div class="price-track">
+                    <span
+                      [style.width.%]="row.width"
+                      [style.animation-delay.ms]="(index < 6 ? index : 5) * 100"
+                    ></span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="empty-note">
+                  {{
+                    statisticsLoading()
+                      ? 'Đang tải thông tin giá…'
+                      : statisticsError()
+                        ? ''
+                        : 'Chưa có phòng còn trống có giá thuê tại khu vực này.'
+                  }}
+                </p>
+              }
+            </div>
+            <p class="statistics-note">
+              Trung bình theo giá thuê từng phòng, chưa gồm tiền điện, nước và dịch vụ.
+            </p>
+          </article>
+          <article class="insight-card insight-card--teal">
+            <h3>
+              <span class="material-symbols-outlined" aria-hidden="true">fact_check</span>Thuê phòng
+              với thông tin rõ ràng
+            </h3>
+            <p>Đừng chỉ xem giá thuê. Hãy trao đổi thêm với chủ trọ về:</p>
+            <div class="cost-tags">
+              <span>Tiền điện & nước</span><span>Phí dịch vụ</span><span>Tiền đặt cọc</span
+              ><span>Thời hạn thuê</span>
+            </div>
+          </article>
+          <a class="market-tip" routerLink="/cam-nang"
+            ><span class="material-symbols-outlined" aria-hidden="true">lightbulb</span
+            ><span
+              ><strong>Lần đầu thuê trọ?</strong
+              ><span>Xem cẩm nang để chuẩn bị trước khi đi xem phòng.</span></span
+            ><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></a
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rental-results" class="section listings" aria-labelledby="results-title">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow"
+            ><span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>KHÔNG
+            GIAN SỐNG DÀNH CHO BẠN</span
+          >
+          <h2 id="results-title">Phòng trọ & căn hộ nổi bật</h2>
+          <p aria-live="polite">
+            {{
+              searching()
+                ? 'Đang tìm tin đăng phù hợp…'
+                : (rooms()?.total ?? 0) + ' tin đăng phù hợp với lựa chọn của bạn.'
+            }}
+          </p>
         </div>
         <div class="result-view" aria-label="Cách xem kết quả">
           <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
-            <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách
-          </button>
-          <button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
+            <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách</button
+          ><button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
             <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
           </button>
         </div>
       </div>
       @if (filterChips().length) {
         <div class="applied-filters" aria-label="Bộ lọc đang áp dụng">
-          <span class="applied-filters__label"
-            ><span class="material-symbols-outlined" aria-hidden="true">tune</span>Đang lọc
-            theo:</span
-          >
+          <span>Đang lọc theo:</span>
           @for (chip of filterChips(); track chip.key) {
             <button
               type="button"
@@ -40,71 +292,109 @@
               }}<span class="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
           }
-          <button type="button" class="applied-filters__clear" (click)="resetFilters()">
-            Xóa tất cả bộ lọc
-          </button>
+          <button type="button" class="clear-filters" (click)="resetFilters()">Xóa tất cả</button>
         </div>
       }
+      @if (searchError()) {
+        <div class="landing-error" role="alert">
+          <p>{{ searchError() }}</p>
+          <button type="button" class="pill-button" (click)="updateFilters({})">Thử lại</button>
+        </div>
+      }
+      @if (view() === 'map') {
+        <app-listing-map
+          [mapItems]="mapListings()"
+          (userLocated)="onMapLocated($event)"
+          [initialCenter]="userPosition()"
+          [locationRevision]="locationRevision()"
+          [mapLoading]="mapLoading()"
+          [mapError]="mapError()"
+          [result]="rooms()"
+          [query]="activeQuery()"
+          [loading]="searching()"
+          (locationFilter)="applyLocationFilter($event)"
+          (listingSelected)="openRoom($event)"
+          (pageChange)="loadMapPage($event)"
+        />
+      } @else {
+        <app-room-grid
+          [result]="rooms()"
+          [loading]="searching()"
+          (loadMore)="loadMore()"
+          (roomSelected)="openRoom($event)"
+        />
+      }
+      <app-ai-recommendation />
     </div>
   </section>
-  <div class="landing__inner">
-    <div class="landing__layout">
-      <aside
-        class="landing__filters"
-        [class.is-open]="mobileFiltersOpen()"
-        aria-label="Bộ lọc tìm kiếm"
-      >
-        <button
-          type="button"
-          class="mobile-filter-toggle"
-          [attr.aria-expanded]="mobileFiltersOpen()"
-          aria-controls="landing-filter-panel"
-          (click)="mobileFiltersOpen.set(!mobileFiltersOpen())"
+
+  <section id="how-it-works" class="section process" aria-labelledby="process-title">
+    <div class="container">
+      <div class="process__heading">
+        <span class="eyebrow"
+          ><span class="material-symbols-outlined" aria-hidden="true">shield</span>AN TÂM TRÊN HÀNH
+          TRÌNH TÌM TRỌ</span
         >
-          <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-          Bộ lọc tìm kiếm
-          @if (filterChips().length) {
-            <span class="mobile-filter-toggle__count">{{ filterChips().length }}</span>
-          }
-          <span class="material-symbols-outlined mobile-filter-toggle__arrow" aria-hidden="true">{{
-            mobileFiltersOpen() ? 'expand_less' : 'expand_more'
-          }}</span>
-        </button>
-        <app-search-capsule
-          id="landing-filter-panel"
-          [appliedFilters]="activeQuery()"
-          [searching]="searching()"
-          (locationLabels)="locationLabels.set($event)"
-          (search)="searchRooms($event)"
-        />
-      </aside>
-      <div class="landing__results">
-        @if (searchError()) {
-          <p class="landing__error" role="alert">
-            <span class="material-symbols-outlined" aria-hidden="true">error</span
-            >{{ searchError() }}
-          </p>
+        <h2 id="process-title">4 bước đến với nơi ở mới</h2>
+        <p>Từ tìm kiếm đến nhận phòng, chủ động kiểm tra thông tin ở mỗi bước.</p>
+      </div>
+      <div class="process__steps">
+        @for (step of rentalSteps; track step.title; let index = $index) {
+          <article class="process__step">
+            <div class="process__icon">
+              <span class="material-symbols-outlined" aria-hidden="true">{{ step.icon }}</span
+              ><b>{{ index + 1 }}</b>
+            </div>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.text }}</p>
+          </article>
         }
-        @if (view() === 'map') {
-          <app-listing-map
-            [result]="rooms()"
-            [query]="activeQuery()"
-            [loading]="searching()"
-            (locationFilter)="applyLocationFilter($event)"
-            (listingSelected)="openRoom($event)"
-            (pageChange)="loadMapPage($event)"
-          />
-        } @else {
-          <app-room-grid
-            [result]="rooms()"
-            [loading]="searching()"
-            (loadMore)="loadMore()"
-            (roomSelected)="openRoom($event)"
-          />
-        }
-        <app-ai-recommendation />
-        <app-landlord-cta />
+      </div>
+      <div class="process__footer">
+        <span
+          ><span class="material-symbols-outlined" aria-hidden="true">verified_user</span>Kiểm tra
+          phòng thực tế và điều khoản trước khi thanh toán.</span
+        ><a routerLink="/cam-nang"
+          >Tìm hiểu quy trình thuê<span class="material-symbols-outlined" aria-hidden="true"
+            >arrow_forward</span
+          ></a
+        >
       </div>
     </div>
-  </div>
+  </section>
+
+  <section id="near-campus" class="section campus" aria-labelledby="campus-title">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow"
+            ><span class="material-symbols-outlined" aria-hidden="true">school</span>ĐI HỌC GẦN HƠN,
+            SỐNG THOẢI MÁI HƠN</span
+          >
+          <h2 id="campus-title">Tìm trọ quanh trường đại học</h2>
+          <p>Nhập tên trường hoặc địa điểm, chọn gợi ý để tìm các tin trong bán kính 3 km.</p>
+        </div>
+        <span class="campus__badge"
+          ><span class="material-symbols-outlined" aria-hidden="true">near_me</span>Trong bán kính 3
+          km</span
+        >
+      </div>
+      <div class="campus__search">
+        <div class="campus__icon material-symbols-outlined" aria-hidden="true">location_city</div>
+        <div>
+          <h3>Trường của bạn ở đâu?</h3>
+          <p>Chọn đúng cơ sở học để tìm phòng gần bạn nhất.</p>
+          <app-map-place-search (placeSelected)="selectPlace($event)" />
+        </div>
+        <div class="campus__note">
+          <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span
+          ><strong>Gần trường, tiện di chuyển</strong>
+          <p>Khoảng cách được tính theo đường chim bay. Hãy kiểm tra thêm tuyến đường thực tế.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="host-section" class="section host-section">
+    <div class="container"><app-landlord-cta /></div>
+  </section>
 </div>

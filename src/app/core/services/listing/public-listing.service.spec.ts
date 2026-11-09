@@ -6,6 +6,41 @@ import { RoomRentalStatus } from '@model/room/room.model';
 import { PublicListingResponse } from '@model/public-listing/response/public-listing-response';
 
 describe('Public listing API', () => {
+  it('loads aggregate prices filtered by the province and ward IDs from the database', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const service = TestBed.inject(PublicListingService);
+    const http = TestBed.inject(HttpTestingController);
+    const rows = [{ areaId: 'ward', areaName: 'Phường A', averagePrice: 2750000, roomCount: 20 }];
+    let result: unknown;
+    service.priceStatistics('province', 'ward').subscribe((data) => {
+      result = data;
+    });
+    const request = http.expectOne((req) => req.url === '/api/listings/price-statistics');
+    expect(request.request.params.get('provinceId')).toBe('province');
+    expect(request.request.params.get('wardId')).toBe('ward');
+    request.flush({ data: rows });
+    expect(result).toEqual(rows);
+    http.verify();
+  });
+  it('requests every map pin with the same filters and no pagination limit', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const service = TestBed.inject(PublicListingService);
+    const http = TestBed.inject(HttpTestingController);
+    service
+      .searchMap({ page: 3, size: 12, maxPrice: 3000000, amenityNames: ['WiFi'] })
+      .subscribe((items) => expect(items).toEqual([]));
+    const request = http.expectOne((req) => req.url === '/api/listings/map');
+    expect(request.request.params.has('page')).toBe(false);
+    expect(request.request.params.has('size')).toBe(false);
+    expect(request.request.params.get('maxPrice')).toBe('3000000');
+    expect(request.request.params.getAll('amenityNames')).toEqual(['WiFi']);
+    request.flush({ data: [] });
+    http.verify();
+  });
   it('reveals the phone only through an explicit POST and handles a missing phone', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

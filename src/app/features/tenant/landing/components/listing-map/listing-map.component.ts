@@ -40,16 +40,24 @@ export class ListingMapComponent implements OnInit, OnChanges {
   private locationRequest = 0;
   private expectedClear = false;
   @Input() result: PublicListingList | null = null;
+  @Input() mapItems: PublicListing[] | null = null;
+  @Input() initialCenter: Coordinates | null = null;
+  @Input() locationRevision = 0;
+  @Input() mapLoading = false;
+  @Input() mapError = '';
   @Input() query: RoomQueryParams = {};
   @Input() loading = false;
   @Output() readonly locationFilter = new EventEmitter<LocationFilter | null>();
   @Output() readonly listingSelected = new EventEmitter<PublicListing>();
   @Output() readonly pageChange = new EventEmitter<number>();
+  @Output() readonly userLocated = new EventEmitter<Coordinates>();
   readonly mode = signal<'viewport' | 'radius' | 'off'>('viewport');
   readonly center = signal<Coordinates | null>(null);
+  readonly userPosition = signal<Coordinates | null>(null);
   readonly radius = signal(3);
   readonly centerLabel = signal('');
   readonly locating = signal(false);
+  readonly centerRevision = signal(0);
   readonly error = signal('');
   readonly images = ImageUtils;
   readonly money = TextUtils.toVnd;
@@ -66,6 +74,10 @@ export class ListingMapComponent implements OnInit, OnChanges {
       });
   }
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialCenter']) this.userPosition.set(this.initialCenter);
+    if (changes['initialCenter'] && this.initialCenter && this.query.radiusKm == null) {
+      this.center.set(this.initialCenter);
+    }
     if (!changes['query']) return;
     const query = this.query;
     if (query.radiusKm == null && query.south == null && this.expectedClear) {
@@ -82,14 +94,14 @@ export class ListingMapComponent implements OnInit, OnChanges {
       changes['query'].previousValue?.radiusKm != null ||
       changes['query'].previousValue?.south != null
     ) {
-      this.mode.set('off');
-      this.center.set(null);
+      this.mode.set(this.initialCenter ? 'viewport' : 'off');
+      this.center.set(this.initialCenter);
       this.centerLabel.set('');
     }
   }
   pins(): MapPin[] {
     const pins: MapPin[] = [];
-    for (const listing of this.result?.items ?? []) {
+    for (const listing of this.mapItems ?? this.result?.items ?? []) {
       const point = LocationUtils.point(listing.property.latitude, listing.property.longitude);
       if (point)
         pins.push({
@@ -158,9 +170,12 @@ export class ListingMapComponent implements OnInit, OnChanges {
       const point = await this.geolocation.locate();
       if (this.destroy.destroyed || request !== this.locationRequest) return;
       this.center.set(point);
+      this.userPosition.set(point);
       this.centerLabel.set('Vị trí của bạn');
-      this.mode.set('radius');
-      this.emitRadius();
+      this.centerRevision.update((value) => value + 1);
+      this.mode.set('viewport');
+      this.userLocated.emit(point);
+      this.clearFilter();
     } catch (error) {
       if (!this.destroy.destroyed && request === this.locationRequest)
         this.error.set((error as Error).message);
@@ -169,7 +184,7 @@ export class ListingMapComponent implements OnInit, OnChanges {
     }
   }
   openPin(id: string): void {
-    const listing = this.result?.items.find((item) => item.id === id);
+    const listing = (this.mapItems ?? this.result?.items ?? []).find((item) => item.id === id);
     if (listing) this.listingSelected.emit(listing);
   }
 }
