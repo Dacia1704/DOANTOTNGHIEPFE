@@ -262,6 +262,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+// Enabled only while the public landing page is mounted.
+html.landing-scroll-snap {
+  scroll-padding-top: 80px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.landing-scroll-snap {
+    scroll-behavior: auto;
+  }
+}
+
 // =========================================================
 // Typography - Headlines
 // =========================================================
@@ -945,6 +955,16 @@ body {
 }
 
 // MapLibre markers and popups are created outside Angular's style encapsulation.
+.rental-map-user-position {
+  width: 20px;
+  height: 20px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 8px #3b82f633, 0 2px 8px #1e40af55;
+  z-index: 2;
+  cursor: help;
+}
 .rental-map-marker {
   display: flex;
   align-items: center;

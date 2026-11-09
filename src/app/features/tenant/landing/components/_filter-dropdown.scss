@@ -6,8 +6,8 @@
   min-width: 0;
   min-height: 78px;
   padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid var(--filter-trigger-border, var(--border));
+  border-radius: var(--filter-trigger-radius, 12px);
   background: var(--surface);
   color: var(--on-surface);
   font: inherit;

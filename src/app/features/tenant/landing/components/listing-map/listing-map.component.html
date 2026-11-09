@@ -17,7 +17,7 @@
       (click)="locate()"
       [disabled]="locating()"
     >
-      {{ locating() ? 'Đang định vị…' : 'Tìm quanh tôi' }}
+      {{ locating() ? 'Đang định vị…' : 'Vị trí của tôi' }}
     </button>
   </div>
   @if (mode() === 'radius') {
@@ -44,15 +44,32 @@
   @if (error()) {
     <p class="map-error" role="alert">{{ error() }}</p>
   }
+  @if (mapError) {
+    <p class="map-error" role="alert">{{ mapError }}</p>
+  }
   <div class="map-layout">
     <div class="map-panel">
       <app-map-canvas
         [pins]="pins()"
+        [userPosition]="userPosition()"
         [center]="center()"
+        [recenterToken]="locationRevision + centerRevision()"
         [radiusKm]="mode() === 'radius' ? radius() : 0"
         (boundsChange)="boundsChanged($event)"
         (pinSelected)="openPin($event)"
       />
+      <button
+        type="button"
+        class="map-corner-locate btn-secondary"
+        (click)="locate()"
+        [disabled]="locating()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">my_location</span>
+        {{ locating() ? 'Đang định vị…' : 'Vị trí của tôi' }}
+      </button>
+      <p class="map-hint" role="status">
+        {{ mapLoading ? 'Đang tải ghim…' : pins().length + ' ghim trên bản đồ' }}
+      </p>
     </div>
     <div class="map-results" [attr.aria-busy]="loading">
       @if (loading) {
@@ -97,7 +114,7 @@
           (changePage)="pageChange.emit($event)"
         />
         <p class="map-hint">
-          Ghim thể hiện các tin của trang hiện tại. Thứ tự hiển thị theo mức ưu tiên của tin.
+          Bản đồ hiển thị tất cả tin phù hợp có tọa độ. Danh sách bên cạnh được phân trang.
         </p>
       }
     </div>
