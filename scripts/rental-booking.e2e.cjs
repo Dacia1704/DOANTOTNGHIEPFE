@@ -28,7 +28,8 @@ async function login(email){return call('/auth/login',null,'POST',{email,passwor
     const guest=await browser.newPage();await guest.goto(`${site}/tro/${listing.id}`);await guest.getByRole('button',{name:'Đặt phòng',exact:true}).click();await guest.waitForURL(/\/login\?redirect=/);await guest.close();
     const t=await pageFor(tenant);await t.goto(`${site}/tro/${listing.id}?phong=${room.id}`);
     await t.getByRole('button',{name:'Đặt phòng',exact:true}).click();
-    const form=t.getByRole('dialog');await form.locator('[formcontrolname="tenantFullName"]').fill('[Mẫu] Khách kiểm thử');
+    await t.waitForURL(new RegExp(`/tro/${listing.id}/dat-phong/${room.id}$`));
+    const form=t.locator('app-booking-dialog');await form.locator('[formcontrolname="tenantFullName"]').fill('[Mẫu] Khách kiểm thử');
     await form.locator('[formcontrolname="tenantPhone"]').fill('0912345678');
     await form.locator('[formcontrolname="tenantCitizenId"]').fill('012345678901');
     await form.locator('[formcontrolname="tenantPermanentAddress"]').fill('Địa chỉ tổng hợp phục vụ kiểm thử');
@@ -36,9 +37,9 @@ async function login(email){return call('/auth/login',null,'POST',{email,passwor
     await form.locator('[formcontrolname="proposedMoveInDate"]').fill(tomorrow);
     await form.locator('[formcontrolname="acceptedPrivacyNotice"]').check();
     const submitted=t.waitForResponse(r=>r.url().endsWith('/api/rental-requests')&&r.request().method()==='POST');
-    await form.getByRole('button',{name:'Gửi yêu cầu thuê',exact:true}).click();
+    await form.getByRole('button',{name:'Gửi yêu cầu thuê phòng',exact:true}).click();
     const response=await submitted;assert.equal(response.status(),201);const request=(await response.json()).data;
-    await t.waitForURL(/\/yeu-cau-thue$/);await t.getByText('Chờ chủ trọ xác nhận',{exact:true}).waitFor();
+    await t.waitForURL(/\/yeu-cau-thue$/);await t.locator('.status-badge[data-status="PENDING"]').waitFor();
     const o=await pageFor(owner);await o.goto(`${site}/quan-ly-dat-phong`);await o.getByRole('button',{name:'Chấp nhận',exact:true}).waitFor();
     await o.screenshot({path:'docs/screenshots/rental_landlord_approval.png',fullPage:true});
     await o.getByRole('button',{name:'Chấp nhận',exact:true}).click();await o.getByRole('dialog').getByRole('button',{name:'Xác nhận',exact:true}).click();

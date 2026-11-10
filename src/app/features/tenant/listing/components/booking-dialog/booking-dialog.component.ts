@@ -1,8 +1,15 @@
 import { formatDate } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  Input,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -11,18 +18,21 @@ import { Room } from '@model/room/room.model';
 import { rentalEndDate } from '@model/rental/rental.model';
 import { AuthService } from '@services/auth/auth.service';
 import { RentalService } from '@services/rental/rental.service';
+import { ImageUtils } from '@shared/utils/image-utils';
 import { RoomUtils } from '@shared/utils/room-utils';
 
 @Component({
   selector: 'app-booking-dialog',
-  imports: [MatDialogModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './booking-dialog.component.html',
   styleUrl: './booking-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingDialogComponent {
-  readonly data = inject<{ listing: PublicListing; room: Room }>(MAT_DIALOG_DATA);
-  private readonly dialog = inject(MatDialogRef<BookingDialogComponent>);
+  @Input() data = inject<{ listing: PublicListing; room: Room }>(MAT_DIALOG_DATA, {
+    optional: true,
+  })!;
+  private readonly dialog = inject(MatDialogRef<BookingDialogComponent>, { optional: true });
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly api = inject(RentalService);
@@ -30,6 +40,7 @@ export class BookingDialogComponent {
   private readonly toast = inject(MatSnackBar);
   private readonly destroy = inject(DestroyRef);
   readonly utils = RoomUtils;
+  readonly images = ImageUtils;
   readonly busy = signal(false);
   readonly error = signal('');
   readonly unavailable = signal(false);
@@ -77,7 +88,7 @@ export class BookingDialogComponent {
       [
         Validators.required,
         Validators.min(1),
-        Validators.max(this.data.room.maxOccupants),
+        (c) => (this.data && c.value > this.data.room.maxOccupants ? { max: true } : null),
         Validators.pattern(/^\d+$/),
       ],
     ],
@@ -98,7 +109,7 @@ export class BookingDialogComponent {
     }
     this.busy.set(true);
     this.error.set('');
-    this.dialog.disableClose = true;
+    if (this.dialog) this.dialog.disableClose = true;
     this.api
       .create({
         ...this.form.getRawValue(),
@@ -109,12 +120,12 @@ export class BookingDialogComponent {
         takeUntilDestroyed(this.destroy),
         finalize(() => {
           this.busy.set(false);
-          this.dialog.disableClose = false;
+          if (this.dialog) this.dialog.disableClose = false;
         }),
       )
       .subscribe({
         next: () => {
-          this.dialog.close('created');
+          this.dialog?.close('created');
           this.toast.open('Đã gửi yêu cầu thuê phòng', 'Đóng', { duration: 4000 });
           void this.router.navigateByUrl('/yeu-cau-thue');
         },
@@ -123,7 +134,7 @@ export class BookingDialogComponent {
             this.unavailable.set(true);
             this.error.set('Phòng vừa được người khác giữ/thuê. Vui lòng chọn phòng khác.');
           } else if (e.status === 401) {
-            this.dialog.close();
+            this.dialog?.close();
             void this.router.navigate(['/login'], {
               queryParams: { redirect: `/tro/${this.data.listing.id}` },
             });

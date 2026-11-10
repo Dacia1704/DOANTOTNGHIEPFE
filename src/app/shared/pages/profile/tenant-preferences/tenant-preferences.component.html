@@ -1,0 +1,383 @@
+<header class="intro">
+  <span class="badge"
+    ><span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span> Gợi ý phòng phù
+    hợp với bạn</span
+  >
+  <h2>Thiết lập hồ sơ nhu cầu thuê phòng</h2>
+  <p>Chọn nơi muốn sống và những điều bạn ưu tiên để Trọ Tốt hiểu rõ nhu cầu của bạn.</p>
+</header>
+@if (loading()) {
+  <p role="status">Đang tải hồ sơ tìm trọ…</p>
+} @else if (loadError()) {
+  <section class="card" role="alert">
+    <p>{{ loadError() }}</p>
+    <button type="button" class="btn-primary" (click)="load()">Thử lại</button>
+  </section>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="save()" (input)="saved.set(false)">
+    <fieldset [disabled]="busy()" class="preferences-layout">
+      <div class="sections">
+        <section class="card">
+          <div class="heading">
+            <span class="number">1</span>
+            <div>
+              <h3>Khu vực bạn muốn tìm phòng</h3>
+              <p>Chọn tỉnh/thành, phường/xã hoặc địa điểm muốn ở gần.</p>
+            </div>
+            <span class="material-symbols-outlined icon" aria-hidden="true">explore</span>
+          </div>
+          <label
+            >Tỉnh / thành phố<select formControlName="desiredProvinceId">
+              <option [ngValue]="null">Không giới hạn</option>
+              @for (province of provinces(); track province.id) {
+                <option [value]="province.id">{{ province.name }}</option>
+              }
+            </select></label
+          >
+          @if (wardError()) {
+            <p class="error" role="alert">{{ wardError() }}</p>
+          }
+          @if (wards().length) {
+            <p class="caption">
+              Phường / xã ưu tiên · tối đa 5 (đã chọn {{ form.controls.wardIds.value.length }})
+            </p>
+            <div class="ward-list">
+              @for (ward of wards(); track ward.id) {
+                <button
+                  type="button"
+                  class="chip"
+                  [class.selected]="form.controls.wardIds.value.includes(ward.id)"
+                  [attr.aria-pressed]="form.controls.wardIds.value.includes(ward.id)"
+                  (click)="toggleWard(ward.id)"
+                >
+                  {{ ward.name }}
+                </button>
+              }
+            </div>
+          }
+          <div class="destination">
+            <h4>Địa điểm muốn ở gần</h4>
+            <label
+              >Tìm trường học, công viên trong danh mục<input
+                type="search"
+                placeholder="VD: Bách khoa, công viên Gia Định…"
+                (input)="searchPlaces($any($event.target).value)"
+                maxlength="100"
+            /></label>
+            @if (placesLoading()) {
+              <p role="status">Đang tìm địa điểm…</p>
+            }
+            @if (placesError()) {
+              <p class="error" role="alert">{{ placesError() }}</p>
+            }
+            @if (!placesLoading() && !placesError() && !places().length) {
+              <p>
+                Không có địa điểm phù hợp. Bạn có thể tìm địa chỉ hoặc chấm trên bản đồ bên dưới.
+              </p>
+            }
+            <div class="places">
+              @for (place of places(); track place.id) {
+                <button
+                  type="button"
+                  [class.selected]="form.controls.anchorPlaceId.value === place.id"
+                  (click)="selectPlace(place)"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">{{
+                    place.category === 'UNIVERSITY'
+                      ? 'school'
+                      : place.category === 'PARK'
+                        ? 'park'
+                        : 'location_on'
+                  }}</span
+                  ><span
+                    ><strong>{{ place.name }}</strong
+                    ><small>{{ place.address }}</small></span
+                  >
+                </button>
+              }
+            </div>
+            <p class="caption">Hoặc tìm địa chỉ, chấm một điểm trên bản đồ và đặt tên riêng.</p>
+            <app-map-place-search [disabled]="busy()" (placeSelected)="searchedPlace($event)" />
+            <app-map-canvas
+              [editable]="true"
+              [disabled]="busy()"
+              [center]="point()"
+              [pins]="pins()"
+              (positionChange)="mapPosition($event)"
+            />
+            @if (point(); as location) {
+              <div class="location-preview">
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                <div>
+                  <strong>{{
+                    form.controls.anchorLabel.value || 'Vị trí đã chọn trên bản đồ'
+                  }}</strong
+                  ><small
+                    >Vĩ độ: {{ location.latitude | number: '1.4-8' }} · Kinh độ:
+                    {{ location.longitude | number: '1.4-8' }}</small
+                  >
+                </div>
+                <button
+                  type="button"
+                  class="text-button"
+                  (click)="clearPlace()"
+                  aria-label="Xóa địa điểm"
+                >
+                  Xóa
+                </button>
+              </div>
+              <label
+                >Tên địa điểm (không bắt buộc)<input
+                  formControlName="anchorLabel"
+                  maxlength="255"
+                  [readOnly]="!!form.controls.anchorPlaceId.value"
+                  placeholder="VD: Nơi làm việc của tôi"
+              /></label>
+              <label
+                >Bán kính mong muốn: {{ form.controls.maxDistanceKm.value }} km<input
+                  type="range"
+                  min="0.5"
+                  max="30"
+                  step="0.5"
+                  formControlName="maxDistanceKm"
+              /></label>
+            }
+          </div>
+        </section>
+        <section class="card">
+          <div class="heading">
+            <span class="number">2</span>
+            <div>
+              <h3>Ngân sách hàng tháng</h3>
+              <p>Giá thuê chưa bao gồm điện, nước và phí dịch vụ.</p>
+            </div>
+            <span class="material-symbols-outlined icon" aria-hidden="true">payments</span>
+          </div>
+          <div class="budget-readout">
+            {{
+              form.controls.priceMin.value == null
+                ? 'Không giới hạn'
+                : (form.controls.priceMin.value | number) + ' đ'
+            }}
+            —
+            {{
+              form.controls.priceMax.value == null
+                ? 'Không giới hạn'
+                : (form.controls.priceMax.value | number) + ' đ'
+            }}<small>/ tháng</small>
+          </div>
+          <div class="fields">
+            <label
+              >Tối thiểu (đ)<input
+                type="number"
+                min="0"
+                max="9999999999.99"
+                step="100000"
+                formControlName="priceMin"
+                placeholder="Không giới hạn" /></label
+            ><label
+              >Tối đa (đ)<input
+                type="number"
+                min="0"
+                max="9999999999.99"
+                step="100000"
+                formControlName="priceMax"
+                placeholder="Không giới hạn"
+            /></label>
+          </div>
+          <div class="chips">
+            <button type="button" class="chip" (click)="budget(0, 3000000)">Dưới 3 triệu</button
+            ><button type="button" class="chip" (click)="budget(3000000, 5000000)">
+              3 — 5 triệu</button
+            ><button type="button" class="chip" (click)="budget(5000000, 8000000)">
+              5 — 8 triệu</button
+            ><button type="button" class="chip" (click)="budget(8000000, null)">
+              Trên 8 triệu
+            </button>
+          </div>
+          <label
+            >Mức vượt ngân sách có thể cân nhắc: {{ form.controls.priceTolerancePct.value }}%<input
+              type="range"
+              min="0"
+              max="50"
+              step="1"
+              formControlName="priceTolerancePct"
+          /></label>
+        </section>
+        <section class="card">
+          <div class="heading">
+            <span class="number">3</span>
+            <div>
+              <h3>Loại phòng và nhu cầu ở</h3>
+              <p>Để trống những tiêu chí bạn chưa quyết định.</p>
+            </div>
+            <span class="material-symbols-outlined icon" aria-hidden="true">apartment</span>
+          </div>
+          <div class="type-grid">
+            <button
+              type="button"
+              class="type"
+              [class.selected]="!form.controls.desiredRoomTypeId.value"
+              (click)="form.controls.desiredRoomTypeId.setValue(null); changed()"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">apps</span> Tất cả loại
+              phòng
+            </button>
+            @for (type of types(); track type.id) {
+              <button
+                type="button"
+                class="type"
+                [class.selected]="form.controls.desiredRoomTypeId.value === type.id"
+                (click)="form.controls.desiredRoomTypeId.setValue(type.id); changed()"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">home</span
+                >{{ type.name }}
+              </button>
+            }
+          </div>
+          <div class="fields">
+            <label
+              >Diện tích tối thiểu (m²)<input
+                type="number"
+                min="0"
+                max="999999.99"
+                step="0.5"
+                formControlName="areaMin" /></label
+            ><label
+              >Diện tích tối đa (m²)<input
+                type="number"
+                min="0"
+                max="999999.99"
+                step="0.5"
+                formControlName="areaMax" /></label
+            ><label
+              >Bạn là<select formControlName="tenantType">
+                <option [ngValue]="null">Chưa chọn</option>
+                <option value="STUDENT">Sinh viên</option>
+                <option value="WORKER">Người đi làm</option>
+                <option value="FAMILY">Gia đình</option>
+                <option value="OTHER">Khác</option>
+              </select></label
+            ><label
+              >Số người ở<input
+                type="number"
+                min="1"
+                max="50"
+                step="1"
+                formControlName="occupants" /></label
+            ><label class="wide"
+              >Ngày dự kiến chuyển đến<input type="date" formControlName="moveInDate"
+            /></label>
+          </div>
+        </section>
+        <section class="card">
+          <div class="heading">
+            <span class="number">4</span>
+            <div>
+              <h3>Tiện ích và ưu tiên</h3>
+              <p>Tiện ích bắt buộc sẽ loại các phòng không đáp ứng khi gợi ý.</p>
+            </div>
+            <span class="material-symbols-outlined icon" aria-hidden="true">tune</span>
+          </div>
+          <div class="amenities">
+            @for (amenity of amenities(); track amenity.id) {
+              <div class="amenity">
+                <label class="check"
+                  ><input
+                    type="checkbox"
+                    [checked]="form.controls.amenityIds.value.includes(amenity.id)"
+                    (change)="toggleAmenity(amenity.id)"
+                  />{{ amenity.name }}</label
+                >
+                @if (form.controls.amenityIds.value.includes(amenity.id)) {
+                  <label class="check required"
+                    ><input
+                      type="checkbox"
+                      [checked]="form.controls.requiredAmenityIds.value.includes(amenity.id)"
+                      (change)="toggleRequired(amenity.id)"
+                    />
+                    Bắt buộc</label
+                  >
+                }
+              </div>
+            }
+          </div>
+          <label
+            >Yếu tố quan trọng nhất<select formControlName="topPriority">
+              <option [ngValue]="null">Cân bằng</option>
+              <option value="PRICE">Giá thuê</option>
+              <option value="LOCATION">Vị trí</option>
+              <option value="AREA">Diện tích</option>
+              <option value="AMENITIES">Tiện ích</option>
+            </select></label
+          >
+          <label
+            >Ghi chú thêm<textarea
+              rows="3"
+              formControlName="note"
+              maxlength="500"
+              placeholder="Những mong muốn khác của bạn…"
+            ></textarea>
+          </label>
+          <label class="check personalization"
+            ><input type="checkbox" formControlName="allowPersonalization" /><span
+              >Cho phép cá nhân hóa gợi ý phòng<small
+                >Sử dụng hồ sơ và hành vi xem, lưu, liên hệ để đề xuất phù hợp hơn.</small
+              ></span
+            ></label
+          >
+        </section>
+      </div>
+      <aside class="summary">
+        <section class="card">
+          <span class="material-symbols-outlined sparkle" aria-hidden="true">auto_awesome</span>
+          <h3>Hồ sơ tìm trọ của bạn</h3>
+          <p>Gợi ý sẽ dựa trên nhu cầu bạn đã lưu.</p>
+          <dl>
+            <div>
+              <dt>Khu vực</dt>
+              <dd>{{ form.controls.wardIds.value.length }} phường/xã</dd>
+            </div>
+            <div>
+              <dt>Địa điểm muốn gần</dt>
+              <dd>
+                {{
+                  form.controls.anchorLabel.value || (point() ? 'Vị trí trên bản đồ' : 'Chưa chọn')
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>Khoảng cách</dt>
+              <dd>{{ point() ? form.controls.maxDistanceKm.value + ' km' : 'Chưa giới hạn' }}</dd>
+            </div>
+            <div>
+              <dt>Tiện ích ưu tiên</dt>
+              <dd>{{ form.controls.amenityIds.value.length }}</dd>
+            </div>
+            <div>
+              <dt>Tiện ích bắt buộc</dt>
+              <dd>{{ form.controls.requiredAmenityIds.value.length }}</dd>
+            </div>
+          </dl>
+          @if (form.touched && form.invalid) {
+            <p class="error" role="alert">
+              {{
+                form.hasError('priceRange')
+                  ? 'Giá tối thiểu không được vượt giá tối đa.'
+                  : form.hasError('areaRange')
+                    ? 'Diện tích tối thiểu không được vượt diện tích tối đa.'
+                    : 'Vui lòng kiểm tra các giá trị đã nhập.'
+              }}
+            </p>
+          }
+          @if (saved()) {
+            <p class="success" role="status">Đã lưu hồ sơ tìm trọ.</p>
+          }
+          <button type="submit" class="btn-primary save" [disabled]="busy()">
+            {{ busy() ? 'Đang lưu…' : 'Lưu hồ sơ tìm trọ' }}</button
+          ><small>Bạn có thể thay đổi thiết lập bất cứ lúc nào.</small>
+        </section>
+      </aside>
+    </fieldset>
+  </form>
+}

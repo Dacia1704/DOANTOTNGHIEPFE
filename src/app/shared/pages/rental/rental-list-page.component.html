@@ -1,6 +1,7 @@
 <section
   class="rental-page rental-list-page"
   [class.management-page]="owner"
+  [class.tenant-rental-page]="!owner"
   [attr.aria-busy]="loading()"
 >
   <header class="page-heading">
@@ -8,28 +9,41 @@
       <p class="eyebrow">{{ owner ? 'KHÔNG GIAN CHỦ TRỌ' : 'HÀNH TRÌNH THUÊ NHÀ' }}</p>
       <h1>
         {{
-          tab === 'agreements'
-            ? owner
+          owner
+            ? tab === 'agreements'
               ? 'Hợp đồng cho thuê'
-              : 'Hợp đồng của tôi'
-            : owner
-              ? 'Quản lý yêu cầu đặt phòng'
-              : 'Yêu cầu thuê của tôi'
+              : 'Quản lý yêu cầu đặt phòng'
+            : 'Yêu cầu thuê phòng của tôi'
         }}
       </h1>
       <p class="page-description">
         {{
           owner
             ? 'Theo dõi yêu cầu, quản lý hợp đồng và kết nối với người thuê.'
-            : 'Từ yêu cầu thuê đến hợp đồng, mọi thông tin đều ở đây.'
+            : 'Theo dõi phản hồi từ chủ trọ và quản lý hợp đồng, từ lúc gửi yêu cầu đến khi nhận phòng.'
         }}
       </p>
     </div>
-    <button class="btn-secondary refresh-button" [disabled]="loading() || busy()" (click)="load()">
-      <span class="material-symbols-outlined" [class.is-spinning]="loading()" aria-hidden="true"
-        >refresh</span
-      >Tải lại
-    </button>
+    <div class="heading-actions">
+      @if (!owner) {
+        <a class="tenant-profile-chip" routerLink="/trang-ca-nhan"
+          ><span class="material-symbols-outlined" aria-hidden="true">person</span
+          ><span
+            ><strong>{{ session()?.fullName || 'Tài khoản của bạn' }}</strong
+            ><small>Quản lý hồ sơ tìm trọ</small></span
+          ><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></a
+        >
+      }
+      <button
+        class="btn-secondary refresh-button"
+        [disabled]="loading() || busy()"
+        (click)="load()"
+      >
+        <span class="material-symbols-outlined" [class.is-spinning]="loading()" aria-hidden="true"
+          >refresh</span
+        >Tải lại
+      </button>
+    </div>
   </header>
 
   @if (owner) {
@@ -228,305 +242,441 @@
       </app-management-table>
     }
   } @else {
-    <nav class="rental-tabs" aria-label="Yêu cầu và hợp đồng">
-      <button
-        [class.is-active]="tab === 'requests'"
-        [disabled]="loading() || busy()"
-        (click)="setTab('requests')"
-        [attr.aria-pressed]="tab === 'requests'"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">inbox</span>Yêu cầu thuê
-      </button>
-      <button
-        [class.is-active]="tab === 'agreements'"
-        [disabled]="loading() || busy()"
-        (click)="setTab('agreements')"
-        [attr.aria-pressed]="tab === 'agreements'"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">description</span>Hợp đồng
-      </button>
-    </nav>
-
-    @if (owner && tab === 'requests') {
-      <div class="filters panel">
-        <span class="filter-heading"
-          ><span class="material-symbols-outlined" aria-hidden="true">tune</span>Bộ lọc</span
+    <div class="tenant-toolbar panel">
+      <nav class="status-tabs" aria-label="Trạng thái yêu cầu và hợp đồng">
+        @for (item of tenantTabs; track item.status) {
+          <button
+            type="button"
+            [class.is-active]="tab === 'requests' && status === item.status"
+            [attr.aria-pressed]="tab === 'requests' && status === item.status"
+            [disabled]="loading() || busy()"
+            (click)="selectTenantTab(item.status)"
+          >
+            <span>{{ item.label }}</span
+            ><b>{{
+              (item.status ? summary()?.statuses?.[item.status] : summary()?.totalRequests) ?? '—'
+            }}</b>
+          </button>
+        }
+        <button
+          type="button"
+          [class.is-active]="tab === 'agreements'"
+          [attr.aria-pressed]="tab === 'agreements'"
+          [disabled]="loading() || busy()"
+          (click)="selectTenantTab('agreements')"
         >
-        <label
-          >Trạng thái<select
-            class="input"
-            [(ngModel)]="status"
+          <span class="material-symbols-outlined" aria-hidden="true">description</span
+          ><span>Hợp đồng</span><b>{{ summary()?.totalAgreements ?? '—' }}</b>
+        </button>
+      </nav>
+      <form class="tenant-search" (ngSubmit)="filter()" aria-label="Tìm yêu cầu và hợp đồng">
+        <label class="search-box"
+          ><span class="material-symbols-outlined" aria-hidden="true">search</span
+          ><input
+            type="search"
+            name="keyword"
+            [(ngModel)]="keyword"
+            maxlength="100"
+            placeholder="Tìm theo tên phòng, khu vực…"
+            aria-label="Từ khóa tìm yêu cầu và hợp đồng"
+          /><button type="submit" [disabled]="loading() || busy()" aria-label="Tìm kiếm">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </button></label
+        >
+        <label class="sort-box"
+          ><span class="material-symbols-outlined" aria-hidden="true">swap_vert</span
+          ><select
+            name="sort"
+            [(ngModel)]="order"
             (ngModelChange)="filter()"
             [disabled]="loading() || busy()"
+            aria-label="Sắp xếp kết quả"
           >
-            <option value="">Tất cả trạng thái</option>
-            <option value="PENDING">Chờ xử lý</option>
-            <option value="ACCEPTED">Đã chấp nhận</option>
-            <option value="REJECTED">Từ chối</option>
-            <option value="EXPIRED">Hết hạn</option>
-            <option value="CANCELLED">Đã hủy</option>
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
           </select></label
         >
-        <label
-          >Cơ sở<select
-            class="input"
-            [(ngModel)]="propertyId"
-            (ngModelChange)="roomId = ''; filter()"
-            [disabled]="loading() || busy()"
-          >
-            <option value="">Tất cả cơ sở</option>
-            @for (p of properties(); track p.id) {
-              <option [value]="p.id">{{ p.name }}</option>
-            }
-          </select></label
-        >
-        <label
-          >Phòng<select
-            class="input"
-            [(ngModel)]="roomId"
-            (ngModelChange)="filter()"
-            [disabled]="!propertyId || loading() || busy()"
-          >
-            <option value="">Tất cả phòng</option>
-            @for (r of rooms; track r.id) {
-              <option [value]="r.id">{{ r.roomNumber }}</option>
-            }
-          </select></label
-        >
-      </div>
-    }
-
+      </form>
+    </div>
     @if (error()) {
       <div class="notice notice-error" role="alert">
         <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
         <p>{{ error() }}</p>
-        <button class="text-button" (click)="load()">Thử lại</button>
+        <button type="button" class="text-button" (click)="load()">Thử lại</button>
       </div>
     }
-
-    <div class="list-heading">
-      <h2>
-        {{ tab === 'agreements' ? 'Danh sách hợp đồng' : 'Danh sách yêu cầu' }}
-        <span class="result-count">{{ totalElements }}</span>
-      </h2>
-      <span>{{
-        owner ? 'Quản lý rõ ràng, cho thuê an tâm' : 'Cập nhật theo từng bước thuê phòng'
-      }}</span>
-    </div>
-
-    @if (loading()) {
-      <div class="cards" role="status" aria-label="Đang tải danh sách">
-        @for (item of [1, 2, 3]; track item) {
-          <div class="skeleton skeleton-card"></div>
-        }
-        <span class="loading-caption">Đang tải…</span>
-      </div>
-    } @else if (tab === 'requests') {
-      <div class="cards request-cards">
-        @for (r of requests(); track r.id) {
-          <article class="request-card panel">
-            @if (r.thumbnailUrl) {
-              <img class="property-thumbnail" [src]="r.thumbnailUrl" alt="" loading="lazy" />
+    @if (summaryError()) {
+      <p class="summary-error" role="status">{{ summaryError() }}</p>
+    }
+    <div class="tenant-content">
+      <main class="tenant-feed" aria-label="Danh sách yêu cầu và hợp đồng">
+        <div class="feed-heading">
+          <h2>{{ tab === 'agreements' ? 'Hợp đồng của tôi' : 'Danh sách yêu cầu' }}</h2>
+          <span>{{ totalElements }} {{ tab === 'agreements' ? 'hợp đồng' : 'yêu cầu' }}</span>
+        </div>
+        @if (loading()) {
+          <div class="feed-skeletons" role="status" aria-label="Đang tải danh sách">
+            @for (item of [1, 2, 3]; track item) {
+              <div class="skeleton feed-skeleton"></div>
             }
-            <div class="card-body">
-              <div class="card-topline">
-                <span class="status-badge" [attr.data-status]="r.status">{{
-                  labels[r.status] || r.status
-                }}</span
-                ><span class="card-date">{{ r.createdAt | date: 'dd/MM/yyyy' }}</span>
-              </div>
-              <h2>{{ r.propertyName }}</h2>
-              <p class="room-caption">
-                <span class="material-symbols-outlined" aria-hidden="true">door_front</span
-                >{{ r.roomNumber ? 'Phòng ' + r.roomNumber : 'Yêu cầu cũ' }}
-              </p>
-              @if (owner) {
-                <div class="request-person">
-                  <span class="person-avatar material-symbols-outlined" aria-hidden="true"
-                    >person</span
-                  >
-                  <div>
-                    <span>Khách thuê</span><strong>{{ r.tenantName }}</strong>
+            <span>Đang tải…</span>
+          </div>
+        } @else if (tab === 'requests') {
+          @for (r of requests(); track r.id) {
+            <article class="rental-feed-card panel" [attr.data-status]="r.status">
+              <div class="feed-card-body">
+                <div class="feed-media">
+                  <div class="feed-image">
+                    <span class="material-symbols-outlined image-placeholder" aria-hidden="true"
+                      >home</span
+                    >
+                    @if (r.card?.thumbnailUrl || r.thumbnailUrl) {
+                      <img
+                        [src]="imageSource(r.card?.thumbnailUrl || r.thumbnailUrl || '')"
+                        [alt]="r.propertyName"
+                        loading="lazy"
+                        (error)="$any($event.target).hidden = true"
+                      />
+                    }
+                    <span class="room-type-tag">{{
+                      r.card?.roomTypeName || 'Phòng cho thuê'
+                    }}</span>
                   </div>
+                  <p class="feed-address">
+                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span
+                    >{{ r.card?.fullAddress || 'Địa chỉ đang cập nhật' }}
+                  </p>
                 </div>
-              }
-              <div class="request-facts">
-                <span
-                  ><span class="material-symbols-outlined" aria-hidden="true">event</span
-                  >{{ r.proposedMoveInDate | date: 'dd/MM/yyyy' }}</span
-                ><span>{{ r.durationMonths }} tháng</span><span>{{ r.occupantCount }} người</span>
+                <div class="feed-info">
+                  <div class="feed-card-top">
+                    <span class="sent-date"
+                      ><span class="material-symbols-outlined" aria-hidden="true">schedule</span>Gửi
+                      {{ r.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span
+                    >
+                    <div class="feed-price">
+                      <strong>{{
+                        r.card?.price == null ? 'Giá đang cập nhật' : utils.formatFee(r.card!.price)
+                      }}</strong
+                      ><small>
+                        @if (r.card?.price != null) {
+                          / tháng
+                        }
+                      </small>
+                    </div>
+                  </div>
+                  <h3>{{ r.card?.listingTitle || r.propertyName }}</h3>
+                  <p class="feed-room">
+                    {{ r.propertyName }}{{ r.roomNumber ? ' · Phòng ' + r.roomNumber : '' }}
+                    @if (r.card?.areaM2 != null) {
+                      <span> · {{ r.card?.areaM2 }} m²</span>
+                    }
+                  </p>
+                  <div class="landlord-cardlet">
+                    <span class="material-symbols-outlined landlord-avatar" aria-hidden="true"
+                      >person</span
+                    >
+                    <div>
+                      <small>Chủ trọ</small
+                      ><strong>{{ r.card?.landlordName || 'Đang cập nhật' }}</strong>
+                    </div>
+                    <span class="material-symbols-outlined" aria-hidden="true">home_work</span>
+                  </div>
+                  <dl class="feed-facts">
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true">event</span>Ngày
+                        vào ở
+                      </dt>
+                      <dd>{{ (r.proposedMoveInDate | date: 'dd/MM/yyyy') || 'Chưa cung cấp' }}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true">date_range</span
+                        >Thời hạn
+                      </dt>
+                      <dd>
+                        {{
+                          r.durationMonths == null ? 'Chưa cung cấp' : r.durationMonths + ' tháng'
+                        }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true">group</span>Số
+                        người
+                      </dt>
+                      <dd>
+                        {{ r.occupantCount == null ? 'Chưa cung cấp' : r.occupantCount + ' người' }}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
-              @if (r.resolutionReason) {
-                <p class="resolution-note">{{ r.resolutionReason }}</p>
-              }
-              <div class="card-actions">
-                <button class="btn-secondary" (click)="view(r.id)">Chi tiết</button>
-                @if (r.status === 'PENDING') {
-                  @if (owner) {
-                    <button class="btn-primary" [disabled]="busy()" (click)="action(r, 'accept')">
-                      Chấp nhận</button
-                    ><button class="text-button" [disabled]="busy()" (click)="action(r, 'reject')">
-                      Từ chối
-                    </button>
-                  } @else {
-                    <button class="text-button" [disabled]="busy()" (click)="action(r, 'cancel')">
+              <footer class="feed-card-footer">
+                <div class="feed-status">
+                  <span class="status-badge" [attr.data-status]="r.status"
+                    ><span class="material-symbols-outlined" aria-hidden="true">{{
+                      statusIcons[r.status] || 'info'
+                    }}</span
+                    >{{ labels[r.status] || r.status }}</span
+                  >
+                  @if (r.resolutionReason) {
+                    <p>{{ r.resolutionReason }}</p>
+                  } @else if (r.status === 'PENDING' && r.expiresAt) {
+                    <small>Hạn phản hồi {{ r.expiresAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+                  }
+                </div>
+                <div class="feed-actions">
+                  <button type="button" class="btn-secondary" (click)="view(r.id)">Chi tiết</button>
+                  @if (r.status === 'PENDING') {
+                    <button
+                      type="button"
+                      class="text-button"
+                      [disabled]="busy()"
+                      (click)="action(r, 'cancel')"
+                    >
                       Hủy yêu cầu
                     </button>
                   }
-                }
-                @if (r.agreementId) {
-                  <a class="btn-primary" [routerLink]="[agreementPath, r.agreementId]"
+                  @if (r.agreementId) {
+                    <a class="btn-primary" [routerLink]="[agreementPath, r.agreementId]"
+                      >Xem hợp đồng<span class="material-symbols-outlined" aria-hidden="true"
+                        >arrow_forward</span
+                      ></a
+                    >
+                  } @else if (r.status !== 'PENDING') {
+                    <a class="text-button" [routerLink]="['/tro', r.listingId]">Xem lại phòng</a>
+                  }
+                </div>
+              </footer>
+            </article>
+          } @empty {
+            <section class="empty-state panel">
+              <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+              <h2>Chưa có yêu cầu phù hợp</h2>
+              <p>
+                {{
+                  keyword
+                    ? 'Thử tên phòng hoặc khu vực khác để tìm yêu cầu của bạn.'
+                    : 'Yêu cầu thuê phòng sẽ xuất hiện tại đây để bạn theo dõi phản hồi từ chủ trọ.'
+                }}
+              </p>
+              @if (keyword) {
+                <button type="button" class="btn-secondary" (click)="resetTenantSearch()">
+                  Xóa tìm kiếm
+                </button>
+              } @else {
+                <a class="btn-primary" routerLink="/">Khám phá phòng trọ</a>
+              }
+            </section>
+          }
+        } @else {
+          @for (a of contracts(); track a.id) {
+            <article
+              class="rental-feed-card agreement-feed-card panel"
+              [attr.data-status]="a.status"
+            >
+              <div class="feed-card-body">
+                <div class="feed-media">
+                  <div class="feed-image">
+                    <span class="material-symbols-outlined image-placeholder" aria-hidden="true"
+                      >description</span
+                    >
+                    @if (a.card?.thumbnailUrl) {
+                      <img
+                        [src]="imageSource(a.card!.thumbnailUrl!)"
+                        [alt]="a.propertyName"
+                        loading="lazy"
+                        (error)="$any($event.target).hidden = true"
+                      />
+                    }
+                    <span class="room-type-tag">{{
+                      a.card?.roomTypeName || 'Hợp đồng thuê phòng'
+                    }}</span>
+                  </div>
+                  <p class="feed-address">
+                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span
+                    >{{ a.card?.fullAddress || 'Địa chỉ đang cập nhật' }}
+                  </p>
+                </div>
+                <div class="feed-info">
+                  <div class="feed-card-top">
+                    <span class="sent-date"
+                      ><span class="material-symbols-outlined" aria-hidden="true">description</span
+                      >Hợp đồng thuê phòng</span
+                    >
+                    <div class="feed-price">
+                      <strong>{{ utils.formatFee(a.price) }}</strong
+                      ><small>/ tháng</small>
+                    </div>
+                  </div>
+                  <h3>{{ a.propertyName }} · Phòng {{ a.roomNumber }}</h3>
+                  <p class="feed-room">Hợp đồng giữa {{ a.landlordName }} và {{ a.tenantName }}</p>
+                  <div class="landlord-cardlet">
+                    <span class="material-symbols-outlined landlord-avatar" aria-hidden="true"
+                      >person</span
+                    >
+                    <div>
+                      <small>Chủ trọ</small><strong>{{ a.landlordName }}</strong>
+                    </div>
+                    <span class="material-symbols-outlined" aria-hidden="true">home_work</span>
+                  </div>
+                  <dl class="feed-facts">
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true">event</span>Ngày
+                        bắt đầu
+                      </dt>
+                      <dd>{{ a.startDate | date: 'dd/MM/yyyy' }}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true"
+                          >event_available</span
+                        >Ngày kết thúc
+                      </dt>
+                      <dd>{{ a.endDate | date: 'dd/MM/yyyy' }}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <span class="material-symbols-outlined" aria-hidden="true">payments</span
+                        >Tiền cọc
+                      </dt>
+                      <dd>{{ utils.formatFee(a.deposit) }}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <footer class="feed-card-footer">
+                <div class="feed-status">
+                  <span class="status-badge" [attr.data-status]="a.status"
+                    ><span class="material-symbols-outlined" aria-hidden="true">{{
+                      statusIcons[a.status] || 'description'
+                    }}</span
+                    >{{ labels[a.status] || a.status }}</span
+                  >
+                  @if (a.status === 'PENDING_CONFIRMATION') {
+                    <small
+                      >Xác nhận trước
+                      {{ a.confirmationExpiresAt | date: 'dd/MM/yyyy HH:mm' }}</small
+                    >
+                  } @else if (a.cancelReason) {
+                    <p>{{ a.cancelReason }}</p>
+                  }
+                </div>
+                <div class="feed-actions">
+                  @if (a.requestId) {
+                    <button type="button" class="btn-secondary" (click)="view(a.requestId)">
+                      Yêu cầu gốc
+                    </button>
+                  }
+                  <a class="btn-primary" [routerLink]="[agreementPath, a.id]"
                     >Xem hợp đồng<span class="material-symbols-outlined" aria-hidden="true"
                       >arrow_forward</span
                     ></a
                   >
-                }
-              </div>
-            </div>
-          </article>
-        } @empty {
-          <article class="empty-state panel">
-            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
-            <h2>Chưa có yêu cầu phù hợp</h2>
-            <p>
-              {{
-                owner
-                  ? 'Các yêu cầu từ người thuê sẽ xuất hiện tại đây. Bạn có thể thay đổi bộ lọc để xem yêu cầu khác.'
-                  : 'Khi tìm được căn phòng ưng ý, hãy gửi yêu cầu thuê để bắt đầu.'
-              }}
-            </p>
-            @if (!owner) {
-              <a class="btn-primary" routerLink="/">Khám phá phòng trọ</a>
-            }
-          </article>
-        }
-      </div>
-    } @else {
-      <div class="cards agreement-cards">
-        @for (a of contracts(); track a.id) {
-          <article class="agreement-card panel">
-            <div class="card-topline">
-              <span class="contract-emblem material-symbols-outlined" aria-hidden="true"
-                >description</span
-              ><span class="status-badge" [attr.data-status]="a.status">{{
-                labels[a.status] || a.status
-              }}</span>
-            </div>
-            <p class="agreement-code">{{ a.agreementCode }}</p>
-            <h2>{{ a.propertyName }}</h2>
-            <p class="room-caption">
-              <span class="material-symbols-outlined" aria-hidden="true">door_front</span>Phòng
-              {{ a.roomNumber }}
-            </p>
-            <div class="agreement-party">
-              <span class="person-avatar material-symbols-outlined" aria-hidden="true">person</span>
-              <div>
-                <span>{{ owner ? 'Người thuê' : 'Chủ trọ' }}</span
-                ><strong>{{ owner ? a.tenantName : a.landlordName }}</strong>
-              </div>
-            </div>
-            <dl class="agreement-facts">
-              <div>
-                <dt>Tiền thuê hàng tháng</dt>
-                <dd class="monthly-price">{{ utils.formatFee(a.price) }}</dd>
-              </div>
-              <div>
-                <dt>Thời gian thuê</dt>
-                <dd>
-                  {{ a.startDate | date: 'dd/MM/yyyy' }}<span class="date-separator">→</span
-                  >{{ a.endDate | date: 'dd/MM/yyyy' }}
-                </dd>
-              </div>
-            </dl>
-            @if (a.status === 'PENDING_CONFIRMATION') {
-              <p class="contract-reminder">
-                <span class="material-symbols-outlined" aria-hidden="true">schedule</span>Xác nhận
-                trước {{ a.confirmationExpiresAt | date: 'HH:mm · dd/MM/yyyy' }}
+                </div>
+              </footer>
+            </article>
+          } @empty {
+            <section class="empty-state panel">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+              <h2>Chưa có hợp đồng phù hợp</h2>
+              <p>
+                {{
+                  keyword
+                    ? 'Thử tên phòng hoặc khu vực khác để tìm hợp đồng.'
+                    : 'Hợp đồng sẽ xuất hiện khi chủ trọ chấp nhận yêu cầu thuê của bạn.'
+                }}
               </p>
-            }
-            <a class="view-contract" [routerLink]="[agreementPath, a.id]"
-              ><span>Xem hợp đồng</span
-              ><span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a
-            >
-          </article>
-        } @empty {
-          <article class="empty-state panel">
-            <span class="material-symbols-outlined" aria-hidden="true">description</span>
-            <h2>Chưa có hợp đồng</h2>
-            <p>
-              {{
-                owner
-                  ? 'Hợp đồng được tạo sau khi bạn chấp nhận yêu cầu thuê phòng.'
-                  : 'Hợp đồng sẽ xuất hiện khi chủ trọ chấp nhận yêu cầu thuê của bạn.'
-              }}
-            </p>
-            <button class="btn-secondary" (click)="setTab('requests')">Xem yêu cầu thuê</button>
-          </article>
+              @if (keyword) {
+                <button type="button" class="btn-secondary" (click)="resetTenantSearch()">
+                  Xóa tìm kiếm
+                </button>
+              } @else {
+                <button type="button" class="btn-secondary" (click)="selectTenantTab('')">
+                  Xem yêu cầu thuê
+                </button>
+              }
+            </section>
+          }
         }
-      </div>
-    }
-  }
-  @if (detail(); as r) {
-    <article class="request-detail panel" aria-label="Chi tiết yêu cầu">
-      <header>
-        <div class="section-title">
-          <span class="material-symbols-outlined" aria-hidden="true">person_outline</span>
-          <h2>Chi tiết yêu cầu thuê</h2>
-        </div>
-        <button class="text-button" (click)="detail.set(null)">
-          Đóng chi tiết<span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      </header>
-      <h3>
-        {{ r.tenantName }} <span>· Phòng {{ r.roomNumber }}</span>
-      </h3>
-      <dl>
-        <div>
-          <dt>Điện thoại</dt>
-          <dd>{{ r.tenantPhone }}</dd>
-        </div>
-        <div>
-          <dt>Email</dt>
-          <dd>{{ r.tenantEmail }}</dd>
-        </div>
-        <div>
-          <dt>Giấy tờ</dt>
-          <dd>{{ r.maskedCitizenId }}</dd>
-        </div>
-        <div>
-          <dt>Địa chỉ thường trú</dt>
-          <dd>{{ r.permanentAddress }}</dd>
-        </div>
-        <div>
-          <dt>Thời gian thuê</dt>
-          <dd>
-            {{ r.proposedMoveInDate | date: 'dd/MM/yyyy' }} → {{ r.endDate | date: 'dd/MM/yyyy' }}
-          </dd>
-        </div>
-      </dl>
-      <div class="request-message">
-        <span>Lời nhắn từ người thuê</span>
-        <p>{{ r.message || 'Không có lời nhắn' }}</p>
-      </div>
-    </article>
-  }
-  @if (!owner && totalPages > 1) {
-    <nav class="pagination" aria-label="Phân trang">
-      <button
-        class="btn-secondary"
-        [disabled]="page === 0 || loading() || busy()"
-        (click)="page = page - 1; load()"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>Trang trước</button
-      ><span
-        >Trang <strong>{{ page + 1 }}</strong> / {{ totalPages }}</span
-      ><button
-        class="btn-secondary"
-        [disabled]="page + 1 >= totalPages || loading() || busy()"
-        (click)="page = page + 1; load()"
-      >
-        Trang sau<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-      </button>
-    </nav>
+        @if (totalPages > 1) {
+          <nav class="pagination" aria-label="Phân trang">
+            <button
+              type="button"
+              class="btn-secondary"
+              [disabled]="page === 0 || loading() || busy()"
+              (click)="changePage(page - 1)"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>Trang
+              trước</button
+            ><span
+              >Trang <strong>{{ page + 1 }}</strong> / {{ totalPages }}</span
+            ><button
+              type="button"
+              class="btn-secondary"
+              [disabled]="page + 1 >= totalPages || loading() || busy()"
+              (click)="changePage(page + 1)"
+            >
+              Trang sau<span class="material-symbols-outlined" aria-hidden="true"
+                >chevron_right</span
+              >
+            </button>
+          </nav>
+        }
+      </main>
+      <aside class="tenant-sidebar" aria-label="Hướng dẫn thuê phòng">
+        <section class="sidebar-card panel">
+          <span class="material-symbols-outlined sidebar-emblem" aria-hidden="true"
+            >fact_check</span
+          >
+          <h2>Hành trình thuê phòng của bạn</h2>
+          <p>Mọi phản hồi và hợp đồng được lưu tại đây để bạn dễ theo dõi.</p>
+          <div class="journey-stats">
+            <div>
+              <strong>{{ summary()?.statuses?.['PENDING'] ?? '—' }}</strong
+              ><span>Chờ phản hồi</span>
+            </div>
+            <div>
+              <strong>{{ summary()?.totalAgreements ?? '—' }}</strong
+              ><span>Hợp đồng</span>
+            </div>
+          </div>
+          <ol class="journey-steps">
+            <li><span>1</span>Gửi yêu cầu với thông tin đầy đủ</li>
+            <li><span>2</span>Theo dõi phản hồi của chủ trọ</li>
+            <li><span>3</span>Đọc kỹ và xác nhận hợp đồng</li>
+          </ol>
+        </section>
+        <section class="sidebar-card tip-card">
+          <div class="sidebar-title">
+            <span class="material-symbols-outlined" aria-hidden="true">lightbulb</span>
+            <h2>Chuẩn bị hồ sơ tìm trọ</h2>
+          </div>
+          <p>Cập nhật nhu cầu, ngân sách và địa điểm muốn ở gần để nhận gợi ý phòng phù hợp hơn.</p>
+          <a routerLink="/trang-ca-nhan"
+            >Thiết lập hồ sơ<span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_forward</span
+            ></a
+          >
+        </section>
+        <section class="sidebar-card panel">
+          <div class="sidebar-title">
+            <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+            <h2>Thuê phòng an tâm</h2>
+          </div>
+          <p>
+            Kiểm tra thực tế phòng, làm rõ các khoản phí và đọc kỹ điều khoản trước khi xác nhận hợp
+            đồng.
+          </p>
+          <a routerLink="/cam-nang"
+            >Xem cẩm nang thuê trọ<span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_forward</span
+            ></a
+          >
+        </section>
+      </aside>
+    </div>
   }
 </section>

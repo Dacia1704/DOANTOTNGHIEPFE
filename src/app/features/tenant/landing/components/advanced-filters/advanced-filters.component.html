@@ -1,0 +1,125 @@
+<form [formGroup]="form" (ngSubmit)="submit()" aria-label="Bộ lọc nâng cao">
+  <div class="filter-intro">
+    <div>
+      <h3>Tìm phòng theo nhu cầu của bạn</h3>
+      <p>Kết hợp khu vực, ngân sách và tiện ích để thu hẹp kết quả.</p>
+    </div>
+    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+  </div>
+  @if (optionError()) {
+    <div class="warning" role="alert">
+      {{ optionError() }} <button type="button" (click)="loadOptions()">Thử tải lại</button>
+    </div>
+  }
+  <div class="fields">
+    <label
+      >Tỉnh / thành phố<select formControlName="provinceId">
+        <option value="">Tất cả tỉnh / thành phố</option>
+        @for (p of provinces(); track p.id) {
+          <option [value]="p.id">{{ p.name }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Phường / xã<select formControlName="wardId" [attr.aria-busy]="wardsLoading()">
+        <option value="">
+          {{
+            wardsLoading()
+              ? 'Đang tải phường / xã…'
+              : form.controls.provinceId.value
+                ? 'Tất cả phường / xã'
+                : 'Chọn tỉnh / thành trước'
+          }}
+        </option>
+        @for (w of wards(); track w.id) {
+          <option [value]="w.id">{{ w.name }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Loại phòng<select formControlName="roomTypeName">
+        <option value="">Tất cả loại phòng</option>
+        @for (type of types(); track type.id) {
+          <option [value]="type.name">{{ type.name }}</option>
+        }
+      </select></label
+    >
+  </div>
+  @if (wardError()) {
+    <p class="warning" role="alert">{{ wardError() }}</p>
+  }
+  <div class="budget">
+    <div class="price-fields">
+      <label
+        >Giá thuê tối thiểu (đ/tháng)<input
+          type="number"
+          min="0"
+          max="9999999999.99"
+          step="100000"
+          formControlName="minPrice"
+          placeholder="Không giới hạn" /></label
+      ><span class="separator" aria-hidden="true">—</span
+      ><label
+        >Giá thuê tối đa (đ/tháng)<input
+          type="number"
+          min="0"
+          max="9999999999.99"
+          step="100000"
+          formControlName="maxPrice"
+          placeholder="Không giới hạn"
+      /></label>
+    </div>
+    <div class="presets">
+      <button type="button" (click)="budget(null, 3000000)">Dưới 3 triệu</button
+      ><button type="button" (click)="budget(3000000, 5000000)">3 – 5 triệu</button
+      ><button type="button" (click)="budget(5000000, 8000000)">5 – 8 triệu</button
+      ><button type="button" (click)="budget(8000000, null)">Trên 8 triệu</button>
+    </div>
+  </div>
+  @if (form.touched && form.invalid) {
+    <p class="field-error" role="alert">
+      {{
+        form.hasError('priceRange')
+          ? 'Giá tối thiểu không được lớn hơn giá tối đa.'
+          : 'Vui lòng nhập giá từ 0 đến 9.999.999.999 đ.'
+      }}
+    </p>
+  }
+  <fieldset class="amenities">
+    <legend>Tiện ích mong muốn <small>Phòng cần có tất cả tiện ích bạn chọn</small></legend>
+    <div class="amenity-options">
+      @for (amenity of amenities(); track amenity.id) {
+        <button
+          type="button"
+          [class.selected]="form.controls.amenityNames.value.includes(amenity.name)"
+          [attr.aria-pressed]="form.controls.amenityNames.value.includes(amenity.name)"
+          (click)="toggleAmenity(amenity.name)"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">{{
+            amenity.icon || 'check_circle'
+          }}</span
+          >{{ amenity.name }}
+        </button>
+      } @empty {
+        <p class="hint">Danh mục tiện ích chưa có lựa chọn.</p>
+      }
+    </div>
+  </fieldset>
+  <div class="filter-footer">
+    <label class="availability"
+      ><input type="checkbox" formControlName="onlyAvailable" /><span
+        >Chỉ hiển thị phòng còn trống<small
+          >Giá thuê chưa bao gồm điện, nước và phí dịch vụ.</small
+        ></span
+      ></label
+    >
+    <div class="actions">
+      <button type="button" class="clear" [disabled]="searching" (click)="clear.emit()">
+        Xóa bộ lọc</button
+      ><button type="submit" class="apply" [disabled]="searching || wardsLoading()">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span
+        >{{ searching ? 'Đang tìm…' : 'Áp dụng bộ lọc' }}
+      </button>
+    </div>
+  </div>
+</form>

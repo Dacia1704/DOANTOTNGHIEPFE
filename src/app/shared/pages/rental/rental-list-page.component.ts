@@ -9,16 +9,24 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
-import { RentalAgreement, RentalRequest, RENTAL_LABELS } from '@model/rental/rental.model';
+import { Subscription, finalize } from 'rxjs';
+import {
+  RentalAgreement,
+  RentalRequest,
+  RentalSummary,
+  RENTAL_LABELS,
+} from '@model/rental/rental.model';
 import { Property } from '@model/property/property.model';
 import { RentalService } from '@services/rental/rental.service';
 import { PropertyService } from '@services/property/property.service';
 import { ConfirmRentalDialogComponent } from './confirm-rental-dialog.component';
+import { RentalRequestDetailDialogComponent } from './rental-request-detail-dialog.component';
 import { RoomUtils } from '@shared/utils/room-utils';
+import { ImageUtils } from '@shared/utils/image-utils';
+import { AuthService } from '@services/auth/auth.service';
 import {
   ManagementTableComponent,
   ManagementTableColumn,
@@ -51,10 +59,33 @@ export class RentalListPageComponent implements OnInit {
   readonly agreementPath = this.owner ? '/landlord/agreements' : '/hop-dong';
   readonly labels = RENTAL_LABELS;
   readonly utils = RoomUtils;
+  readonly session = inject(AuthService).session;
+  readonly summary = signal<RentalSummary | null>(null);
+  readonly summaryError = signal('');
+  private summarySubscription?: Subscription;
+  readonly tenantTabs = [
+    { status: '', label: 'Tất cả' },
+    { status: 'PENDING', label: 'Đang chờ phản hồi' },
+    { status: 'ACCEPTED', label: 'Đã chấp nhận' },
+    { status: 'REJECTED', label: 'Đã từ chối' },
+    { status: 'EXPIRED', label: 'Đã hết hạn' },
+  ];
+  readonly statusIcons: Record<string, string> = {
+    PENDING: 'schedule',
+    ACCEPTED: 'check_circle',
+    REJECTED: 'cancel',
+    EXPIRED: 'timer_off',
+    CANCELLED: 'block',
+    ACTIVE: 'verified',
+    PENDING_CONFIRMATION: 'hourglass_top',
+    TERMINATED: 'task_alt',
+  };
+  keyword = '';
+  order = 'newest';
   readonly requests = signal<RentalRequest[]>([]);
   readonly contracts = signal<RentalAgreement[]>([]);
   readonly properties = signal<Property[]>([]);
-  readonly detail = signal<RentalRequest | null>(null);
+  private detailDialog?: MatDialogRef<RentalRequestDetailDialogComponent>;
   readonly loading = signal(false);
   readonly busy = signal(false);
   readonly error = signal('');
@@ -87,6 +118,11 @@ export class RentalListPageComponent implements OnInit {
   get pagination() {
     return { page: this.page, total: this.total, totalPages: this.totalPages };
   }
+  imageSource(value: string | null | undefined): string {
+    return value?.startsWith('/') && !value.startsWith('//') && !value.startsWith('/9j/')
+      ? value
+      : ImageUtils.toImageSrc(value);
+  }
   changePage(page: number) {
     if (this.loading() || this.busy()) return;
     this.page = page;
@@ -115,6 +151,29 @@ export class RentalListPageComponent implements OnInit {
         .pipe(takeUntilDestroyed(this.destroy))
         .subscribe({ next: (p) => this.properties.set(p), error: () => {} });
   }
+  selectTenantTab(status: string): void {
+    if (this.loading() || this.busy()) return;
+    this.tab = status === 'agreements' ? 'agreements' : 'requests';
+    this.status = status === 'agreements' ? '' : status;
+    this.page = 0;
+    this.load();
+  }
+  private loadSummary(): void {
+    this.summarySubscription?.unsubscribe();
+    this.summaryError.set('');
+    this.summarySubscription = this.api
+      .summary()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (summary) => this.summary.set(summary),
+        error: () => this.summaryError.set('Chưa tải được số lượng theo trạng thái.'),
+      });
+  }
+  resetTenantSearch(): void {
+    this.keyword = '';
+    this.order = 'newest';
+    this.filter();
+  }
   setTab(tab: 'requests' | 'agreements') {
     if (this.loading() || this.busy()) return;
     this.tab = tab;
@@ -125,12 +184,17 @@ export class RentalListPageComponent implements OnInit {
     if (this.loading()) return;
     this.loading.set(true);
     this.error.set('');
-    this.detail.set(null);
+    if (!this.owner) this.loadSummary();
     if (this.tab === 'requests') {
+      if (!this.owner) this.requests.set([]);
       const filters: Record<string, string> = {};
       if (this.status) filters['status'] = this.status;
       if (this.propertyId) filters['propertyId'] = this.propertyId;
       if (this.roomId) filters['roomId'] = this.roomId;
+      if (!this.owner) {
+        filters['q'] = this.keyword.trim();
+        filters['sort'] = this.order;
+      }
       this.api
         .requests(this.owner, this.page, filters, this.pageSize)
         .pipe(
@@ -147,9 +211,15 @@ export class RentalListPageComponent implements OnInit {
           },
           error: (e) => this.fail(e),
         });
-    } else
+    } else {
+      if (!this.owner) this.contracts.set([]);
       this.api
-        .agreements(this.owner, this.page, this.pageSize)
+        .agreements(
+          this.owner,
+          this.page,
+          this.pageSize,
+          this.owner ? {} : { q: this.keyword.trim(), sort: this.order },
+        )
         .pipe(
           takeUntilDestroyed(this.destroy),
           finalize(() => this.loading.set(false)),
@@ -164,16 +234,26 @@ export class RentalListPageComponent implements OnInit {
           },
           error: (e) => this.fail(e),
         });
+    }
   }
   filter() {
     this.page = 0;
     this.load();
   }
   view(id: string) {
-    this.api
-      .request(id)
+    if (this.detailDialog) return;
+    this.detailDialog = this.dialogs.open(RentalRequestDetailDialogComponent, {
+      data: { requestId: id, agreementPath: this.agreementPath },
+      width: '880px',
+      maxWidth: 'calc(100vw - 24px)',
+      maxHeight: '94dvh',
+      autoFocus: 'dialog',
+      ariaLabel: 'Chi tiết yêu cầu thuê',
+    });
+    this.detailDialog
+      .afterClosed()
       .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({ next: (r) => this.detail.set(r), error: (e) => this.fail(e) });
+      .subscribe(() => (this.detailDialog = undefined));
   }
   action(r: RentalRequest, action: 'accept' | 'reject' | 'cancel') {
     if (this.busy()) return;

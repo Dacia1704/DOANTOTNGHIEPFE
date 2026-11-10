@@ -1,130 +1,199 @@
-<h2 mat-dialog-title>Đăng ký thuê {{ data.room.displayName }}</h2>
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <mat-dialog-content>
-    <p class="property-name">{{ data.listing.propertyName }}</p>
-    <p>{{ data.listing.fullAddress }}</p>
-    <div class="booking-summary">
-      <span
-        >Giá thuê<strong>{{ utils.formatPrice(data.room.price) }}</strong></span
-      ><span
-        >Tiền cọc<strong>{{ utils.formatFee(data.room.defaultDeposit) }}</strong></span
+<form [formGroup]="form" (ngSubmit)="submit()" class="booking-layout">
+  <div class="form-sections">
+    <section class="card">
+      <div class="section-title">
+        <span class="number">1</span>
+        <div>
+          <h2>Thông tin người thuê</h2>
+          <p>Thông tin liên hệ và định danh dùng để xử lý yêu cầu, lập hợp đồng.</p>
+        </div>
+        <span class="material-symbols-outlined section-icon" aria-hidden="true">badge</span>
+      </div>
+      <div class="fields">
+        <label class="wide" for="tenant-name"
+          >Họ và tên *<input
+            id="tenant-name"
+            formControlName="tenantFullName"
+            autocomplete="name"
+            maxlength="100"
+            placeholder="Nhập họ và tên của bạn"
+        /></label>
+        <label for="tenant-phone"
+          >Số điện thoại *<input
+            id="tenant-phone"
+            formControlName="tenantPhone"
+            type="tel"
+            autocomplete="tel"
+            placeholder="09xxxxxxxx"
+        /></label>
+        <label for="tenant-email"
+          >Email *<input
+            id="tenant-email"
+            formControlName="tenantEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="email@example.com"
+        /></label>
+        <label class="wide" for="tenant-id"
+          >CMND / CCCD *<input
+            id="tenant-id"
+            formControlName="tenantCitizenId"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="12"
+            placeholder="9 hoặc 12 chữ số"
+        /></label>
+        <label class="wide" for="tenant-address"
+          >Địa chỉ thường trú *<input
+            id="tenant-address"
+            formControlName="tenantPermanentAddress"
+            autocomplete="street-address"
+            maxlength="500"
+            placeholder="Số nhà, đường, phường/xã, tỉnh/thành"
+        /></label>
+      </div>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <span class="number">2</span>
+        <div>
+          <h2>Nhu cầu thuê phòng</h2>
+          <p>Chọn thời gian và số người dự kiến vào ở.</p>
+        </div>
+        <span class="material-symbols-outlined section-icon" aria-hidden="true"
+          >calendar_month</span
+        >
+      </div>
+      <div class="fields">
+        <label for="booking-date"
+          >Ngày dự kiến vào ở *<input
+            id="booking-date"
+            type="date"
+            [min]="today"
+            formControlName="proposedMoveInDate"
+        /></label>
+        <label for="booking-duration"
+          >Thời hạn thuê (tháng) *<input
+            id="booking-duration"
+            type="number"
+            min="1"
+            max="36"
+            step="1"
+            formControlName="durationMonths"
+        /></label>
+        <label class="wide" for="booking-people"
+          >Số người ở (tối đa {{ data.room.maxOccupants }}) *<input
+            id="booking-people"
+            type="number"
+            min="1"
+            [max]="data.room.maxOccupants"
+            step="1"
+            formControlName="occupantCount"
+        /></label>
+      </div>
+      @if (endDate) {
+        <p class="date-preview">
+          <span class="material-symbols-outlined" aria-hidden="true">event_available</span> Thời
+          gian thuê: {{ form.controls.proposedMoveInDate.value }} → {{ endDate }}
+        </p>
+      }
+      <label for="booking-note"
+        >Lời nhắn cho chủ trọ<textarea
+          id="booking-note"
+          rows="4"
+          maxlength="2000"
+          formControlName="message"
+          placeholder="Giới thiệu về bạn, thời gian thuận tiện liên hệ hoặc mong muốn thêm…"
+        ></textarea>
+      </label>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <span class="number">3</span>
+        <div>
+          <h2>Xác nhận và gửi yêu cầu</h2>
+          <p>Kiểm tra thông tin trước khi gửi đến chủ trọ.</p>
+        </div>
+      </div>
+      <p class="notice">
+        Thông tin cá nhân dùng để xử lý yêu cầu và lập hợp đồng, chỉ cung cấp cho các bên có quyền
+        truy cập. Gửi yêu cầu chưa giữ phòng và chưa xác nhận hợp đồng.
+      </p>
+      <label class="consent"
+        ><input type="checkbox" formControlName="acceptedPrivacyNotice" />
+        <span>Tôi đã đọc và đồng ý với thông báo xử lý dữ liệu cá nhân. *</span></label
       >
-    </div>
-    <p>
-      Điện: {{ utils.formatFee(data.room.electricityPrice) }} · Nước:
-      {{ utils.formatFee(data.room.waterPrice) }} · Dịch vụ:
-      {{ utils.formatFee(data.room.serviceFee) }}. Đơn vị tính trao đổi với chủ trọ.
-    </p>
-    <label for="tenant-name">Họ tên *</label
-    ><input
-      id="tenant-name"
-      class="input"
-      formControlName="tenantFullName"
-      autocomplete="name"
-      maxlength="100"
-    />
-    <label for="tenant-phone">Số điện thoại *</label
-    ><input
-      id="tenant-phone"
-      class="input"
-      formControlName="tenantPhone"
-      type="tel"
-      autocomplete="tel"
-    />
-    <label for="tenant-email">Email *</label
-    ><input
-      id="tenant-email"
-      class="input"
-      formControlName="tenantEmail"
-      type="email"
-      autocomplete="email"
-    />
-    <label for="tenant-id">CMND/CCCD (9 hoặc 12 chữ số) *</label
-    ><input
-      id="tenant-id"
-      class="input"
-      formControlName="tenantCitizenId"
-      inputmode="numeric"
-      autocomplete="off"
-      maxlength="12"
-    />
-    <label for="tenant-address">Địa chỉ thường trú *</label
-    ><input
-      id="tenant-address"
-      class="input"
-      formControlName="tenantPermanentAddress"
-      autocomplete="off"
-      maxlength="500"
-    />
-    <label for="booking-date">Ngày vào ở *</label
-    ><input
-      id="booking-date"
-      class="input"
-      type="date"
-      [min]="today"
-      formControlName="proposedMoveInDate"
-    />
-    <label for="booking-duration">Thời hạn (1–36 tháng) *</label
-    ><input
-      id="booking-duration"
-      class="input"
-      type="number"
-      min="1"
-      max="36"
-      step="1"
-      formControlName="durationMonths"
-    />
-    <label for="booking-people">Số người (tối đa {{ data.room.maxOccupants }}) *</label
-    ><input
-      id="booking-people"
-      class="input"
-      type="number"
-      min="1"
-      [max]="data.room.maxOccupants"
-      step="1"
-      formControlName="occupantCount"
-    />
-    @if (endDate) {
-      <p>
-        Thời gian thuê:
-        <strong>{{ form.controls.proposedMoveInDate.value }} → {{ endDate }}</strong>
-      </p>
-    }
-    <label for="booking-note">Lời nhắn</label
-    ><textarea
-      id="booking-note"
-      class="input"
-      rows="3"
-      maxlength="2000"
-      formControlName="message"
-    ></textarea>
-    <p class="notice">
-      Thông tin cá nhân dùng để xử lý yêu cầu và lập hợp đồng, chỉ cung cấp cho các bên có quyền
-      truy cập. Gửi yêu cầu chưa giữ phòng và chưa xác nhận hợp đồng.
-    </p>
-    <label
-      ><input type="checkbox" formControlName="acceptedPrivacyNotice" /> Tôi đã đọc thông báo xử lý
-      dữ liệu cá nhân. *</label
-    >
-    @if (form.touched && form.invalid) {
-      <p class="field-error" role="alert">
-        Vui lòng nhập đủ thông tin hợp lệ, ngày từ hôm nay và xác nhận thông báo riêng tư.
-      </p>
-    }
-    @if (error()) {
-      <p class="field-error" role="alert">{{ error() }}</p>
-    }
-  </mat-dialog-content>
-  <mat-dialog-actions align="end"
-    ><button
-      type="button"
-      class="btn-secondary"
-      [disabled]="busy()"
-      [mat-dialog-close]="unavailable() ? 'refresh' : null"
-    >
-      Đóng</button
-    ><button type="submit" class="btn-primary" [disabled]="busy() || unavailable()">
-      {{ busy() ? 'Đang gửi…' : 'Gửi yêu cầu thuê' }}
-    </button></mat-dialog-actions
-  >
+      @if (form.touched && form.invalid) {
+        <p class="field-error" role="alert">
+          Vui lòng nhập đủ thông tin hợp lệ: họ tên từ 2 ký tự, điện thoại 9–15 chữ số, email,
+          CMND/CCCD 9 hoặc 12 chữ số, địa chỉ từ 5 ký tự, ngày từ hôm nay, thời hạn 1–36 tháng, số
+          người trong giới hạn và xác nhận riêng tư.
+        </p>
+      }
+      @if (error()) {
+        <p class="field-error" role="alert">{{ error() }}</p>
+      }
+      <button type="submit" class="btn-primary submit" [disabled]="busy() || unavailable()">
+        <span class="material-symbols-outlined" aria-hidden="true">send</span
+        >{{ busy() ? 'Đang gửi…' : 'Gửi yêu cầu thuê phòng' }}
+      </button>
+    </section>
+  </div>
+  <aside class="summary">
+    <section class="card room-card">
+      @if (data.room.thumbnail || data.listing.thumbnail) {
+        <img
+          class="room-photo"
+          [src]="images.toImageSrc(data.room.thumbnail || data.listing.thumbnail)"
+          alt="Ảnh phòng đã chọn"
+        />
+      }
+      <div class="room-info">
+        <span class="tag">{{
+          data.listing.rentalMode === 'WHOLE' ? 'Thuê nguyên căn' : 'Phòng đã chọn'
+        }}</span>
+        <h2>{{ data.listing.propertyName }} · {{ data.room.displayName }}</h2>
+        <p>{{ data.listing.fullAddress }}</p>
+        <strong class="price">{{ utils.formatPrice(data.room.price) }}</strong>
+        <div class="features">
+          <span>{{ utils.formatArea(data.room.areaM2) }}</span
+          ><span>Tối đa {{ data.room.maxOccupants }} người</span>
+        </div>
+        <hr />
+        <h3>Chi phí tham khảo</h3>
+        <dl>
+          <div>
+            <dt>Tiền cọc</dt>
+            <dd>{{ utils.formatFee(data.room.defaultDeposit) }}</dd>
+          </div>
+          <div>
+            <dt>Điện</dt>
+            <dd>{{ utils.formatFee(data.room.electricityPrice) }}</dd>
+          </div>
+          <div>
+            <dt>Nước</dt>
+            <dd>{{ utils.formatFee(data.room.waterPrice) }}</dd>
+          </div>
+          <div>
+            <dt>Dịch vụ</dt>
+            <dd>{{ utils.formatFee(data.room.serviceFee) }}</dd>
+          </div>
+        </dl>
+        <p class="small">
+          Đơn vị tính điện, nước và dịch vụ cần trao đổi với chủ trọ. Các điều khoản chính thức được
+          xác nhận trong hợp đồng.
+        </p>
+      </div>
+    </section>
+    <section class="help">
+      <span class="material-symbols-outlined" aria-hidden="true">handshake</span>
+      <div>
+        <h3>Bước tiếp theo</h3>
+        <p>
+          Chủ trọ xem xét yêu cầu và liên hệ với bạn. Theo dõi phản hồi tại mục Yêu cầu thuê sau khi
+          gửi.
+        </p>
+      </div>
+    </section>
+  </aside>
 </form>

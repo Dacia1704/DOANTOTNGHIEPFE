@@ -1,4 +1,4 @@
-// UI-only simulation derived from RentalManagement/docs/PROPERTY_API.md.
+// UI-only simulation derived from RentalManagement/docs/api.md#property-api.
 // Synthetic fixtures stay here; production Angular services always use the actual API.
 const http = require('http');
 const crypto = require('crypto');

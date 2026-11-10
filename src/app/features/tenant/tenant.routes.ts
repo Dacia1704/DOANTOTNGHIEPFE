@@ -57,6 +57,13 @@ export const TENANT_ROUTES: Routes = [
       import('@shared/pages/rental/agreement-page.component').then((m) => m.AgreementPageComponent),
   },
   {
+    path: 'tro/:id/dat-phong/:roomId',
+    title: 'Gửi yêu cầu thuê phòng | Trọ Tốt',
+    canActivate: [roleGuard([RoleCode.TENANT])],
+    loadComponent: () =>
+      import('./listing/pages/booking-page/booking-page.component').then(m => m.BookingPageComponent),
+  },
+  {
     path: 'tro/:id',
     loadComponent: () =>
       import('@features/tenant/listing/pages/listing-detail-page/listing-detail-page.component').then(

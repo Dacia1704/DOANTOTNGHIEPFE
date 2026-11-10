@@ -1,0 +1,369 @@
+:host {
+  display: block;
+  min-width: 0;
+  color: var(--text-primary);
+}
+h2 {
+  font-size: 26px;
+  line-height: 1.4;
+  margin: 12px 0;
+}
+h3 {
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+h4 {
+  font-size: 15px;
+  margin: 0 0 16px;
+}
+p,
+small {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+p {
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+small {
+  font-size: 12px;
+  display: block;
+}
+.intro {
+  margin-bottom: 26px;
+}
+.badge {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+.badge span {
+  font-size: 17px;
+}
+.preferences-layout {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 22px;
+  align-items: start;
+  min-width: 0;
+}
+.sections {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.card {
+  background: var(--surface);
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  min-width: 0;
+  box-shadow: 0 3px 12px #12372c04;
+}
+.heading {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.heading p {
+  margin: 0;
+}
+.number {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  font-weight: 700;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+}
+.icon {
+  color: var(--primary);
+  margin-left: auto;
+}
+label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 16px 0;
+}
+input:not([type='checkbox']):not([type='range']),
+select,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--text-primary);
+  font: inherit;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+input.ng-invalid.ng-touched {
+  border-color: #ba1a1a;
+}
+input[type='checkbox'],
+input[type='range'] {
+  accent-color: var(--primary);
+}
+.caption {
+  font-size: 12px;
+  margin-top: 18px;
+}
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.fields label {
+  margin: 10px 0;
+}
+.wide {
+  grid-column: 1/-1;
+}
+.chips,
+.ward-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ward-list {
+  max-height: 150px;
+  overflow: auto;
+  padding: 3px;
+}
+.chip {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.chips {
+  margin: 14px 0;
+}
+.selected {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface)) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+.destination {
+  border-top: 1px solid var(--border);
+  margin-top: 22px;
+  padding-top: 22px;
+}
+.places {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 3px;
+}
+.places button {
+  display: flex;
+  gap: 12px;
+  text-align: left;
+  padding: 12px;
+  background: var(--background);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.places button > span:first-child {
+  color: var(--primary);
+}
+.places strong {
+  font-weight: 500;
+}
+.places small {
+  font-size: 11px;
+}
+.location-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--background);
+  padding: 12px;
+  border-radius: 10px;
+  margin: 14px 0;
+  font-size: 13px;
+}
+.location-preview > span {
+  color: var(--primary);
+}
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  margin-left: auto;
+}
+.budget-readout {
+  padding: 18px;
+  background: var(--background);
+  border-radius: 12px;
+  color: var(--primary);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.type {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--background);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.type span {
+  color: var(--primary);
+}
+.amenities {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.amenity {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+  margin: 0;
+}
+.check input {
+  margin-top: 3px;
+}
+.required {
+  font-size: 11px;
+  color: var(--primary);
+  margin: 10px 0 0;
+}
+.personalization {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.summary {
+  position: sticky;
+  top: 100px;
+}
+.summary h3 {
+  margin: 10px 0;
+}
+.sparkle {
+  font-size: 32px;
+  color: var(--primary);
+}
+dl {
+  margin: 20px 0;
+}
+dl > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+dt {
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.save {
+  width: 100%;
+  padding: 14px;
+  margin: 12px 0;
+}
+.summary small {
+  text-align: center;
+}
+.error {
+  color: #ba1a1a;
+}
+.success {
+  color: var(--primary);
+}
+app-map-canvas {
+  margin-top: 14px;
+  --map-height: 330px;
+}
+.preferences-layout[disabled] {
+  opacity: 0.7;
+}
+@media (max-width: 1200px) {
+  .preferences-layout {
+    grid-template-columns: 1fr;
+  }
+  .summary {
+    position: static;
+  }
+  .summary dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 16px;
+  }
+}
+@media (max-width: 600px) {
+  h2 {
+    font-size: 22px;
+  }
+  .card {
+    padding: 18px;
+  }
+  .fields,
+  .type-grid,
+  .amenities {
+    grid-template-columns: 1fr;
+  }
+  .icon {
+    display: none;
+  }
+  .budget-readout {
+    font-size: 18px;
+  }
+}

@@ -20,7 +20,6 @@ import { RoleCode } from '@model/auth/auth.model';
 import { ChatWidgetService } from '@services/chat/chat-widget.service';
 import { ImageUtils } from '@shared/utils/image-utils';
 import { RoomUtils } from '@shared/utils/room-utils';
-import { BookingDialogComponent } from '../../components/booking-dialog/booking-dialog.component';
 import { PropertyLocationComponent } from '@shared/components/property-location/property-location.component';
 import { ReviewSummary } from '@model/review/listing-review.model';
 import { ListingReviewsComponent } from '../../components/listing-reviews/listing-reviews.component';
@@ -270,17 +269,7 @@ export class ListingDetailPageComponent implements OnInit {
       return;
     }
     if (!this.auth.hasAnyRole([RoleCode.TENANT])) return;
-    this.dialogs
-      .open(BookingDialogComponent, {
-        data: { listing, room },
-        width: '560px',
-        maxWidth: 'calc(100vw - 24px)',
-        maxHeight: '92dvh',
-        autoFocus: 'first-tabbable',
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe(() => this.reload());
+    void this.router.navigate(['/tro', listing.id, 'dat-phong', room.id]);
   }
 
   chatWithLandlord(): void {

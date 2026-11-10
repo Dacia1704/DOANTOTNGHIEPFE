@@ -1,0 +1,255 @@
+:host {
+  display: block;
+  margin: 0 0 22px;
+}
+form {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 5px 24px #12372c06;
+  color: var(--text-primary);
+}
+.filter-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.filter-intro > span {
+  color: var(--primary);
+  font-size: 26px;
+}
+h3 {
+  font-size: 17px;
+  margin: 0 0 6px;
+}
+p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+input:not([type='checkbox']),
+select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  font: inherit;
+  color: var(--text-primary);
+}
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.budget {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.price-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.separator {
+  padding-bottom: 12px;
+  color: var(--text-secondary);
+}
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 3px;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.presets button,
+.amenity-options button {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.amenities {
+  border: 0;
+  border-top: 1px solid var(--border);
+  padding: 18px 0 0;
+  margin: 24px 0 0;
+  min-width: 0;
+}
+legend {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 12px 0 0;
+}
+small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.amenity-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  max-height: 180px;
+  overflow: auto;
+  padding: 3px;
+}
+.amenity-options button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.amenity-options button span {
+  font-size: 17px;
+}
+.amenity-options button.selected {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.filter-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.availability {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.availability input {
+  margin: 3px 0 0;
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.apply span {
+  font-size: 20px;
+}
+.clear {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 12px;
+}
+.warning,
+.field-error {
+  font-size: 12px;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.warning {
+  color: var(--text-secondary);
+}
+.warning button {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  text-decoration: underline;
+}
+.field-error {
+  color: var(--error, #ba1a1a);
+}
+@media (max-width: 850px) {
+  .budget {
+    display: block;
+  }
+  .presets {
+    margin-top: 12px;
+  }
+  .fields {
+    gap: 12px;
+  }
+  .filter-footer {
+    align-items: flex-start;
+  }
+}
+@media (max-width: 600px) {
+  form {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  .fields {
+    grid-template-columns: 1fr;
+  }
+  .price-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .separator {
+    display: none;
+  }
+  .filter-footer,
+  .actions {
+    width: 100%;
+  }
+  .actions {
+    justify-content: space-between;
+  }
+  .apply {
+    flex: 1;
+  }
+  .amenity-options {
+    max-height: 220px;
+  }
+}

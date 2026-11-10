@@ -3,7 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { map } from 'rxjs';
 import { environment } from '@environments/environment';
 import { ApiResponse, PageResponse } from '@model/api-response';
-import { RentalAgreement, RentalBooking, RentalRequest } from '@model/rental/rental.model';
+import {
+  RentalAgreement,
+  RentalBooking,
+  RentalRequest,
+  RentalSummary,
+} from '@model/rental/rental.model';
 
 @Injectable({ providedIn: 'root' })
 export class RentalService {
@@ -27,11 +32,16 @@ export class RentalService {
       .get<ApiResponse<RentalRequest>>(`${this.base}/rental-requests/${encodeURIComponent(id)}`)
       .pipe(map((r) => r.data));
   }
-  agreements(owner: boolean, page = 0, size = 10) {
+  summary() {
+    return this.http
+      .get<ApiResponse<RentalSummary>>(`${this.base}/rental-requests/my/summary`)
+      .pipe(map((r) => r.data));
+  }
+  agreements(owner: boolean, page = 0, size = 10, filters: Record<string, string> = {}) {
     return this.http
       .get<ApiResponse<PageResponse<RentalAgreement>>>(
         `${this.base}/${owner ? 'landlord/rental-agreements' : 'rental-agreements/my'}`,
-        { params: { page, size } },
+        { params: { ...filters, page, size } },
       )
       .pipe(map((r) => r.data));
   }

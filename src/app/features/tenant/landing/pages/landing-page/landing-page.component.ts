@@ -34,6 +34,7 @@ import { MapCanvasComponent } from '@shared/components/map-canvas/map-canvas.com
 import { MapPlaceSearchComponent } from '@shared/components/map-place-search/map-place-search.component';
 import { DOCUMENT, DecimalPipe } from '@angular/common';
 import { LocationUtils } from '@shared/utils/location-utils';
+import { AdvancedFiltersComponent } from '../../components/advanced-filters/advanced-filters.component';
 
 /** Public landing page using published listings and the existing rental flows. */
 @Component({
@@ -48,6 +49,7 @@ import { LocationUtils } from '@shared/utils/location-utils';
     MapPlaceSearchComponent,
     RouterLink,
     DecimalPipe,
+    AdvancedFiltersComponent,
   ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
@@ -224,6 +226,7 @@ export class LandingPageComponent implements OnInit {
   readonly searchError = signal('');
   readonly searching = signal(false);
   readonly view = signal<'list' | 'map'>('list');
+  readonly advancedFiltersOpen = signal(false);
   readonly locationLabels = signal({ province: '', ward: '' });
   readonly nearbyPlace = signal('');
   readonly mapPins = computed<MapPin[]>(() =>
