@@ -61,12 +61,12 @@ describe('listing booking access', () => {
     });
     expect(open).not.toHaveBeenCalled();
   });
-  it('opens booking for an eligible tenant and refreshes after closing', () => {
+  it('navigates an eligible tenant to the selected room booking page', () => {
     const c = component();
-    const reload = vi.spyOn(c, 'reload');
+    const nav = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     c.book();
-    expect(open).toHaveBeenCalledTimes(1);
-    expect(reload).toHaveBeenCalled();
+    expect(nav).toHaveBeenCalledWith(['/tro', 'post', 'dat-phong', 'room']);
+    expect(open).not.toHaveBeenCalled();
     expect(auth.hasAnyRole).toHaveBeenCalledWith([RoleCode.TENANT]);
   });
 });

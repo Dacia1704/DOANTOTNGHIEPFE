@@ -1,0 +1,193 @@
+<header class="dialog-header">
+  <div>
+    <span class="eyebrow">HÀNH TRÌNH THUÊ NHÀ</span>
+    <h2 mat-dialog-title>Chi tiết yêu cầu thuê</h2>
+  </div>
+  <button type="button" class="close-button" mat-dialog-close aria-label="Đóng chi tiết yêu cầu">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+<mat-dialog-content [attr.aria-busy]="loading()">
+  @if (loading()) {
+    <div class="state" role="status">Đang tải chi tiết yêu cầu…</div>
+  } @else if (error()) {
+    <div class="state" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-secondary" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (request(); as r) {
+    <div class="request-topline">
+      <span class="status" [attr.data-status]="r.status">{{ labels[r.status] || r.status }}</span
+      ><span>Gửi {{ r.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+    <section class="room-summary">
+      @if (r.thumbnailUrl && !imageFailed()) {
+        <img
+          [src]="images.toImageSrc(r.thumbnailUrl)"
+          alt="Ảnh cơ sở cho thuê"
+          (error)="imageFailed.set(true)"
+        />
+      }
+      <div>
+        <span class="eyebrow">{{
+          r.roomDetails?.rentalMode === 'WHOLE' ? 'THUÊ NGUYÊN CĂN' : 'PHÒNG YÊU CẦU THUÊ'
+        }}</span>
+        <h3>{{ r.propertyName }}</h3>
+        <p>{{ r.roomNumber ? 'Phòng ' + r.roomNumber : 'Yêu cầu cũ chưa chỉ định phòng' }}</p>
+        @if (r.roomDetails; as room) {
+          <p>{{ room.fullAddress || 'Chưa có địa chỉ' }}</p>
+          <strong class="price">{{
+            room.price == null ? 'Chưa có giá thuê' : utils.formatPrice(room.price)
+          }}</strong>
+          <div class="room-facts">
+            @if (room.roomTypeName) {
+              <span>{{ room.roomTypeName }}</span>
+            }
+            @if (room.areaM2 != null) {
+              <span>{{ utils.formatArea(room.areaM2) }}</span>
+            }
+            @if (room.maxOccupants != null) {
+              <span>Tối đa {{ room.maxOccupants }} người</span>
+            }
+            @if (room.floorNumber != null) {
+              <span>Tầng {{ room.floorNumber }}</span>
+            }
+          </div>
+        }
+      </div>
+    </section>
+    @if (r.roomDetails; as room) {
+      <section class="section">
+        <h3>
+          <span class="material-symbols-outlined" aria-hidden="true">payments</span>Giá và chi phí
+        </h3>
+        <p class="caption">
+          {{
+            room.priceSource === 'AGREEMENT'
+              ? 'Giá và phí đã chốt trong hợp đồng của yêu cầu này.'
+              : 'Giá và phí hiện tại của phòng; điều khoản chính thức được xác nhận trong hợp đồng.'
+          }}
+        </p>
+        <dl class="costs">
+          <div>
+            <dt>Tiền thuê / tháng</dt>
+            <dd>{{ utils.formatFee(room.price) }}</dd>
+          </div>
+          <div>
+            <dt>Tiền cọc</dt>
+            <dd>{{ utils.formatFee(room.deposit) }}</dd>
+          </div>
+          <div>
+            <dt>Điện</dt>
+            <dd>{{ utils.formatFee(room.electricityPrice) }}</dd>
+          </div>
+          <div>
+            <dt>Nước</dt>
+            <dd>{{ utils.formatFee(room.waterPrice) }}</dd>
+          </div>
+          <div>
+            <dt>Dịch vụ</dt>
+            <dd>{{ utils.formatFee(room.serviceFee) }}</dd>
+          </div>
+        </dl>
+        <p class="caption">Đơn vị tính điện, nước và dịch vụ cần trao đổi với chủ trọ.</p>
+      </section>
+    }
+    <section class="section">
+      <h3>
+        <span class="material-symbols-outlined" aria-hidden="true">event_note</span>Thông tin yêu
+        cầu
+      </h3>
+      <dl class="facts">
+        <div>
+          <dt>Ngày dự kiến vào ở</dt>
+          <dd>{{ (r.proposedMoveInDate | date: 'dd/MM/yyyy') || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>Ngày kết thúc dự kiến</dt>
+          <dd>{{ (r.endDate | date: 'dd/MM/yyyy') || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>Thời hạn thuê</dt>
+          <dd>{{ r.durationMonths == null ? 'Chưa cung cấp' : r.durationMonths + ' tháng' }}</dd>
+        </div>
+        <div>
+          <dt>Số người ở</dt>
+          <dd>{{ r.occupantCount == null ? 'Chưa cung cấp' : r.occupantCount + ' người' }}</dd>
+        </div>
+        <div>
+          <dt>Hạn xử lý yêu cầu</dt>
+          <dd>{{ (r.expiresAt | date: 'dd/MM/yyyy HH:mm') || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>Chủ trọ</dt>
+          <dd>{{ r.roomDetails?.landlordName || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div class="wide">
+          <dt>Mã yêu cầu</dt>
+          <dd class="request-id">{{ r.id }}</dd>
+        </div>
+      </dl>
+      @if (r.resolutionReason) {
+        <div class="note">
+          <strong>Phản hồi / lý do xử lý</strong>
+          <p>{{ r.resolutionReason }}</p>
+        </div>
+      }
+      <div class="note">
+        <strong>Lời nhắn của người thuê</strong>
+        <p>{{ r.message || 'Không có lời nhắn' }}</p>
+      </div>
+    </section>
+    <section class="section">
+      <h3>
+        <span class="material-symbols-outlined" aria-hidden="true">person</span>Thông tin người thuê
+      </h3>
+      <dl class="facts">
+        <div>
+          <dt>Họ tên</dt>
+          <dd>{{ r.tenantName || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>Số điện thoại</dt>
+          <dd>{{ r.tenantPhone || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ r.tenantEmail || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div>
+          <dt>CMND / CCCD</dt>
+          <dd>{{ r.maskedCitizenId || 'Chưa cung cấp' }}</dd>
+        </div>
+        <div class="wide">
+          <dt>Địa chỉ thường trú</dt>
+          <dd>{{ r.permanentAddress || 'Chưa cung cấp' }}</dd>
+        </div>
+      </dl>
+    </section>
+    @if (r.roomDetails; as room) {
+      <section class="section location">
+        <app-property-location
+          [latitude]="room.latitude"
+          [longitude]="room.longitude"
+          [address]="room.fullAddress"
+        />
+      </section>
+    } @else {
+      <p class="caption">Yêu cầu cũ chưa có thông tin vị trí phòng.</p>
+    }
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (request()?.agreementId; as agreementId) {
+    <a
+      class="btn-primary"
+      [routerLink]="[data.agreementPath, agreementId]"
+      [mat-dialog-close]="true"
+      >Xem hợp đồng</a
+    >
+  }
+  <button type="button" class="btn-secondary" mat-dialog-close>Đóng</button>
+</mat-dialog-actions>

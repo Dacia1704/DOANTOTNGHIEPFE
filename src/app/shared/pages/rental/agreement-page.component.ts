@@ -169,7 +169,7 @@ export class AgreementPageComponent implements OnInit {
                 : 'Xác nhận đã nhận bàn giao phòng',
           message:
             action === 'confirm'
-              ? `Bạn đồng ý nội dung hợp đồng ${a.agreementCode} đã hiển thị?`
+              ? `Bạn đồng ý nội dung hợp đồng giữa ${a.landlordName} và ${a.tenantName} đã hiển thị?`
               : action === 'checkout'
                 ? 'Chỉ tiếp tục khi đã hoàn tất bàn giao và nhận lại phòng. Phòng sẽ được mở đặt lại.'
                 : 'Phòng sẽ được giải phóng để nhận yêu cầu mới.',

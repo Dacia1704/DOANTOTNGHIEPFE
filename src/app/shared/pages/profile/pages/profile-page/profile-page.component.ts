@@ -8,10 +8,13 @@ import { Observable, finalize } from 'rxjs';
 import { UserService } from '@services/identity/user.service';
 import { ROLE_LABELS, STATUS_LABELS, UserProfile } from '@model/user/user.model';
 import { ImageUtils } from '@shared/utils/image-utils';
+import { TenantPreferencesComponent } from '../../tenant-preferences/tenant-preferences.component';
+import { AuthService } from '@services/auth/auth.service';
+import { RoleCode } from '@model/auth/auth.model';
 
 @Component({
   selector: 'app-profile-page',
-  imports: [ReactiveFormsModule, DatePipe, RouterLink],
+  imports: [ReactiveFormsModule, DatePipe, RouterLink, TenantPreferencesComponent],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,7 +28,8 @@ export class ProfilePageComponent {
   readonly user = signal<UserProfile | null>(null);
   readonly loading = signal(true);
   readonly busy = signal(false);
-  readonly section = signal<'profile' | 'security'>('profile');
+  readonly section = signal<'profile' | 'security' | 'preferences'>('profile');
+  readonly isTenant = inject(AuthService).hasAnyRole([RoleCode.TENANT]);
   readonly showPasswords = signal(false);
   readonly roleLabels = ROLE_LABELS;
   readonly statusLabels = STATUS_LABELS;

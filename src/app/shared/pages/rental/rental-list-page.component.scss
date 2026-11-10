@@ -1,464 +1,781 @@
 @use './rental';
 
-.rental-tabs {
+.heading-actions {
   display: flex;
-  gap: var(--space-lg);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: var(--space-lg);
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
-.rental-tabs button {
+.tenant-rental-page {
+  max-width: 1440px;
+}
+.tenant-rental-page .page-heading {
+  align-items: center;
+  margin-bottom: 24px;
+}
+.tenant-rental-page .page-description {
+  max-width: 720px;
+}
+.tenant-profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+.tenant-profile-chip > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+}
+.tenant-profile-chip strong {
+  display: block;
+  font-size: 12px;
+  max-width: 180px;
+  overflow-wrap: anywhere;
+}
+.tenant-profile-chip small {
+  display: block;
+  color: var(--primary);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.tenant-profile-chip > span:last-child {
+  color: var(--primary);
+  font-size: 18px;
+}
+.tenant-toolbar {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.status-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 3px;
+  scrollbar-width: thin;
+}
+.status-tabs button {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  position: relative;
-  padding: 15px 4px 17px;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
   border: 0;
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.status-tabs button b {
+  display: grid;
+  place-items: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  border-radius: 50%;
+  background: var(--background);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.status-tabs button.is-active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 3px 8px #00685f18;
+}
+.status-tabs button.is-active b {
+  background: #fff;
+  color: var(--primary);
+}
+.status-tabs button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.status-tabs .material-symbols-outlined {
+  font-size: 18px;
+}
+.tenant-search {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 0 4px;
+}
+.search-box,
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0 12px;
+}
+.search-box {
+  flex: 1;
+  max-width: 420px;
+  min-width: 0;
+}
+.search-box > span,
+.sort-box > span {
+  color: var(--primary);
+  font-size: 18px;
+}
+.search-box input {
+  border: 0;
+  outline: 0;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  padding: 11px 0;
+  color: var(--text-primary);
+}
+.search-box button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  padding: 4px;
   cursor: pointer;
 }
-.rental-tabs .material-symbols-outlined {
-  font-size: 20px;
+.search-box:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
-.rental-tabs .is-active {
-  color: var(--primary);
-  font-weight: 650;
-}
-.rental-tabs .is-active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--primary);
-}
-.filters {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  padding: 18px 20px;
-}
-.filter-heading {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-right: var(--space-md);
-  color: var(--text-secondary);
+.sort-box select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
   font-size: 12px;
+  padding: 10px 0;
+  max-width: 140px;
+  cursor: pointer;
 }
-.filters label {
-  flex: 1;
-  min-width: 155px;
-  font-size: 10px;
-  color: var(--text-secondary);
+.tenant-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 28px;
+  align-items: start;
 }
-.filters .input {
-  padding: 9px 12px;
-  margin-top: 7px;
-  font-size: 12px;
-  border-radius: var(--radius);
+.tenant-feed {
+  min-width: 0;
+  display: grid;
+  gap: 22px;
 }
-.list-heading {
+.feed-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: 12px;
 }
-.list-heading h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: 14px;
+.feed-heading h2 {
+  font-size: 15px;
 }
-.list-heading > span {
+.feed-heading > span {
+  font-size: 12px;
   color: var(--text-secondary);
-  font-size: 11px;
 }
-.result-count {
-  display: grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  padding-inline: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-lg);
-}
-.cards > .empty-state {
-  grid-column: 1 / -1;
-}
-.agreement-card {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+.rental-feed-card {
   overflow: hidden;
-  padding: 22px;
   transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
-.agreement-card:hover {
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  box-shadow: var(--shadow-hover);
+.rental-feed-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+  box-shadow: 0 6px 24px #12372c07;
 }
-.card-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
+.feed-card-body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  padding: 22px;
 }
-.contract-emblem {
+.feed-media,
+.feed-info {
+  min-width: 0;
+}
+.feed-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface-container-low);
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 46px;
+}
+.feed-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.feed-image img[hidden] {
+  display: none;
+}
+.image-placeholder {
+  font-size: 52px;
+  color: color-mix(in srgb, var(--primary) 35%, var(--surface));
+}
+.room-type-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  width: fit-content;
+  max-width: calc(100% - 20px);
+  padding: 5px 9px;
+  background: var(--surface);
   color: var(--primary);
-  background: var(--primary-subtle);
-  border: 1px solid color-mix(in srgb, var(--primary) 12%, var(--surface));
-  border-radius: var(--radius-md);
-  font-size: 25px;
-}
-.agreement-code {
-  margin: 20px 0 var(--space-sm);
-  color: var(--text-secondary);
+  border-radius: 20px;
   font-size: 10px;
-  line-height: 1.7;
-  overflow-wrap: anywhere;
-}
-.agreement-card h2,
-.request-card h2 {
-  font-size: 17px;
-  letter-spacing: -0.3px;
+  font-weight: 600;
   line-height: 1.6;
   overflow-wrap: anywhere;
+  box-shadow: 0 2px 6px #00000009;
 }
-.room-caption {
+.feed-address {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
-  margin: 6px 0 18px;
-  font-size: 12px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.8;
   color: var(--text-secondary);
 }
-.room-caption .material-symbols-outlined {
-  font-size: 17px;
+.feed-address span {
   color: var(--primary);
+  font-size: 17px;
+  margin-top: 2px;
 }
-.agreement-party,
-.request-person {
+.feed-info {
+  display: flex;
+  flex-direction: column;
+}
+.feed-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.sent-date {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-block: var(--space-md);
-  border-block: 1px solid var(--border);
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
-.person-avatar {
+.sent-date span {
+  font-size: 15px;
+}
+.feed-price {
+  flex-shrink: 0;
+  text-align: right;
+}
+.feed-price strong {
+  display: block;
+  color: var(--primary);
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+.feed-price small {
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.feed-info h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+}
+.feed-room {
+  margin: 4px 0 12px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.landlord-cardlet {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--background);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.landlord-avatar {
   display: grid;
   place-items: center;
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--background);
-  color: var(--text-secondary);
-  font-size: 20px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 21px;
 }
-.agreement-party > div,
-.request-person > div {
+.landlord-cardlet > div {
   min-width: 0;
+  flex: 1;
 }
-.agreement-party div > span,
-.request-person div > span {
+.landlord-cardlet small {
   display: block;
-  margin-bottom: 4px;
   font-size: 10px;
   color: var(--text-secondary);
+  margin-bottom: 3px;
 }
-.agreement-party strong,
-.request-person strong {
-  display: block;
+.landlord-cardlet strong {
   font-size: 12px;
-  font-weight: 600;
+  line-height: 1.5;
   overflow-wrap: anywhere;
-  line-height: 1.6;
 }
-.agreement-facts {
-  display: grid;
-  gap: 18px;
-  margin: 20px 0;
-}
-.agreement-facts dt {
-  margin-bottom: 6px;
-  font-size: 10px;
-  color: var(--text-secondary);
-}
-.agreement-facts dd {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.7;
-}
-.agreement-facts .monthly-price {
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -0.7px;
+.landlord-cardlet > span:last-child {
   color: var(--primary);
-}
-.date-separator {
-  margin-inline: var(--space-sm);
-  color: var(--text-placeholder);
-}
-.contract-reminder {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin: 0 0 var(--space-md);
-  padding: 10px;
-  border-radius: var(--radius);
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  font-size: 10px;
-  line-height: 1.8;
-}
-.contract-reminder .material-symbols-outlined {
-  font-size: 16px;
-  margin-top: 2px;
-}
-.view-contract {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  margin-top: auto;
-  padding: 12px var(--space-md);
-  border-radius: var(--radius-md);
-  background: var(--primary-subtle);
-  color: var(--primary);
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 650;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-.view-contract:hover {
-  background: var(--primary);
-  color: var(--on-primary-container);
-}
-.view-contract .material-symbols-outlined {
   font-size: 19px;
 }
-.request-card {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.property-thumbnail {
-  display: block;
-  width: 100%;
-  height: 165px;
-  object-fit: cover;
-}
-.card-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 22px;
-}
-.card-date {
-  color: var(--text-secondary);
-  font-size: 10px;
-}
-.request-card h2 {
-  margin-top: var(--space-md);
-}
-.request-person {
-  margin-bottom: var(--space-md);
-  padding-block: 12px;
-}
-.request-facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm) 12px;
-  margin-bottom: var(--space-md);
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-.request-facts > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.request-facts .material-symbols-outlined {
-  font-size: 16px;
-}
-.card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-top: auto;
-  padding-top: var(--space-sm);
-}
-.card-actions .btn-primary,
-.card-actions .btn-secondary {
-  padding-inline: 12px;
-}
-.resolution-note {
-  margin: 0 0 var(--space-md);
-  font-size: 11px;
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-.request-detail {
-  margin-top: var(--space-lg);
-  padding: var(--space-lg);
-}
-.request-detail header,
-.section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-.section-title .material-symbols-outlined {
-  color: var(--primary);
-}
-.request-detail h3 {
-  margin: var(--space-md) 0;
-  font-size: 17px;
-}
-.request-detail h3 > span {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text-secondary);
-}
-.request-detail dl {
+.feed-facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-lg);
-  margin-block: var(--space-lg);
+  gap: 12px;
+  margin: auto 0 0;
 }
-.request-detail dt {
-  margin-bottom: var(--space-sm);
+.feed-facts dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 10px;
+  margin-bottom: 6px;
+  line-height: 1.5;
 }
-.request-detail dd {
+.feed-facts dt span {
+  font-size: 16px;
+  color: var(--primary);
+}
+.feed-facts dd {
   margin: 0;
   font-size: 12px;
   font-weight: 500;
+  line-height: 1.6;
   overflow-wrap: anywhere;
 }
-.request-message {
-  background: var(--background);
-  padding: var(--space-md);
-  border-radius: var(--radius-md);
+.feed-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: color-mix(in srgb, var(--surface-container-low) 55%, var(--surface));
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
 }
-.request-message > span {
+.feed-status {
+  min-width: 0;
+  flex: 1;
+}
+.feed-status .status-badge {
+  gap: 6px;
+  white-space: normal;
+  line-height: 1.7;
+}
+.feed-status .status-badge::before {
+  display: none;
+}
+.feed-status .status-badge > span {
+  font-size: 17px;
+}
+.feed-status p,
+.feed-status > small {
+  display: block;
   font-size: 10px;
   color: var(--text-secondary);
-}
-.request-message p {
-  margin: var(--space-sm) 0 0;
-  font-size: 12px;
-  white-space: pre-wrap;
+  line-height: 1.7;
+  margin: 6px 0 0;
   overflow-wrap: anywhere;
-  line-height: 1.8;
+}
+.feed-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.feed-actions a,
+.feed-actions button {
+  font-size: 11px;
+}
+.feed-actions .material-symbols-outlined {
+  font-size: 17px;
+}
+.feed-actions .btn-primary,
+.feed-actions .btn-secondary {
+  border-radius: 30px;
+  padding: 9px 14px;
+  min-height: 36px;
+}
+.feed-actions .text-button {
+  text-decoration: none;
+}
+.tenant-sidebar {
+  display: grid;
+  gap: 20px;
+  position: sticky;
+  top: 104px;
+}
+.sidebar-card {
+  padding: 24px;
+  border-radius: 18px;
+}
+.sidebar-emblem {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-size: 27px;
+  margin-bottom: 16px;
+}
+.sidebar-card h2 {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+.sidebar-card p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.sidebar-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 16px;
+}
+.sidebar-card a span {
+  font-size: 17px;
+}
+.journey-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+  background: var(--background);
+  border-radius: 12px;
+  padding: 16px 12px;
+}
+.journey-stats > div {
+  text-align: center;
+}
+.journey-stats > div + div {
+  border-left: 1px solid var(--border);
+}
+.journey-stats strong {
+  display: block;
+  color: var(--primary);
+  font-size: 23px;
+  line-height: 1.3;
+}
+.journey-stats span {
+  display: block;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.journey-steps {
+  display: grid;
+  gap: 13px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.journey-steps li {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.journey-steps li > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--background);
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.tip-card {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+}
+.sidebar-title {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.sidebar-title > span {
+  color: var(--primary);
+  font-size: 23px;
+}
+.sidebar-title h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.summary-error {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+}
+.feed-skeletons {
+  display: grid;
+  gap: 20px;
+}
+.feed-skeleton {
+  height: 300px;
+  border-radius: 18px;
+}
+.feed-skeletons > span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.tenant-feed .empty-state {
+  padding: 48px 24px;
 }
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-lg);
-  margin-top: var(--space-xl);
+  gap: 16px;
+  margin-top: 8px;
 }
 .pagination > span {
   font-size: 12px;
+  white-space: nowrap;
   color: var(--text-secondary);
 }
-.skeleton-card {
-  height: 385px;
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
-.loading-caption {
-  grid-column: 1 / -1;
-  font-size: 12px;
-  color: var(--text-secondary);
+@media (min-width: 1280px) {
+  .tenant-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .tenant-search {
+    gap: 8px;
+  }
+  .search-box {
+    max-width: 230px;
+  }
+  .status-tabs button {
+    padding: 9px 10px;
+    font-size: 11px;
+  }
 }
-@media (max-width: 1050px) {
-  .cards {
+@media (max-width: 1150px) {
+  .tenant-content {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 20px;
+  }
+  .feed-card-body {
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 18px;
+    padding: 18px;
+  }
+  .feed-card-top {
+    flex-direction: column;
+    gap: 7px;
+  }
+  .feed-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    text-align: left;
+  }
+  .sidebar-card {
+    padding: 20px;
+  }
+  .tenant-profile-chip {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .tenant-content {
+    grid-template-columns: 1fr;
+  }
+  .tenant-sidebar {
+    position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .filter-heading {
-    width: 100%;
+  .tenant-sidebar > .sidebar-card:first-child {
+    grid-column: 1/-1;
+  }
+  .journey-stats {
+    margin: 16px 0;
+  }
+  .feed-card-body {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .feed-card-top {
+    flex-direction: row;
+  }
+  .tenant-rental-page .page-heading {
+    align-items: flex-start;
+  }
+  .heading-actions {
+    align-self: center;
   }
 }
 @media (max-width: 600px) {
-  .cards {
+  .tenant-rental-page {
+    padding-top: 22px;
+  }
+  .tenant-rental-page h1 {
+    font-size: 24px;
+  }
+  .tenant-toolbar {
+    padding: 8px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+  .status-tabs button {
+    padding: 9px 12px;
+    font-size: 11px;
+  }
+  .tenant-search {
+    padding: 0 3px 3px;
+    gap: 8px;
+  }
+  .search-box {
+    max-width: none;
+    padding-inline: 10px;
+  }
+  .search-box input {
+    font-size: 11px;
+  }
+  .sort-box {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+  .sort-box select {
+    font-size: 11px;
+    max-width: 80px;
+  }
+  .tenant-feed {
+    gap: 18px;
+  }
+  .feed-card-body {
     grid-template-columns: 1fr;
-    gap: var(--space-md);
+    padding: 16px;
+    gap: 14px;
   }
-  .list-heading > span {
-    display: none;
+  .feed-image {
+    aspect-ratio: 16/9;
   }
-  .filters {
-    gap: var(--space-md);
-    padding: var(--space-md);
+  .feed-address {
+    margin-top: 9px;
   }
-  .filters label {
-    min-width: 0;
-    flex-basis: calc(50% - 8px);
+  .feed-card-top {
+    align-items: flex-start;
+    gap: 10px;
   }
-  .filters label:first-of-type {
-    flex-basis: 100%;
+  .sent-date {
+    font-size: 9px;
   }
-  .rental-tabs {
-    gap: var(--space-lg);
+  .feed-price strong {
+    font-size: 17px;
   }
-  .rental-tabs button {
-    font-size: 12px;
+  .feed-price {
+    display: block;
+    text-align: right;
+    flex-shrink: 1;
   }
-  .agreement-card,
-  .card-body,
-  .request-detail {
-    padding: 20px;
+  .feed-info h3 {
+    font-size: 16px;
   }
-  .agreement-facts {
-    grid-template-columns: 1fr;
+  .feed-facts {
+    gap: 10px;
   }
-  .request-detail dl {
-    grid-template-columns: 1fr;
+  .feed-facts dt {
+    font-size: 9px;
   }
-  .request-detail header {
+  .feed-facts dd {
+    font-size: 11px;
+  }
+  .feed-card-footer {
+    padding: 14px 16px;
     align-items: flex-start;
   }
-  .request-detail header > .text-button {
-    font-size: 0;
-    padding: 0;
+  .feed-status {
+    flex-basis: 100%;
   }
-  .request-detail header > .text-button .material-symbols-outlined {
-    font-size: 20px;
+  .feed-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .tenant-sidebar {
+    grid-template-columns: 1fr;
+  }
+  .tenant-sidebar > .sidebar-card:first-child {
+    grid-column: auto;
   }
   .pagination {
-    gap: var(--space-sm);
+    gap: 8px;
   }
-  .pagination > .btn-secondary {
-    padding-inline: 10px;
+  .pagination button {
+    font-size: 10px;
+    padding: 8px;
+    min-height: 36px;
+  }
+  .pagination button span {
+    font-size: 16px;
+  }
+  .pagination > span {
     font-size: 11px;
+  }
+  .heading-actions {
+    flex-shrink: 0;
   }
 }

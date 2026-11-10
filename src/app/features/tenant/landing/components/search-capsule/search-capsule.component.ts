@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   EventEmitter,
   Input,
@@ -16,6 +17,8 @@ import { Province } from '@model/address/province.model';
 import { Ward } from '@model/address/ward.model';
 import { RoomQueryParams } from '@model/room/request/room-query-params';
 import { RoomRentalStatus } from '@model/room/room.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 import { CategoryBarComponent } from '../category-bar/category-bar.component';
 import { FilterOption, FilterSelectComponent } from '../filter-select/filter-select.component';
 
@@ -29,6 +32,8 @@ import { FilterOption, FilterSelectComponent } from '../filter-select/filter-sel
 export class SearchCapsuleComponent implements OnInit {
   private readonly amenityService = inject(AmenityService);
   private readonly addressService = inject(AddressService);
+  private readonly destroy = inject(DestroyRef);
+  private wardLookup?: Subscription;
   @Output() readonly search = new EventEmitter<RoomQueryParams>();
   @Output() readonly locationLabels = new EventEmitter<{ province: string; ward: string }>();
   @Input() searching = false;
@@ -44,7 +49,7 @@ export class SearchCapsuleComponent implements OnInit {
     { value: '', label: 'Tất cả phường / xã' },
     ...this.wards().map(({ id, name }) => ({ value: id, label: name })),
   ]);
-  readonly priceOptions: FilterOption[] = [
+  priceOptions: FilterOption[] = [
     { value: 'all', label: 'Tất cả mức giá' },
     { value: 'under3', label: 'Dưới 3 triệu' },
     { value: '3to5', label: '3 – 5 triệu' },
@@ -62,13 +67,20 @@ export class SearchCapsuleComponent implements OnInit {
   readonly selectedAmenityNames = signal<string[]>([]);
   readonly showAmenities = signal(false);
   readonly rentalStatus = signal<RoomRentalStatus | ''>(RoomRentalStatus.AVAILABLE);
+  private customPriceBounds: [number | null, number | null] = [null, null];
   @Input() set appliedFilters(query: RoomQueryParams) {
+    const provinceChanged = this.provinceId() !== (query.provinceId ?? '');
     this.provinceId.set(query.provinceId ?? '');
     this.wardId.set(query.wardId ?? '');
     this.roomTypeName.set(query.roomTypeName ?? '');
     this.selectedAmenityNames.set(query.amenityNames ?? []);
     this.rentalStatus.set(query.rentalStatus ?? '');
     this.priceRange.set(this.priceRangeFor(query.minPrice, query.maxPrice));
+    this.customPriceBounds = [query.minPrice ?? null, query.maxPrice ?? null];
+    this.priceOptions = this.priceOptions.filter((option) => option.value !== 'custom');
+    if (this.priceRange() === 'custom')
+      this.priceOptions.push({ value: 'custom', label: 'Khoảng giá tùy chọn' });
+    if (provinceChanged) this.loadWards(query.provinceId ?? '');
   }
 
   ngOnInit(): void {
@@ -99,12 +111,20 @@ export class SearchCapsuleComponent implements OnInit {
   onProvinceChange(provinceId: string): void {
     this.provinceId.set(provinceId);
     this.wardId.set('');
+    this.loadWards(provinceId);
+  }
+
+  private loadWards(provinceId: string): void {
+    this.wardLookup?.unsubscribe();
     this.wards.set([]);
     if (provinceId) {
-      this.addressService.getWards(provinceId, undefined, 0, 100).subscribe({
-        next: (result) => this.wards.set(result.items),
-        error: () => this.wards.set([]),
-      });
+      this.wardLookup = this.addressService
+        .getAllWards(provinceId)
+        .pipe(takeUntilDestroyed(this.destroy))
+        .subscribe({
+          next: (wards) => this.wards.set(wards),
+          error: () => this.wards.set([]),
+        });
     }
   }
 
@@ -114,6 +134,7 @@ export class SearchCapsuleComponent implements OnInit {
   }
 
   resetFilters(): void {
+    this.wardLookup?.unsubscribe();
     this.location.set('');
     this.provinceId.set('');
     this.wardId.set('');
@@ -147,6 +168,8 @@ export class SearchCapsuleComponent implements OnInit {
 
   private priceBounds(): [number | null, number | null] {
     switch (this.priceRange()) {
+      case 'custom':
+        return this.customPriceBounds;
       case 'under3':
         return [null, 3000000];
       case '3to5':
@@ -163,7 +186,7 @@ export class SearchCapsuleComponent implements OnInit {
     if (minPrice == null && maxPrice === 3000000) return 'under3';
     if (minPrice === 3000000 && maxPrice === 5000000) return '3to5';
     if (minPrice === 5000000 && maxPrice == null) return 'over5';
-    return 'all';
+    return 'custom';
   }
 
   private findProvinceByName(query: string): string {

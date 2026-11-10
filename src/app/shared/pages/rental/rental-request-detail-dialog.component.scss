@@ -1,0 +1,238 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px 14px;
+  border-bottom: 1px solid var(--border);
+}
+h2[mat-dialog-title] {
+  margin: 5px 0 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+h2[mat-dialog-title]::before {
+  display: none;
+}
+.eyebrow {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.close-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--background);
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+mat-dialog-content {
+  max-height: 70dvh;
+  padding: 22px 28px !important;
+  min-height: 180px;
+}
+.state {
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.state p {
+  margin: 0;
+}
+.request-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.status {
+  border-radius: 30px;
+  padding: 7px 12px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  font-weight: 600;
+}
+.status[data-status='REJECTED'],
+.status[data-status='CANCELLED'],
+.status[data-status='EXPIRED'] {
+  background: var(--background);
+  color: var(--text-secondary);
+}
+.room-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  background: var(--background);
+  border-radius: 16px;
+}
+.room-summary img {
+  width: 180px;
+  height: 155px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.room-summary > div {
+  min-width: 0;
+}
+.room-summary h3 {
+  font-size: 20px;
+  margin: 6px 0;
+  line-height: 1.5;
+}
+.room-summary p {
+  margin: 6px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.price {
+  display: block;
+  font-size: 21px;
+  color: var(--primary);
+  margin-top: 12px;
+}
+.room-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 12px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+}
+.section {
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+  margin-top: 24px;
+}
+.section > h3 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 17px;
+  margin: 0 0 16px;
+}
+.section > h3 span {
+  color: var(--primary);
+  font-size: 22px;
+}
+.caption {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 8px 0;
+}
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  margin: 20px 0 0;
+}
+.wide {
+  grid-column: 1/-1;
+}
+dt {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+}
+dd {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.costs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.costs > div {
+  background: var(--background);
+  padding: 14px;
+  border-radius: 10px;
+}
+.note {
+  padding: 16px;
+  background: var(--background);
+  border-radius: 12px;
+  margin-top: 18px;
+  font-size: 13px;
+}
+.note p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+}
+.request-id {
+  font-size: 12px;
+}
+.location {
+  --map-height: 320px;
+}
+mat-dialog-actions {
+  border-top: 1px solid var(--border);
+  padding: 14px 28px !important;
+  gap: 10px;
+}
+mat-dialog-actions a {
+  text-decoration: none;
+}
+@media (max-width: 600px) {
+  .dialog-header {
+    padding: 18px;
+  }
+  h2[mat-dialog-title] {
+    font-size: 19px;
+  }
+  mat-dialog-content {
+    padding: 18px !important;
+  }
+  .room-summary {
+    flex-direction: column;
+    padding: 16px;
+    gap: 14px;
+  }
+  .room-summary img {
+    width: 100%;
+    height: 160px;
+  }
+  .facts,
+  .costs {
+    grid-template-columns: 1fr;
+  }
+  .price {
+    font-size: 19px;
+  }
+  mat-dialog-actions {
+    padding: 12px 18px !important;
+  }
+}

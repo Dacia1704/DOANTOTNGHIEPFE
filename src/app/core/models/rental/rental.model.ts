@@ -43,8 +43,43 @@ export interface RentalRequest {
   agreementId?: string;
   pdfStatus?: string;
   thumbnailUrl?: string;
+  roomDetails?: RentalRequestRoom | null;
+  card?: RentalCard | null;
+}
+export interface RentalCard {
+  thumbnailUrl: string | null;
+  fullAddress: string;
+  roomTypeName: string | null;
+  areaM2: number | null;
+  landlordName: string;
+  price: number | null;
+  listingTitle: string | null;
+}
+export interface RentalSummary {
+  totalRequests: number;
+  statuses: Record<string, number>;
+  totalAgreements: number;
+}
+export interface RentalRequestRoom {
+  listingTitle: string;
+  landlordName: string;
+  rentalMode: 'WHOLE' | 'BY_ROOM';
+  roomTypeName: string | null;
+  floorNumber: number | null;
+  areaM2: number | null;
+  maxOccupants: number | null;
+  fullAddress: string;
+  latitude: number | null;
+  longitude: number | null;
+  price: number | null;
+  deposit: number | null;
+  electricityPrice: number | null;
+  waterPrice: number | null;
+  serviceFee: number | null;
+  priceSource: 'AGREEMENT' | 'CURRENT_ROOM';
 }
 export interface RentalAgreement {
+  card?: RentalCard | null;
   id: string;
   requestId: string;
   agreementCode: string;

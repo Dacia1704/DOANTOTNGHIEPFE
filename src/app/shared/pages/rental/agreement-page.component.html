@@ -1,14 +1,11 @@
 <section class="rental-page agreement-page" [attr.aria-busy]="loading()">
-  <a class="back-link" [routerLink]="backLink">
-    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-    {{ owner ? 'Quản lý đặt phòng' : 'Yêu cầu thuê của tôi' }}
-  </a>
-
   <header class="page-heading">
     <div>
-      <p class="eyebrow">HỒ SƠ THUÊ PHÒNG</p>
+      <a class="back-link" [routerLink]="backLink">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+        {{ owner ? 'Quản lý đặt phòng' : 'Yêu cầu thuê của tôi' }}
+      </a>
       <h1>Hợp đồng thuê phòng</h1>
-      <p class="page-description">Kiểm tra thông tin thuê và theo dõi tiến trình xác nhận.</p>
     </div>
     <button class="btn-secondary refresh-button" [disabled]="loading() || busy()" (click)="load()">
       <span class="material-symbols-outlined" [class.is-spinning]="loading()" aria-hidden="true"
@@ -109,7 +106,7 @@
             >
             <div>
               <h2 id="document-title">Tài liệu hợp đồng</h2>
-              <p class="contract-code">{{ a.agreementCode }}</p>
+              <p class="contract-parties">Hợp đồng giữa {{ a.landlordName }} và {{ a.tenantName }}</p>
             </div>
           </div>
           @if (pdfBlob()) {
@@ -211,7 +208,7 @@
             <label class="consent">
               <input type="checkbox" [(ngModel)]="accepted" [disabled]="busy() || !pdfRendered()" />
               <span
-                >Tôi đã đọc và đồng ý với nội dung hợp đồng số <strong>{{ a.agreementCode }}</strong
+                >Tôi đã đọc và đồng ý với nội dung hợp đồng giữa <strong>{{ a.landlordName }} và {{ a.tenantName }}</strong
                 >.</span
               >
             </label>

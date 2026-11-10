@@ -271,14 +271,39 @@
             }}
           </p>
         </div>
-        <div class="result-view" aria-label="Cách xem kết quả">
-          <button type="button" [attr.aria-pressed]="view() === 'list'" (click)="view.set('list')">
-            <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách</button
-          ><button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
-            <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+        <div class="result-actions">
+          <button
+            type="button"
+            class="advanced-filter-toggle"
+            [class.active]="advancedFiltersOpen()"
+            [attr.aria-expanded]="advancedFiltersOpen()"
+            aria-controls="advanced-listing-filters"
+            (click)="advancedFiltersOpen.set(!advancedFiltersOpen())"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">tune</span>Bộ lọc nâng cao
           </button>
+          <div class="result-view" aria-label="Cách xem kết quả">
+            <button
+              type="button"
+              [attr.aria-pressed]="view() === 'list'"
+              (click)="view.set('list')"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách</button
+            ><button type="button" [attr.aria-pressed]="view() === 'map'" (click)="view.set('map')">
+              <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+            </button>
+          </div>
         </div>
       </div>
+      @if (advancedFiltersOpen()) {
+        <app-advanced-filters
+          id="advanced-listing-filters"
+          [query]="activeQuery()"
+          [searching]="searching()"
+          (apply)="locationLabels.set($event.labels); searchRooms($event.query)"
+          (clear)="resetFilters()"
+        />
+      }
       @if (filterChips().length) {
         <div class="applied-filters" aria-label="Bộ lọc đang áp dụng">
           <span>Đang lọc theo:</span>

@@ -40,6 +40,11 @@
           <button type="button" [class.selected]="section() === 'security'" [attr.aria-pressed]="section() === 'security'" (click)="section.set('security')">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span> Mật khẩu và bảo mật
           </button>
+          @if (isTenant) {
+            <button type="button" [class.selected]="section() === 'preferences'" [attr.aria-pressed]="section() === 'preferences'" (click)="section.set('preferences')">
+              <span class="material-symbols-outlined" aria-hidden="true">manage_search</span> Hồ sơ tìm trọ
+            </button>
+          }
         </nav>
       </aside>
       <main class="profile-content">
@@ -80,6 +85,22 @@
               </fieldset>
             </form>
           </section>
+          @if (isTenant) {
+            <section class="rental-shortcuts" aria-label="Nhu cầu thuê phòng">
+              <button type="button" class="rental-shortcut" (click)="section.set('preferences')">
+                <span class="material-symbols-outlined" aria-hidden="true">travel_explore</span>
+                <span><strong>Tìm nơi ở phù hợp với bạn</strong><small>Thiết lập ngân sách, tiện ích và địa điểm muốn ở gần để nhận gợi ý phù hợp.</small></span>
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+              </button>
+              <a class="rental-shortcut" routerLink="/yeu-cau-thue">
+                <span class="material-symbols-outlined" aria-hidden="true">description</span>
+                <span><strong>Yêu cầu thuê và hợp đồng</strong><small>Theo dõi phản hồi từ chủ trọ và quản lý quá trình thuê phòng của bạn.</small></span>
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+              </a>
+            </section>
+          }
+        } @else if (section() === 'preferences' && isTenant) {
+          <app-tenant-preferences />
         } @else {
           <section class="panel">
             <div class="section-heading">
