@@ -44,4 +44,29 @@ describe('Report creation with separate evidence uploads', () => {
     c.submit();
     expect(api.create).toHaveBeenCalledTimes(1);
   });
+  it.each([{ originListingId: 'origin-listing' }, { rentalAgreementId: 'agreement' }])(
+    'passes the supplied landlord report context to the API: %j',
+    (context) => {
+      TestBed.overrideProvider(MAT_DIALOG_DATA, {
+        useValue: {
+          targetType: 'LANDLORD',
+          targetId: 'owner',
+          targetName: 'Chủ trọ An',
+          ...context,
+        },
+      });
+      const c = TestBed.createComponent(ReportFormDialogComponent).componentInstance;
+      api.create.mockReturnValue(of({ id: 'saved-report' }));
+      c.reason = 'SCAM';
+      c.description = ' Nội dung ';
+      c.submit();
+      expect(api.create).toHaveBeenCalledExactlyOnceWith({
+        targetType: 'LANDLORD',
+        targetId: 'owner',
+        reasonCode: 'SCAM',
+        description: 'Nội dung',
+        ...context,
+      });
+    },
+  );
 });

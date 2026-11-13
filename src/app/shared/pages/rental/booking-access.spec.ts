@@ -69,4 +69,11 @@ describe('listing booking access', () => {
     expect(open).not.toHaveBeenCalled();
     expect(auth.hasAnyRole).toHaveBeenCalledWith([RoleCode.TENANT]);
   });
+  it('passes the current listing context when reporting the landlord', () => {
+    const c = component();
+    c.report('LANDLORD');
+    expect(open.mock.calls[0][1].data).toMatchObject({
+      targetType: 'LANDLORD', targetId: 'owner', originListingId: 'post',
+    });
+  });
 });

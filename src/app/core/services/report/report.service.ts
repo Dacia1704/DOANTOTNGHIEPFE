@@ -7,8 +7,10 @@ import { ReportMapper } from '@model/report/report.mapper';
 import { ReportReason, ReportStatus, ReportTargetType } from '@model/report/report.model';
 import {
   ReportResponse,
+  ReportSanctionOptionsResponse,
   ReportDetailResponse,
   ReportEvidenceResponse,
+  ReportListingResponse,
 } from '@model/report/response/report-response';
 import { ReportCreateRequest } from '@model/report/request/report-request';
 @Injectable({ providedIn: 'root' })
@@ -43,16 +45,37 @@ export class ReportService {
       .get<ApiResponse<ReportDetailResponse>>(`${this.api}/reports/${encodeURIComponent(id)}`)
       .pipe(map((r) => ReportMapper.detail(r.data)));
   }
+  listingDetail(reportId: string, listingId: string) {
+    return this.http
+      .get<ApiResponse<ReportListingResponse>>(
+        `${this.api}/admin/reports/${encodeURIComponent(reportId)}/listings/${encodeURIComponent(listingId)}`,
+      )
+      .pipe(map((r) => ReportMapper.listing(r.data)));
+  }
   summary() {
     return this.http
       .get<ApiResponse<Record<ReportStatus, number>>>(`${this.api}/admin/reports/summary`)
       .pipe(map((r) => ({ ...r.data })));
   }
-  action(id: string, action: 'assign' | 'resolve' | 'reject', resolutionNote = '') {
+  sanctionOptions(id: string) {
+    return this.http
+      .get<ApiResponse<ReportSanctionOptionsResponse>>(
+        `${this.api}/admin/reports/${encodeURIComponent(id)}/sanction-options`,
+      )
+      .pipe(map((r) => r.data));
+  }
+  action(
+    id: string,
+    action: 'assign' | 'resolve' | 'reject',
+    resolutionNote = '',
+    relatedListingId?: string,
+  ) {
     return this.http
       .post<ApiResponse<ReportResponse>>(
         `${this.api}/admin/reports/${encodeURIComponent(id)}/${action}`,
-        action === 'assign' ? {} : { resolutionNote },
+        action === 'assign'
+          ? {}
+          : { resolutionNote, ...(relatedListingId ? { relatedListingId } : {}) },
       )
       .pipe(map((r) => ReportMapper.fromResponse(r.data)));
   }

@@ -10,6 +10,10 @@ export interface Report {
   status: ReportStatus;
   handledBy: string | null;
   handledByName: string | null;
+  warningLevel?: number;
+  sanctionAction?: string;
+  sanctionedListingId?: string | null;
+  originListingId?: string | null;
   resolutionNote: string | null;
   resolvedAt: Date | null;
   createdAt: Date;
@@ -21,6 +25,20 @@ export interface ReportEvidence {
 export interface ReportDetail {
   report: Report;
   evidences: ReportEvidence[];
+  originListing: ReportListing | null;
+  sanctionedListing: ReportListing | null;
+}
+export interface ReportListing {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  publishedAt: Date | null;
+  expiresAt: Date | null;
+  propertyId: string;
+  propertyName: string;
+  fullAddress: string;
+  landlordId: string;
 }
 export const REPORT_STATUSES: Record<ReportStatus, string> = {
   PENDING: 'Chờ tiếp nhận',

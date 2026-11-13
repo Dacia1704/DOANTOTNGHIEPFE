@@ -44,9 +44,6 @@
       </button>
     </div>
   }
-  @if (auth.hasAnyRole([tenantRole])) {
-    <p class="scope-note"><a routerLink="/yeu-cau-thue">Đến hợp đồng thuê để viết đánh giá</a></p>
-  }
   <p class="scope-note">
     {{
       target() === 'ROOM'
@@ -168,5 +165,18 @@
         <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
       </button>
     }
+  }
+  <button
+    type="button"
+    class="write-review"
+    (click)="writeReview()"
+    [disabled]="checkingContract() || reviewDialogOpen()"
+    [attr.aria-describedby]="writeNotice() ? 'write-review-notice' : null"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+    {{ checkingContract() ? 'Đang kiểm tra hợp đồng…' : 'Viết đánh giá' }}
+  </button>
+  @if (writeNotice()) {
+    <p id="write-review-notice" class="write-notice" role="status">{{ writeNotice() }}</p>
   }
 </section>
