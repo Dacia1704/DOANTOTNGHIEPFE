@@ -99,6 +99,7 @@ export class ListingDetailPageComponent implements OnInit {
         targetType,
         targetId,
         targetName: targetType === 'LISTING' ? listing.listingTitle : listing.landlordName,
+        ...(targetType === 'LANDLORD' ? { originListingId: listing.id } : {}),
       },
     });
   }
@@ -108,6 +109,7 @@ export class ListingDetailPageComponent implements OnInit {
   readonly chatWidget = inject(ChatWidgetService);
   private readonly requests = new Subject<string>();
   readonly listing = signal<PublicListing | null>(null);
+  readonly reviewRoomIds = computed(() => this.listing()?.property.rooms.map(room => room.id) ?? []);
   readonly wholeMappingInvalid = computed(
     () => this.listing()?.rentalMode === 'WHOLE' && this.listing()?.property.rooms.length !== 1,
   );

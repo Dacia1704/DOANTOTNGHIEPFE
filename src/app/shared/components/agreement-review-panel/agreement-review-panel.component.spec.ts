@@ -61,4 +61,20 @@ describe('Agreement review access', () => {
     expect(dialog.open.mock.calls[0][1].data).toMatchObject({ type: 'LANDLORD', agreementId: 'a' });
     expect(api.eligibility).toHaveBeenCalledTimes(2);
   });
+  it('passes the agreement context when reporting its landlord', () => {
+    const fixture = create();
+    fixture.componentRef.setInput('agreement', {
+      id: 'agreement',
+      landlordId: 'owner',
+      landlordName: 'Chủ trọ An',
+    } as RentalAgreement);
+    fixture.detectChanges();
+    fixture.componentInstance.report();
+    expect(dialog.open.mock.calls[0][1].data).toEqual({
+      targetType: 'LANDLORD',
+      targetId: 'owner',
+      targetName: 'Chủ trọ An',
+      rentalAgreementId: 'agreement',
+    });
+  });
 });

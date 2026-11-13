@@ -4,4 +4,6 @@ export interface ReportCreateRequest {
   targetId: string;
   reasonCode: ReportReason;
   description: string;
+  originListingId?: string;
+  rentalAgreementId?: string;
 }

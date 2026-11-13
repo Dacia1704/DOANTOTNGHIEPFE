@@ -72,12 +72,25 @@
           </dl>
           <h3>Mô tả sự việc</h3>
           <p class="copy">{{ r.description || 'Không có mô tả bổ sung.' }}</p>
-          @if (r.targetType === 'LISTING') {
-            <a class="button" [routerLink]="['/tro', r.targetId]"
-              >Xem tin đăng<span class="material-symbols-outlined" aria-hidden="true"
-                >open_in_new</span
-              ></a
-            >
+          @if (originListingId; as listingId) {
+            <h3>
+              {{
+                r.targetType === 'LISTING'
+                  ? 'Tin đăng bị báo cáo'
+                  : 'Tin đăng gốc liên quan đến báo cáo'
+              }}
+            </h3>
+            <app-report-listing-preview
+              [listingId]="listingId"
+              [context]="d.originListing"
+              [reportId]="admin ? r.id : ''"
+              [title]="r.targetType === 'LISTING' ? r.targetName || '' : ''"
+            />
+          } @else {
+            <p class="notice">
+              Báo cáo này nhắm đến chủ trọ và chưa có tin đăng gốc được liên kết. Cần đối chiếu mô
+              tả và minh chứng để xác định tin liên quan trước khi chọn tin xử lý.
+            </p>
           }
           <details>
             <summary>Mã tham chiếu</summary>
@@ -142,6 +155,69 @@
           }
           @if (canClose) {
             <form (ngSubmit)="action('resolve')">
+              @if (sanctionLoading()) {
+                <p class="notice" role="status">Đang tải mức xử lý…</p>
+              } @else if (sanctionOptions(); as options) {
+                <p class="notice">
+                  Phê duyệt sẽ áp dụng mức {{ options.nextWarningLevel }}:
+                  @switch (options.nextWarningLevel) {
+                    @case (1) {
+                      Gửi cảnh báo đến chủ trọ.
+                    }
+                    @case (2) {
+                      Ẩn tin bị báo cáo và đưa ưu tiên các tin còn lại của chủ trọ về 0.
+                    }
+                    @case (3) {
+                      Khóa tài khoản chủ trọ.
+                    }
+                  }
+                  Mức thực tế được kiểm tra lại khi lưu.
+                </p>
+                @if (originListingId && options.nextWarningLevel === 2) {
+                  <p class="notice">
+                    Hệ thống sẽ xử lý đúng tin đăng gốc đã liên kết trong báo cáo này.
+                  </p>
+                }
+                @if (needsRelatedListing) {
+                  <label class="field"
+                    >Tin đăng liên quan (bắt buộc)
+                    <select
+                      name="relatedListingId"
+                      [(ngModel)]="relatedListingId"
+                      [disabled]="busy()"
+                      required
+                    >
+                      <option value="">Chọn tin đăng của chủ trọ bị báo cáo</option>
+                      @for (listing of options.listings; track listing.id) {
+                        <option [value]="listing.id">
+                          {{ listing.title }} ·
+                          {{ listingStatuses[listing.status] || listing.status }}
+                        </option>
+                      }
+                    </select>
+                  </label>
+                  @if (selectedRelatedListing; as listing) {
+                    <div class="selected-listing">
+                      <h3>Tin đăng được chọn để ẩn</h3>
+                      <app-report-listing-preview
+                        [reportId]="r.id"
+                        [listingId]="listing.id"
+                        [title]="listing.title"
+                        [status]="listing.status"
+                      />
+                    </div>
+                  }
+                  @if (!options.listings.length) {
+                    <p class="notice">
+                      Chủ trọ chưa có tin đăng để áp dụng mức 2. Chưa thể phê duyệt báo cáo này.
+                    </p>
+                  }
+                }
+              } @else {
+                <button type="button" (click)="loadSanctionOptions()" [disabled]="busy()">
+                  Tải lại mức xử lý
+                </button>
+              }
               <label class="field"
                 >Kết quả xử lý (bắt buộc)<textarea
                   name="note"
@@ -158,7 +234,9 @@
                 <button
                   class="primary"
                   type="submit"
-                  [disabled]="busy() || loading() || !note.trim() || note.length > 5000"
+                  [disabled]="
+                    busy() || loading() || !note.trim() || note.length > 5000 || !canApprove
+                  "
                 >
                   Giải quyết</button
                 ><button
@@ -179,12 +257,36 @@
           <section class="panel">
             <h2>Kết quả xử lý</h2>
             <p class="copy">{{ r.resolutionNote }}</p>
+            @if (r.warningLevel) {
+              <p class="notice">
+                Đã áp dụng mức {{ r.warningLevel }}:
+                @switch (r.sanctionAction) {
+                  @case ('WARNING') {
+                    Gửi cảnh báo đến chủ trọ.
+                  }
+                  @case ('HIDE_LISTING_AND_SUPPRESS_PRIORITY') {
+                    Ẩn tin bị báo cáo và đưa ưu tiên các tin còn lại của chủ trọ về 0.
+                  }
+                  @case ('BLOCK_ACCOUNT') {
+                    Khóa tài khoản chủ trọ.
+                  }
+                }
+              </p>
+              @if (r.sanctionedListingId) {
+                <h3>Tin đăng đã xử lý</h3>
+                <app-report-listing-preview
+                  [listingId]="r.sanctionedListingId"
+                  [context]="d.sanctionedListing"
+                  [reportId]="admin ? r.id : ''"
+                />
+              }
+            }
           </section>
         }
         @if (admin) {
           <p class="notice">
-            Kết quả báo cáo được gửi đến người phản ánh. Các thao tác kiểm duyệt tin hoặc tài khoản
-            thực hiện tại trang quản lý tương ứng.
+            Khi phê duyệt, hệ thống tự áp dụng mức xử lý và gửi thông báo đến chủ trọ, người phản
+            ánh. Báo cáo bị từ chối không tăng mức cảnh cáo.
           </p>
         }
       </aside>
