@@ -1,0 +1,241 @@
+:host {
+  display: block;
+  color: var(--text-primary);
+}
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+h1 {
+  font-size: 28px;
+  margin: 8px 0;
+}
+h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.eyebrow {
+  color: var(--primary);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+.page-title > .material-symbols-outlined {
+  color: var(--primary);
+  font-size: 52px;
+}
+p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--space-lg);
+}
+button {
+  border: 0;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.active,
+.primary {
+  background: var(--primary) !important;
+  color: var(--surface) !important;
+}
+.panel {
+  padding: var(--space-lg);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-lg);
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.toolbar > input {
+  flex: 1;
+}
+.table-wrap {
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+th {
+  background: var(--background);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 14px;
+  white-space: nowrap;
+}
+td {
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+small {
+  display: block;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  font-size: 12px;
+}
+.reason {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.badge {
+  display: inline-block;
+  background: var(--secondary-subtle);
+  color: var(--secondary);
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  font-size: 12px;
+}
+.badge.hidden {
+  background: var(--error-bg);
+  color: var(--error);
+}
+.empty {
+  text-align: center;
+  padding: 45px;
+}
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  font-size: 13px;
+}
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 14px;
+  border: 1px solid var(--outline-variant);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 110px;
+  margin: 8px 0 16px;
+}
+.message {
+  background: var(--primary-subtle);
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.error {
+  color: var(--error);
+  background: var(--error-bg);
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: color-mix(in srgb, var(--text-primary) 45%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.dialog {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  width: 600px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: var(--shadow-floating);
+}
+.dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.snapshot {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  line-height: 1.8;
+  max-height: 220px;
+  overflow: auto;
+}
+.dialog label {
+  display: block;
+  font-size: 13px;
+  margin-top: 14px;
+}
+.dialog label > input:not([type='checkbox']),
+.dialog select {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+}
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.check {
+  display: flex !important;
+  gap: 8px;
+  align-items: center;
+}
+fieldset {
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  margin-top: 16px;
+}
+legend {
+  font-size: 13px;
+}
+.hint {
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  h1 {
+    font-size: 23px;
+  }
+  .panel {
+    padding: var(--space-md);
+  }
+  .dialog {
+    padding: var(--space-md);
+  }
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}

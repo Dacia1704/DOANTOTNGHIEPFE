@@ -1,0 +1,28 @@
+<a class="back" routerLink="/community">← Bảng tin cộng đồng</a>
+<div class="detail-layout">
+  <main>
+    @if (post(); as p) {
+      <app-community-post-card [post]="p" (changed)="load()" /><app-community-comments
+        [postId]="p.id"
+        [authorId]="p.authorId"
+        [canComment]="p.status === 'VISIBLE'"
+      />
+    } @else if (loading()) {
+      <p role="status">Đang tải bài viết…</p>
+    } @else {
+      <p role="alert">{{ error() }}</p>
+    }
+  </main>
+  <aside>
+    <span class="material-symbols-outlined">forum</span>
+    <h3>Mỗi câu chuyện là một kết nối</h3>
+    <p>Cùng trao đổi kinh nghiệm, tìm bạn ở ghép và xây dựng cộng đồng thuê trọ an toàn.</p>
+    <hr />
+    <h3>Quy tắc ứng xử</h3>
+    <p>
+      Tôn trọng ý kiến người khác. Không đe dọa hoặc xúc phạm. Báo cáo thông tin có dấu hiệu lừa đảo
+      để được xem xét.
+    </p>
+    <a routerLink="/community/create">Chia sẻ câu chuyện của bạn →</a>
+  </aside>
+</div>

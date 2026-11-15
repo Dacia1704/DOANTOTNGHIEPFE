@@ -18,6 +18,7 @@ export class AdminLayout implements OnInit {
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
   private readonly items: NavItem[] = [
+    { icon: 'policy', label: 'Kiểm duyệt cộng đồng', route: '/admin/moderation' },
     { icon: 'forum', label: 'Tin nhắn & hỗ trợ', route: '/admin/messages' },
     { icon: 'inventory_2', label: 'Gói dịch vụ & Boost', route: '/admin/service-packages' },
     { icon: 'receipt_long', label: 'Quản lý thanh toán', route: '/admin/payments' },
@@ -33,6 +34,7 @@ export class AdminLayout implements OnInit {
   ];
   get menu(): NavItem[] {
     const readPermissions: Record<string, string> = {
+      '/admin/moderation': 'MODERATION_READ',
       '/admin/users': 'USER_READ',
       '/admin/reviews': 'REVIEW_READ',
       '/admin/reports': 'REPORT_READ',

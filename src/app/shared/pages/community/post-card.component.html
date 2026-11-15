@@ -1,0 +1,118 @@
+@let p = post();
+<article class="post-card">
+  <header>
+    <img class="avatar" [src]="p.avatarUrl || 'avatar-default.jpg'" alt="" />
+    <div class="author">
+      <strong>{{ p.authorName || 'Thành viên' }}</strong
+      ><small
+        >{{
+          p.role === 'LANDLORD' ? 'Chủ trọ' : p.role === 'ADMIN' ? 'Quản trị viên' : 'Người thuê'
+        }}
+        · {{ p.createdAt | date: 'dd/MM HH:mm' }}
+        @if (p.edited) {
+          · Đã chỉnh sửa
+        }
+      </small>
+    </div>
+    @if (auth.isLoggedIn() && auth.session()?.id !== p.authorId) {
+      <button [disabled]="busy()" (click)="follow()">
+        {{ p.following ? 'Đang theo dõi' : '+ Theo dõi' }}
+      </button>
+    }
+  </header>
+  @if (p.pinned) {
+    <span class="badge">push_pin · Đã ghim</span>
+  }
+  @if (auth.primaryRole() === 'ADMIN' && p.status === 'VISIBLE') {
+    <button [disabled]="busy()" (click)="pin()">{{ p.pinned ? 'Bỏ ghim bài' : 'Ghim bài' }}</button>
+  }
+  @if (p.area) {
+    <small class="area">{{ p.area }}</small>
+  }
+  @if (p.status !== 'VISIBLE') {
+    <p class="notice">
+      {{ labels[p.status] }}
+      @if (p.status === 'RESTRICTED' && !p.content && !revealed()) {
+        <button (click)="reveal()">Xem nội dung bị hạn chế</button>
+      }
+    </p>
+  }
+  @if (p.content) {
+    <p class="content">{{ p.content }}</p>
+  }
+  @if (revealed()) {
+    <p class="content">{{ revealed() }}</p>
+  }
+  @if (p.media.length) {
+    <div class="media-grid" [class.single]="p.media.length === 1">
+      @for (image of p.media; track image.id) {
+        <img [src]="image.url" alt="Ảnh bài viết cộng đồng" loading="lazy" />
+      }
+    </div>
+  }
+  @for (listing of p.listings; track listing.id) {
+    <div class="listing">
+      <span class="material-symbols-outlined">apartment</span>
+      <div>
+        <small>TIN PHÒNG ĐÍNH KÈM</small>
+        @if (listing.available) {
+          <a [routerLink]="['/tro', listing.id]">{{ listing.title }}</a>
+        } @else {
+          <span>Tin không còn khả dụng</span>
+        }
+      </div>
+      <span>↗</span>
+    </div>
+  }
+  <div class="counts">
+    <span>{{ p.reactionCount }} cảm xúc</span
+    ><a [routerLink]="['/community/posts', p.id]">{{ p.commentCount }} bình luận</a>
+  </div>
+  <footer>
+    @if (auth.isLoggedIn()) {
+      @for (reaction of ['LIKE', 'LOVE', 'WOW']; track reaction) {
+        <button
+          [class.active]="p.myReaction === reaction"
+          [disabled]="busy() || p.status !== 'VISIBLE'"
+          (click)="react($any(reaction))"
+        >
+          {{
+            reaction === 'LIKE' ? '♡ Thích' : reaction === 'LOVE' ? '♥ Yêu thích' : '☺ Ngạc nhiên'
+          }}
+        </button>
+      }
+      <button [disabled]="busy()" (click)="save()">{{ p.saved ? 'Đã lưu' : 'Lưu bài' }}</button>
+    } @else {
+      <a routerLink="/dang-nhap">Đăng nhập để tương tác</a>
+    }
+    <a [routerLink]="['/community/posts', p.id]">Bình luận</a>
+  </footer>
+  @if (auth.session()?.id === p.authorId) {
+    <div class="owner">
+      <a [routerLink]="['/community/create']" [queryParams]="{ edit: p.id }">Chỉnh sửa</a
+      ><button [disabled]="busy()" (click)="remove()">Xóa bài</button>
+    </div>
+  }
+  @if (auth.isLoggedIn() && auth.session()?.id !== p.authorId) {
+    <button class="report" (click)="reportOpen.set(!reportOpen())">Báo cáo nội dung</button>
+  }
+  @if (auth.session()?.id === p.authorId && p.status !== 'VISIBLE') {
+    <button class="report" (click)="reportOpen.set(!reportOpen())">Yêu cầu xem xét lại</button>
+  }
+  @if (reportOpen()) {
+    <form (ngSubmit)="report()">
+      <label
+        >Lý do đề nghị xem xét<textarea
+          name="reason"
+          [(ngModel)]="reason"
+          maxlength="1000"
+          required
+        ></textarea></label
+      ><button [disabled]="busy() || !reason.trim()">Gửi yêu cầu</button
+      ><button type="button" (click)="reportOpen.set(false)">Hủy</button>
+    </form>
+  }
+  @if (error()) {
+    <p role="alert" class="error">{{ error() }}</p>
+  }
+</article>

@@ -15,6 +15,7 @@ import { ListingReviewService } from '@services/listing/listing-review.service';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@services/auth/auth.service';
 import { RoleCode } from '@model/auth/auth.model';
+import { moderationLabels } from '@model/community/community.model';
 
 interface ReviewState {
   data: ListingReviews | null;
@@ -30,6 +31,7 @@ interface ReviewState {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListingReviewsComponent {
+  readonly moderationLabels = moderationLabels;
   readonly auth = inject(AuthService);
   readonly tenantRole = RoleCode.TENANT;
   readonly entireProperty = signal(false);

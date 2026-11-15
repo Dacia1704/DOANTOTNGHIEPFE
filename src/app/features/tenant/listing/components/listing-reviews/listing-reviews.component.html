@@ -6,6 +6,7 @@
     </div>
     <span class="material-symbols-outlined heading-star" aria-hidden="true">reviews</span>
   </div>
+  <p class="scope-note">Chỉ người đang hoặc đã thuê qua hợp đồng hợp lệ mới có thể đánh giá.</p>
   <div class="review-tabs" role="group" aria-label="Loại đánh giá">
     <button
       type="button"
@@ -130,6 +131,9 @@
           <p class="review-comment">
             {{ review.comment || 'Người thuê đã chấm điểm và chưa để lại nhận xét.' }}
           </p>
+          @if (review.textStatus && review.textStatus !== 'VISIBLE') {
+            <small>{{ moderationLabels[review.textStatus] }} · Điểm sao vẫn được ghi nhận.</small>
+          }
           @if (review.verifiedStay) {
             <span class="verified-stay"
               ><span class="material-symbols-outlined" aria-hidden="true">verified</span>Người thuê
@@ -140,6 +144,9 @@
             <div class="landlord-reply">
               <strong>Phản hồi từ chủ trọ</strong>
               <p>{{ review.landlordReply }}</p>
+              @if (review.replyStatus && review.replyStatus !== 'VISIBLE') {
+                <small>{{ moderationLabels[review.replyStatus] }}</small>
+              }
             </div>
           }
         </article>

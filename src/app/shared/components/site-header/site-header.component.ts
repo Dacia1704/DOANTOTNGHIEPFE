@@ -51,6 +51,7 @@ export class SiteHeaderComponent {
   get navLinks(): readonly NavLink[] {
     return [
       { label: 'Thuê phòng', route: '/', exact: true },
+      { label: 'Cộng đồng', route: '/community' },
       ...(this.isLandlord ? [{ label: 'Cho thuê / Đăng tin', route: '/dang-tin' }] : []),
       {
         label: this.isLandlord ? 'Cẩm nang thuê / cho thuê trọ' : 'Cẩm nang thuê trọ',

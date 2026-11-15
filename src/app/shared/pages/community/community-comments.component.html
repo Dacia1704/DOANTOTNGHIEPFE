@@ -1,0 +1,105 @@
+<section>
+  <h2>Bình luận cộng đồng</h2>
+  <p class="hint">Tôn trọng người khác và chia sẻ thông tin có ích.</p>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p role="status">{{ notice() }}</p>
+  }
+  <ng-template #commentView let-c
+    ><article class="comment">
+      <img [src]="c.avatarUrl || 'avatar-default.jpg'" alt="" />
+      <div class="body">
+        <div class="bubble">
+          <strong>{{ c.authorName || 'Thành viên' }}</strong
+          ><small>{{ c.createdAt | date: 'dd/MM HH:mm' }}</small>
+          @if (c.deleted) {
+            <p class="hint">Bình luận đã được xóa</p>
+          } @else if (c.content) {
+            <p>{{ c.content }}</p>
+          } @else {
+            <p class="hint">{{ labels[c.status] }}</p>
+            @if (c.status === 'RESTRICTED') {
+              <button (click)="reveal(c)">Xem nội dung bị hạn chế</button>
+            }
+          }
+        </div>
+        @if (!c.deleted && auth.isLoggedIn()) {
+          <div class="actions">
+            @if (c.status === 'VISIBLE' && canComment()) {
+              <button (click)="react(c)">
+                {{ c.myReaction ? '♥ Đã thích' : '♡ Thích' }} · {{ c.reactionCount }}</button
+              ><button (click)="selectReply(c)">Trả lời</button>
+            }
+            @if (auth.session()?.id === c.authorId) {
+              <button (click)="edit(c)">Sửa</button>
+            } @else {
+              <button (click)="report(c)">Báo cáo</button>
+            }
+            @if (auth.session()?.id === c.authorId || auth.session()?.id === authorId()) {
+              <button (click)="remove(c)">Xóa</button>
+            }
+          </div>
+        }
+      </div>
+    </article></ng-template
+  >
+  @for (c of items(); track c.id) {
+    <ng-container [ngTemplateOutlet]="commentView" [ngTemplateOutletContext]="{ $implicit: c }" />
+    @if (c.status === 'VISIBLE') {
+      <button class="reply-toggle" (click)="loadReplies(c.id)">Xem trả lời</button>
+    }
+    @if (replies()[c.id]; as group) {
+      <div class="replies">
+        @for (reply of group.items; track reply.id) {
+          <ng-container
+            [ngTemplateOutlet]="commentView"
+            [ngTemplateOutletContext]="{ $implicit: reply }"
+          />
+        }
+        @if (group.hasMore) {
+          <button (click)="loadReplies(c.id, true)">Xem thêm trả lời</button>
+        }
+      </div>
+    }
+  }
+  @if (loading()) {
+    <p role="status">Đang tải bình luận…</p>
+  } @else if (!items().length) {
+    <p class="empty">Chưa có bình luận. Hãy bắt đầu cuộc trò chuyện!</p>
+  }
+  @if (hasMore()) {
+    <button (click)="load()">Xem thêm bình luận</button>
+  }
+  @if (auth.isLoggedIn() && canComment()) {
+    <form (ngSubmit)="submit()">
+      @if (replyTo() || editing()) {
+        <div class="replying">
+          {{ editing() ? 'Chỉnh sửa bình luận' : 'Đang trả lời bình luận'
+          }}<button type="button" (click)="cancel()">Hủy</button>
+        </div>
+      }
+      <label for="comment-content">{{ editing() ? 'Nội dung chỉnh sửa' : 'Viết bình luận' }}</label
+      ><textarea
+        id="comment-content"
+        name="content"
+        [(ngModel)]="content"
+        maxlength="2000"
+        required
+        placeholder="Chia sẻ ý kiến của bạn…"
+      ></textarea
+      ><button class="primary" [disabled]="busy() || !content.trim()">
+        {{ busy() ? 'Đang gửi…' : 'Gửi bình luận' }}
+      </button>
+    </form>
+  } @else {
+    <p class="hint">
+      {{
+        auth.isLoggedIn()
+          ? 'Bài viết hiện không cho phép bình luận.'
+          : 'Đăng nhập để tham gia cuộc trò chuyện.'
+      }}
+    </p>
+  }
+</section>

@@ -114,6 +114,7 @@ export class NotificationCenterComponent {
     if (item.referenceType === 'RENTAL_REQUEST')
       route = [this.auth.primaryRole() === RoleCode.LANDLORD ? '/quan-ly-dat-phong' : '/yeu-cau-thue'];
     if (item.referenceType === 'LISTING') route = ['/tin-cua-toi'];
+    if (item.referenceType === 'COMMUNITY_POST' && item.referenceId) route = ['/community/posts', item.referenceId];
     if (route) {
       this.opened.set(false);
       void this.router.navigate(route);

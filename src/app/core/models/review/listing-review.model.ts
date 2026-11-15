@@ -8,6 +8,8 @@ export interface ReviewSummary {
   distribution: { stars: number; count: number }[];
 }
 export interface ListingReview {
+  textStatus?: 'VISIBLE' | 'RESTRICTED' | 'PENDING' | 'HIDDEN' | 'REMOVED';
+  replyStatus?: 'VISIBLE' | 'RESTRICTED' | 'PENDING' | 'HIDDEN' | 'REMOVED';
   id: string;
   authorName: string;
   rating: number;

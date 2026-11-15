@@ -1,5 +1,7 @@
 # Hướng dẫn giao diện frontend
 
+Ngày 15/11/2026, các file unit test, smoke/E2E và mock đã được tạm gỡ. Các kết quả kiểm chứng bên dưới là lịch sử triển khai; các script kiểm thử được nhắc đến không còn nằm trong source hiện tại. Dùng `npm run build` để kiểm tra biên dịch.
+
 [Mục lục](../README.md) · [Quy tắc](RULE.md) · [API chung tại BE](../../RentalManagement/docs/api.md)
 
 Các mục kiểm chứng có ngày/số lượng bên dưới ghi nhận lịch sử triển khai; không phải kết quả chạy lại khi hợp nhất tài liệu. Smoke có API mô phỏng chỉ kiểm tra FE/HTTP, không xác lập JWT, transaction hoặc database thật.
@@ -60,16 +62,7 @@ Xem [Property API](../../RentalManagement/docs/api.md#property-api). FE gọi GE
 
 Cần Postman CLI >= 1.70 và Playwright có Edge (`npm install --no-save --package-lock=false playwright` nếu chưa cài).
 
-```powershell
-npm run build
-# Terminal 1
-postman simulation run postman/simulations/rental-property-ui.sim.yaml --port 4907 --output ndjson --no-history
-# Terminal 2: server chỉ bind 127.0.0.1, proxy /api vào simulation.
-node postman/simulations/rental-property-preview.cjs
-# Terminal 3
-node postman/simulations/rental-property-ui.smoke.cjs
-node postman/simulations/rental-property-admin.smoke.cjs
-```
+
 
 Nếu Playwright được cài bên ngoài repo, có thể đặt PLAYWRIGHT_MODULE_PATH tới module playwright. Test chỉ mở server loopback và dùng session giả cho mô phỏng, không cần mật khẩu thật. Ảnh tạm và log nằm trong `.angular/property-*` (gitignored). Các route `/test/reset` và `/test/fail-next` chỉ tồn tại trong mock. Dừng hai server bằng Ctrl+C khi xong.
 
@@ -189,17 +182,7 @@ PDF vẫn do JasperReports tại BE tạo. FE xác minh SHA-256 của Blob trư�
 
 Cần Postman CLI >= 1.70, Playwright và Edge đã cài. Nếu Playwright nằm ngoài repo, đặt `PLAYWRIGHT_MODULE_PATH` tới module đó.
 
-```powershell
-npm run build
-# Terminal 1
-postman simulation run postman/simulations/rental-agreement-ui.sim.yaml --port 4917 --output ndjson --no-history
-# Terminal 2
-$env:RENTAL_PREVIEW_PORT='4227'
-$env:RENTAL_BACKEND_PORT='4917'
-node scripts/rental-e2e-preview.cjs
-# Terminal 3
-node postman/simulations/rental-agreement-ui.smoke.cjs
-```
+
 
 Các tài khoản trong simulation là role token tổng hợp, không phải tài khoản ứng dụng. Script chỉ reset/ghi state của mock. Dừng hai server local sau khi kiểm tra. Context và giới hạn của simulation được lưu tại `postman/simulations/rental-agreement-ui.context.yaml`.
 

@@ -1,0 +1,109 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">KẾT NỐI · CHIA SẺ · AN TÂM THUÊ TRỌ</span>
+    <h1>Cộng đồng Trọ Tốt</h1>
+    <p>Chuyện ở trọ, có nhau chia sẻ.</p>
+  </div>
+  <span class="shield material-symbols-outlined">diversity_3</span>
+</div>
+<div class="community-grid">
+  <aside class="left">
+    <section class="panel navigation">
+      <h3>Không gian của bạn</h3>
+      <button [class.active]="tab() === 'LATEST'" (click)="select('LATEST')">
+        <span class="material-symbols-outlined">dynamic_feed</span>Bảng tin cộng đồng
+      </button>
+      @if (auth.isLoggedIn()) {
+        <button [class.active]="tab() === 'SAVED'" (click)="select('SAVED')">
+          <span class="material-symbols-outlined">bookmark</span>Bài đã lưu</button
+        ><button [class.active]="tab() === 'MINE'" (click)="select('MINE')">
+          <span class="material-symbols-outlined">edit_note</span>Bài của tôi
+        </button>
+      }
+      <a routerLink="/cam-nang"
+        ><span class="material-symbols-outlined">menu_book</span>Cẩm nang thuê trọ</a
+      >
+    </section>
+    <section class="safety panel">
+      <span class="material-symbols-outlined">verified_user</span>
+      <h3>Cùng xây cộng đồng văn minh</h3>
+      <p>Chia sẻ trải nghiệm thật, tôn trọng sự khác biệt và báo cáo nội dung không phù hợp.</p>
+    </section>
+  </aside>
+  <main>
+    <section class="panel composer-teaser">
+      <div class="compose-row">
+        <img [src]="auth.session()?.avatarUrl || 'avatar-default.jpg'" alt="" /><a
+          [routerLink]="auth.isLoggedIn() ? '/community/create' : '/dang-nhap'"
+          >Bạn muốn chia sẻ điều gì?</a
+        >
+      </div>
+      <div class="compose-actions">
+        <span>📷 Ảnh kỷ niệm</span><span>⌂ Chia sẻ tin phòng</span
+        ><a routerLink="/community/create">Viết bài</a>
+      </div>
+    </section>
+    <div class="tabs">
+      <button [class.active]="tab() === 'LATEST'" (click)="select('LATEST')">Mới nhất</button>
+      @if (auth.isLoggedIn()) {
+        <button [class.active]="tab() === 'FOLLOWING'" (click)="select('FOLLOWING')">
+          Đang theo dõi
+        </button>
+      }
+      <button [class.active]="tab() === 'NEARBY'" (click)="select('NEARBY')">Quanh tôi</button>
+    </div>
+    <form class="search" (ngSubmit)="load(true)">
+      <input
+        name="q"
+        [(ngModel)]="q"
+        placeholder="Tìm bài viết, hashtag…"
+        aria-label="Tìm bài viết"
+        maxlength="100"
+      />
+      @if (tab() === 'NEARBY') {
+        <input
+          name="area"
+          [(ngModel)]="area"
+          placeholder="Khu vực, ví dụ Bình Thạnh"
+          aria-label="Khu vực"
+          maxlength="150"
+        />
+      }
+      <button>Tìm kiếm</button>
+    </form>
+    @if (error()) {
+      <div class="panel error" role="alert">
+        {{ error() }}<button (click)="load(true)">Thử lại</button>
+      </div>
+    }
+    @for (post of posts(); track post.id) {
+      <app-community-post-card [post]="post" (changed)="load(true)" />
+    }
+    @if (loading()) {
+      <div class="panel state" role="status">Đang tải câu chuyện mới…</div>
+    } @else if (!posts().length && !error()) {
+      <div class="panel state">
+        <span class="material-symbols-outlined">forum</span>
+        <h3>Chưa có bài viết nào</h3>
+        <p>Hãy là người đầu tiên chia sẻ câu chuyện của bạn.</p>
+        <a routerLink="/community/create">Viết bài đầu tiên</a>
+      </div>
+    }
+    @if (hasMore() && !loading()) {
+      <button class="load-more" (click)="load()">Xem thêm bài viết</button>
+    }
+  </main>
+  <aside class="right">
+    <section class="panel">
+      <span class="eyebrow">GÓC CHIA SẺ</span>
+      <h3>Một chỗ ở tốt bắt đầu từ thông tin thật</h3>
+      <p>Hỏi đáp về cuộc sống ở trọ, chia sẻ kinh nghiệm và kết nối bạn cùng phòng.</p>
+      <a routerLink="/">Khám phá phòng trọ →</a>
+    </section>
+    <section class="panel">
+      <h3>Đánh giá đáng tin cậy</h3>
+      <p>Đánh giá trên tin phòng chỉ dành cho người đang hoặc đã thuê qua hợp đồng hợp lệ.</p>
+      <span class="verified">✓ Xác thực trải nghiệm thuê</span>
+    </section>
+  </aside>
+</div>

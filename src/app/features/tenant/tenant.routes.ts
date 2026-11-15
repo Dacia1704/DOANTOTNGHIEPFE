@@ -11,6 +11,9 @@ const profileRedirect: RedirectFunction = ({ queryParams, fragment }) =>
   });
 
 export const TENANT_ROUTES: Routes = [
+  { path: 'community', title: 'Cộng đồng | Trọ Tốt', loadComponent: () => import('@shared/pages/community/community-feed.component').then(m => m.CommunityFeedComponent) },
+  { path: 'community/create', title: 'Viết bài | Trọ Tốt', canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])], loadComponent: () => import('@shared/pages/community/post-composer.component').then(m => m.PostComposerComponent) },
+  { path: 'community/posts/:id', title: 'Bài viết cộng đồng | Trọ Tốt', loadComponent: () => import('@shared/pages/community/post-detail.component').then(m => m.PostDetailComponent) },
   {
     path: 'danh-gia-cua-toi',
     title: 'Đánh giá của tôi | Trọ Tốt',

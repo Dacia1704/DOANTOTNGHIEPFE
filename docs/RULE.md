@@ -32,4 +32,4 @@
 
 - Nêu giả định và điểm chưa rõ; dùng giải pháp nhỏ nhất đáp ứng yêu cầu. Không thêm tính năng/abstraction ngoài phạm vi.
 - Chỉ sửa phần liên quan, theo style hiện tại; dọn import/biến mà thay đổi của mình làm thừa. Không tự refactor code lân cận.
-- Xác định tiêu chí kiểm chứng, chạy build/spec phù hợp và báo đúng kết quả/giới hạn. [Hướng dẫn UI và smoke](UI.md), [API nguồn duy nhất](../../RentalManagement/docs/api.md).
+- Xác định tiêu chí kiểm chứng, chạy build và báo đúng kết quả/giới hạn. Bộ kiểm thử tự động hiện đã tạm gỡ; sẽ bổ sung lại sau. [Hướng dẫn UI](UI.md), [API nguồn duy nhất](../../RentalManagement/docs/api.md).

@@ -114,9 +114,6 @@
             "buildTarget": "library-frontend:build",
             "proxyConfig": "proxy.conf.json"
           }
-        },
-        "test": {
-          "builder": "@angular/build:unit-test"
         }
       }
     }

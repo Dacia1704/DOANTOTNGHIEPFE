@@ -1,0 +1,274 @@
+<header class="page-title">
+  <div>
+    <span class="eyebrow">AN TOÀN & TIN CẬY</span>
+    <h1>Kiểm duyệt cộng đồng</h1>
+    <p>Quản lý bài viết, bình luận và nội dung đánh giá từ cùng một nơi.</p>
+  </div>
+  <span class="material-symbols-outlined">policy</span>
+</header>
+<nav class="tabs">
+  <button [class.active]="tab() === 'cases'" (click)="tab.set('cases')">Hàng đợi kiểm duyệt</button
+  ><button [class.active]="tab() === 'rules'" (click)="tab.set('rules')">Từ khóa & quy tắc</button>
+</nav>
+@if (error()) {
+  <div class="error message" role="alert">{{ error() }}</div>
+}
+@if (notice()) {
+  <div class="message" role="status">{{ notice() }}</div>
+}
+@if (tab() === 'cases') {
+  <section class="panel">
+    <div class="toolbar">
+      <input
+        placeholder="Tìm người viết, loại hoặc lý do…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        aria-label="Tìm hồ sơ"
+      /><select
+        [(ngModel)]="resolved"
+        (ngModelChange)="page = 0; load()"
+        aria-label="Trạng thái xử lý"
+      >
+        <option [ngValue]="false">Chờ xử lý</option>
+        <option [ngValue]="true">Đã xử lý</option></select
+      ><button (click)="load()">Làm mới</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Người viết / loại nội dung</th>
+            <th>Lý do</th>
+            <th>Trạng thái nội dung</th>
+            <th>Phát hiện</th>
+            <th>Thời gian</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtered(); track c.id) {
+            <tr>
+              <td>
+                <strong>{{ c.authorName || 'Thành viên' }}</strong
+                ><small>{{ typeLabels[c.targetType] || c.targetType }}</small>
+              </td>
+              <td class="reason">{{ c.reason }}</td>
+              <td>
+                <span class="badge" [class.hidden]="c.status === 'HIDDEN'">{{
+                  labels[c.status]
+                }}</span>
+              </td>
+              <td>{{ c.source === 'AUTO_RULE' ? 'Bộ lọc tự động' : c.source === 'APPEAL' ? 'Tác giả đề nghị xét lại' : 'Người dùng báo cáo' }}</td>
+              <td>{{ c.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+              <td>
+                <button (click)="open(c)">{{ c.resolved ? 'Xem hồ sơ' : 'Xem xét' }}</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty">Không có nội dung trong hàng đợi này.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <button [disabled]="page === 0" (click)="page = page - 1; load()">Trước</button
+      ><span>Trang {{ page + 1 }}</span
+      ><button [disabled]="cases().length < 50" (click)="page = page + 1; load()">Tiếp</button>
+    </div>
+  </section>
+} @else {
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h2>Bộ quy tắc dùng chung</h2>
+        <p>Cấu hình xử lý nội dung mới. Tắt quy tắc không tự khôi phục nội dung cũ.</p>
+      </div>
+      <button class="primary" (click)="newRule()">＋ Thêm quy tắc</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Từ / cụm từ / tên miền</th>
+            <th>Kiểu khớp</th>
+            <th>Xử lý</th>
+            <th>Phạm vi</th>
+            <th>Trạng thái</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rules(); track r.id) {
+            <tr>
+              <td>
+                <strong>{{ r.pattern }}</strong
+                ><small>Phiên bản {{ r.version }}</small>
+              </td>
+              <td>
+                {{
+                  r.matchType === 'TOKEN'
+                    ? 'Từ độc lập'
+                    : r.matchType === 'PHRASE'
+                      ? 'Cụm từ'
+                      : 'Tên miền'
+                }}
+              </td>
+              <td>
+                {{
+                  r.action === 'HIDE'
+                    ? 'Tự động ẩn'
+                    : r.action === 'REQUIRE_REVIEW'
+                      ? 'Chờ duyệt'
+                      : 'Hạn chế'
+                }}
+              </td>
+              <td>
+                <small>
+                  @if (r.applyPosts) {
+                    Bài viết ·
+                  }
+                  @if (r.applyComments) {
+                    Bình luận ·
+                  }
+                  @if (r.applyReviews) {
+                    Đánh giá ·
+                  }
+                  @if (r.applyReplies) {
+                    Phản hồi
+                  }
+                </small>
+              </td>
+              <td>{{ r.enabled ? 'Đang bật' : 'Đã tắt' }}</td>
+              <td><button (click)="editRule(r)">Chỉnh sửa</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Thử bộ quy tắc đã lưu</h2>
+    <p>Kết quả chỉ để thử nghiệm, không tạo nội dung hoặc hồ sơ kiểm duyệt.</p>
+    <select [(ngModel)]="testScope" aria-label="Phạm vi thử">
+      <option value="POST">Bài viết</option>
+      <option value="POST_COMMENT">Bình luận</option>
+      <option value="ROOM_REVIEW_TEXT">Đánh giá phòng</option>
+      <option value="ROOM_REVIEW_REPLY">Phản hồi chủ trọ</option></select
+    ><textarea
+      [(ngModel)]="testText"
+      maxlength="5000"
+      placeholder="Nhập nội dung cần thử…"
+      aria-label="Nội dung thử"
+    ></textarea
+    ><button (click)="test()" [disabled]="!testText.trim()">Kiểm tra nội dung</button>
+  </section>
+}
+@if (selected(); as c) {
+  <div class="overlay">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="case-title">
+      <header>
+        <h2 id="case-title">Chi tiết kiểm duyệt</h2>
+        <button (click)="selected.set(null)" aria-label="Đóng">×</button>
+      </header>
+      <p>{{ typeLabels[c.targetType] }} · {{ c.authorName }} · Phiên bản {{ c.contentVersion }}</p>
+      <div class="snapshot">{{ c.snapshot }}</div>
+      <p class="reason">{{ c.reason }}</p>
+      @if (!c.resolved) {
+        <form (ngSubmit)="decide()">
+          <label
+            >Quyết định<select name="decision" [(ngModel)]="decision">
+              <option value="VISIBLE">Cho phép hiển thị</option>
+              <option value="RESTRICTED">Giữ hạn chế</option>
+              <option value="HIDDEN">Ẩn nội dung</option>
+              <option value="REMOVED">Gỡ nội dung</option>
+            </select></label
+          ><label
+            >Lý do xử lý<textarea
+              name="reason"
+              [(ngModel)]="reason"
+              maxlength="1000"
+              required
+            ></textarea>
+          </label>
+          <p class="hint">
+            Đối với đánh giá, quyết định chỉ áp dụng phần chữ hoặc phản hồi. Điểm sao hợp lệ được
+            giữ nguyên.
+          </p>
+          <button class="primary" [disabled]="busy() || !reason.trim()">
+            {{ busy() ? 'Đang lưu…' : 'Lưu quyết định' }}
+          </button>
+        </form>
+      }
+    </section>
+  </div>
+}
+@if (draft(); as r) {
+  <div class="overlay">
+    <form
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rule-title"
+      (ngSubmit)="saveRule()"
+    >
+      <header>
+        <h2 id="rule-title">{{ r.id ? 'Chỉnh sửa' : 'Thêm' }} quy tắc</h2>
+        <button type="button" (click)="draft.set(null)" aria-label="Đóng">×</button>
+      </header>
+      <label
+        >Từ, cụm từ hoặc tên miền<input
+          name="pattern"
+          [(ngModel)]="r.pattern"
+          maxlength="500"
+          required
+      /></label>
+      <div class="columns">
+        <label
+          >Kiểu khớp<select name="matchType" [(ngModel)]="r.matchType">
+            <option value="TOKEN">Từ độc lập</option>
+            <option value="PHRASE">Cụm từ</option>
+            <option value="DOMAIN">Tên miền</option>
+          </select></label
+        ><label
+          >Mức xử lý<select name="action" [(ngModel)]="r.action">
+            <option value="RESTRICT">Hạn chế</option>
+            <option value="REQUIRE_REVIEW">Chờ duyệt</option>
+            <option value="HIDE">Tự động ẩn</option>
+          </select></label
+        >
+      </div>
+      <label class="check"
+        ><input type="checkbox" name="accents" [(ngModel)]="r.accentInsensitive" />Khớp cả biến thể
+        không dấu</label
+      >
+      <fieldset>
+        <legend>Áp dụng cho</legend>
+        <label class="check"
+          ><input type="checkbox" name="posts" [(ngModel)]="r.applyPosts" />Bài viết</label
+        ><label class="check"
+          ><input type="checkbox" name="comments" [(ngModel)]="r.applyComments" />Bình luận cộng
+          đồng</label
+        ><label class="check"
+          ><input type="checkbox" name="reviews" [(ngModel)]="r.applyReviews" />Nội dung đánh giá
+          listing</label
+        ><label class="check"
+          ><input type="checkbox" name="replies" [(ngModel)]="r.applyReplies" />Phản hồi chủ
+          trọ</label
+        >
+      </fieldset>
+      <label
+        >Lý do hiển thị<input
+          name="ruleReason"
+          [(ngModel)]="r.reason"
+          maxlength="255"
+          required /></label
+      ><label class="check"
+        ><input type="checkbox" name="enabled" [(ngModel)]="r.enabled" />Bật quy tắc</label
+      ><button class="primary" [disabled]="busy() || !r.pattern.trim() || !r.reason.trim()">
+        Lưu quy tắc
+      </button>
+    </form>
+  </div>
+}
