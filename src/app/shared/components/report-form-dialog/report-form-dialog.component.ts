@@ -17,6 +17,8 @@ export interface ReportDialogData {
   targetType: ReportTargetType;
   targetId: string;
   targetName: string;
+  originListingId?: string;
+  rentalAgreementId?: string;
 }
 @Component({
   selector: 'app-report-form-dialog',
@@ -76,6 +78,8 @@ export class ReportFormDialogComponent {
         targetId: this.data.targetId,
         reasonCode: this.reason as ReportReason,
         description: this.description.trim(),
+        ...(this.data.originListingId ? { originListingId: this.data.originListingId } : {}),
+        ...(this.data.rentalAgreementId ? { rentalAgreementId: this.data.rentalAgreementId } : {}),
       })
       .pipe(
         takeUntilDestroyed(this.destroy),
@@ -85,7 +89,8 @@ export class ReportFormDialogComponent {
         }),
       )
       .subscribe({
-        next: (report) => this.detail.set({ report, evidences: [] }),
+        next: (report) =>
+          this.detail.set({ report, evidences: [], originListing: null, sanctionedListing: null }),
         error: (e) =>
           this.error.set(e.error?.message || 'Chưa gửi được báo cáo. Vui lòng thử lại.'),
       });

@@ -482,6 +482,8 @@
         <app-listing-reviews
           #reviewsSection
           [listingId]="post.id"
+          [propertyRoomIds]="reviewRoomIds()"
+          [landlordId]="post.property.landlordId || selectedRoom()?.landlordId || null"
           [roomId]="selectedRoom()?.id ?? null"
           [roomLabel]="
             post.rentalMode === 'WHOLE'

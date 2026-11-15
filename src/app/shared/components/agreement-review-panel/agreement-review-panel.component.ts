@@ -102,7 +102,7 @@ export class AgreementReviewPanelComponent {
       maxWidth: '94vw',
       maxHeight: '90dvh',
       ariaLabel: 'Báo cáo chủ trọ',
-      data: { targetType: 'LANDLORD', targetId: a.landlordId, targetName: a.landlordName },
+      data: { targetType: 'LANDLORD', targetId: a.landlordId, targetName: a.landlordName, rentalAgreementId: a.id },
     });
   }
   viewTenant() {

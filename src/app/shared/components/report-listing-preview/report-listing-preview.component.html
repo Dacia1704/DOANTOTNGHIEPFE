@@ -1,0 +1,64 @@
+<article class="listing-preview" [attr.aria-busy]="loading()">
+  <h3>{{ listing()?.title || title() || 'Tin đăng liên quan' }}</h3>
+  <dl>
+    <div>
+      <dt>Mã tin</dt>
+      <dd>{{ listingId() }}</dd>
+    </div>
+    @if (listing()?.status || status(); as listingStatus) {
+      <div>
+        <dt>Trạng thái</dt>
+        <dd>{{ statuses[listingStatus] || listingStatus }}</dd>
+      </div>
+    }
+    @if (listing(); as post) {
+      <div>
+        <dt>Cơ sở</dt>
+        <dd>{{ post.propertyName }}</dd>
+      </div>
+      <div>
+        <dt>Địa chỉ</dt>
+        <dd>{{ post.fullAddress }}</dd>
+      </div>
+      <div>
+        <dt>Mã chủ trọ</dt>
+        <dd>{{ post.landlordId }}</dd>
+      </div>
+      <div>
+        <dt>Ngày đăng</dt>
+        <dd>{{ (post.publishedAt | date: 'HH:mm · dd/MM/yyyy') || 'Chưa công khai' }}</dd>
+      </div>
+      @if (post.expiresAt) {
+        <div>
+          <dt>Hết hạn</dt>
+          <dd>{{ post.expiresAt | date: 'HH:mm · dd/MM/yyyy' }}</dd>
+        </div>
+      }
+    }
+  </dl>
+  @if (listing(); as post) {
+    @if (post.description) {
+      <details>
+        <summary>Nội dung tin đăng hiện tại</summary>
+        <p class="copy">{{ post.description }}</p>
+      </details>
+    }
+    @if (post.status === 'PUBLISHED') {
+      <a [routerLink]="['/tro', listingId()]" target="_blank" rel="noopener"
+        >Xem tin đăng (tab mới)<span class="material-symbols-outlined" aria-hidden="true"
+          >open_in_new</span
+        ></a
+      >
+    }
+  }
+  @if (loading()) {
+    <p class="muted" role="status">Đang tải chi tiết tin đăng…</p>
+  }
+  @if (error()) {
+    <p class="muted" role="status">{{ error() }}</p>
+    <button type="button" (click)="reload()">Thử lại</button>
+  }
+  @if (!loading() && !listing() && !error()) {
+    <p class="muted">Chưa có thông tin chi tiết của tin đăng trong hồ sơ báo cáo.</p>
+  }
+</article>
