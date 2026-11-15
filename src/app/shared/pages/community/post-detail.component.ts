@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { timer, filter } from 'rxjs';
 import { CommunityService } from '@services/community/community.service';
 import { CommunityPost } from '@model/community/community.model';
 import { PostCardComponent } from './post-card.component';
@@ -29,12 +28,6 @@ export class PostDetailComponent implements OnInit {
   readonly loading = signal(false);
   ngOnInit() {
     this.load();
-    timer(5000, 5000)
-      .pipe(
-        filter(() => document.visibilityState === 'visible'),
-        takeUntilDestroyed(this.destroy),
-      )
-      .subscribe(() => this.load());
   }
   load() {
     if (this.loading()) return;

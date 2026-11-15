@@ -1,118 +1,251 @@
 @let p = post();
-<article class="post-card">
-  <header>
-    <img class="avatar" [src]="p.avatarUrl || 'avatar-default.jpg'" alt="" />
-    <div class="author">
-      <strong>{{ p.authorName || 'Thành viên' }}</strong
-      ><small
-        >{{
-          p.role === 'LANDLORD' ? 'Chủ trọ' : p.role === 'ADMIN' ? 'Quản trị viên' : 'Người thuê'
-        }}
-        · {{ p.createdAt | date: 'dd/MM HH:mm' }}
-        @if (p.edited) {
-          · Đã chỉnh sửa
-        }
-      </small>
-    </div>
-    @if (auth.isLoggedIn() && auth.session()?.id !== p.authorId) {
-      <button [disabled]="busy()" (click)="follow()">
-        {{ p.following ? 'Đang theo dõi' : '+ Theo dõi' }}
-      </button>
-    }
-  </header>
-  @if (p.pinned) {
-    <span class="badge">push_pin · Đã ghim</span>
-  }
-  @if (auth.primaryRole() === 'ADMIN' && p.status === 'VISIBLE') {
-    <button [disabled]="busy()" (click)="pin()">{{ p.pinned ? 'Bỏ ghim bài' : 'Ghim bài' }}</button>
-  }
-  @if (p.area) {
-    <small class="area">{{ p.area }}</small>
-  }
-  @if (p.status !== 'VISIBLE') {
-    <p class="notice">
-      {{ labels[p.status] }}
-      @if (p.status === 'RESTRICTED' && !p.content && !revealed()) {
-        <button (click)="reveal()">Xem nội dung bị hạn chế</button>
-      }
-    </p>
-  }
-  @if (p.content) {
-    <p class="content">{{ p.content }}</p>
-  }
-  @if (revealed()) {
-    <p class="content">{{ revealed() }}</p>
-  }
-  @if (p.media.length) {
-    <div class="media-grid" [class.single]="p.media.length === 1">
-      @for (image of p.media; track image.id) {
-        <img [src]="image.url" alt="Ảnh bài viết cộng đồng" loading="lazy" />
-      }
-    </div>
-  }
-  @for (listing of p.listings; track listing.id) {
-    <div class="listing">
-      <span class="material-symbols-outlined">apartment</span>
-      <div>
-        <small>TIN PHÒNG ĐÍNH KÈM</small>
-        @if (listing.available) {
-          <a [routerLink]="['/tro', listing.id]">{{ listing.title }}</a>
+<ng-template #postBody let-inModal="inModal">
+  <article class="post-card" [class.in-modal]="inModal">
+    <header>
+      <img class="avatar" [src]="p.avatarUrl || 'avatar-default.jpg'" alt="" />
+      <div class="author">
+        @if (authorClickable()) {
+          <button class="author-name" (click)="openAuthor()" aria-haspopup="dialog">
+            {{ p.authorName || 'Thành viên' }}
+          </button>
         } @else {
-          <span>Tin không còn khả dụng</span>
+          <strong>{{ p.authorName || 'Thành viên' }}</strong>
+        }
+        <small
+          >{{
+            p.role === 'LANDLORD' ? 'Chủ trọ' : p.role === 'ADMIN' ? 'Quản trị viên' : 'Người thuê'
+          }}
+          · {{ p.createdAt | date: 'dd/MM HH:mm' }}
+          @if (p.edited) {
+            · Đã chỉnh sửa
+          }
+        </small>
+      </div>
+      <div class="post-menu">
+        <button
+          class="icon-button"
+          aria-label="Tùy chọn bài viết"
+          [attr.aria-expanded]="menuOpen()"
+          (click)="menuOpen.set(!menuOpen())"
+        >
+          <span class="material-symbols-outlined">more_horiz</span>
+        </button>
+        @if (menuOpen()) {
+          <button
+            class="menu-backdrop"
+            aria-label="Đóng tùy chọn"
+            (click)="menuOpen.set(false)"
+          ></button>
+          <div class="menu-panel" (keydown.escape)="menuOpen.set(false)">
+            @if (auth.isLoggedIn()) {
+              <button [disabled]="busy()" (click)="save()">
+                <span class="material-symbols-outlined">bookmark</span
+                ><span
+                  >{{ p.saved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'
+                  }}<small>Lưu vào danh sách bài viết của bạn</small></span
+                >
+              </button>
+            }
+            <button (click)="viewDetails()">
+              <span class="material-symbols-outlined">open_in_new</span
+              ><span>Xem chi tiết<small>Mở trang chi tiết bài viết</small></span>
+            </button>
+            <button (click)="share()">
+              <span class="material-symbols-outlined">link</span>Sao chép liên kết
+            </button>
+            @if (auth.isLoggedIn() && auth.session()?.id !== p.authorId) {
+              <button [disabled]="busy()" (click)="follow()">
+                <span class="material-symbols-outlined">{{
+                  p.following ? 'person_remove' : 'person_add'
+                }}</span
+                >{{ p.following ? 'Bỏ theo dõi' : 'Theo dõi' }} {{ p.authorName }}
+              </button>
+              <button (click)="reportOpen.set(true); menuOpen.set(false)">
+                <span class="material-symbols-outlined">flag</span
+                ><span>Báo cáo bài viết<small>Chúng tôi sẽ giữ kín người báo cáo</small></span>
+              </button>
+            }
+            @if (auth.session()?.id === p.authorId) {
+              <a
+                [routerLink]="['/community/create']"
+                [queryParams]="{ edit: p.id }"
+                (click)="closeModal()"
+                ><span class="material-symbols-outlined">edit</span>Chỉnh sửa bài viết</a
+              >
+              <button [disabled]="busy()" (click)="menuOpen.set(false); remove()">
+                <span class="material-symbols-outlined">delete</span>Xóa bài viết
+              </button>
+              @if (p.status !== 'VISIBLE') {
+                <button (click)="reportOpen.set(true); menuOpen.set(false)">
+                  <span class="material-symbols-outlined">gavel</span>Yêu cầu xem xét lại
+                </button>
+              }
+            }
+            @if (auth.primaryRole() === 'ADMIN' && p.status === 'VISIBLE') {
+              <button [disabled]="busy()" (click)="menuOpen.set(false); pin()">
+                <span class="material-symbols-outlined">push_pin</span
+                >{{ p.pinned ? 'Bỏ ghim bài' : 'Ghim bài' }}
+              </button>
+            }
+          </div>
         }
       </div>
-      <span>↗</span>
-    </div>
-  }
-  <div class="counts">
-    <span>{{ p.reactionCount }} cảm xúc</span
-    ><a [routerLink]="['/community/posts', p.id]">{{ p.commentCount }} bình luận</a>
-  </div>
-  <footer>
-    @if (auth.isLoggedIn()) {
-      @for (reaction of ['LIKE', 'LOVE', 'WOW']; track reaction) {
-        <button
-          [class.active]="p.myReaction === reaction"
-          [disabled]="busy() || p.status !== 'VISIBLE'"
-          (click)="react($any(reaction))"
-        >
-          {{
-            reaction === 'LIKE' ? '♡ Thích' : reaction === 'LOVE' ? '♥ Yêu thích' : '☺ Ngạc nhiên'
-          }}
-        </button>
-      }
-      <button [disabled]="busy()" (click)="save()">{{ p.saved ? 'Đã lưu' : 'Lưu bài' }}</button>
-    } @else {
-      <a routerLink="/dang-nhap">Đăng nhập để tương tác</a>
+    </header>
+    @if (p.pinned) {
+      <span class="badge">Đã ghim</span>
     }
-    <a [routerLink]="['/community/posts', p.id]">Bình luận</a>
-  </footer>
-  @if (auth.session()?.id === p.authorId) {
-    <div class="owner">
-      <a [routerLink]="['/community/create']" [queryParams]="{ edit: p.id }">Chỉnh sửa</a
-      ><button [disabled]="busy()" (click)="remove()">Xóa bài</button>
+    @if (p.area) {
+      <small class="area">{{ p.area }}</small>
+    }
+    @if (p.status !== 'VISIBLE') {
+      <p class="notice">
+        {{ labels[p.status] }}
+        @if (p.status === 'RESTRICTED' && !p.content && !revealed()) {
+          <button (click)="reveal()">Xem nội dung bị hạn chế</button>
+        }
+      </p>
+    }
+    @if (p.content) {
+      <p class="content" [class.collapsed]="!inModal && !expanded() && p.content.length > 280">
+        {{ p.content }}
+      </p>
+      @if (!inModal && !expanded() && p.content.length > 280) {
+        <button class="see-more" (click)="expanded.set(true)">Xem thêm</button>
+      }
+    }
+    @if (revealed()) {
+      <p class="content">{{ revealed() }}</p>
+    }
+    @if (p.media.length) {
+      <div class="media-grid" [class.single]="p.media.length === 1">
+        @for (image of p.media; track image.id) {
+          <img [src]="image.url" alt="Ảnh bài viết cộng đồng" loading="lazy" />
+        }
+      </div>
+    }
+    @for (listing of p.listings; track listing.id) {
+      <div class="listing">
+        <span class="material-symbols-outlined">apartment</span>
+        <div>
+          <small>TIN PHÒNG ĐÍNH KÈM</small>
+          @if (listing.available) {
+            <button
+              type="button"
+              class="listing-preview-link"
+              aria-haspopup="dialog"
+              (click)="openListingPreview(listing)"
+            >
+              {{ listing.title }}
+            </button>
+          } @else {
+            <span>Tin không còn khả dụng</span>
+          }
+        </div>
+        <span>↗</span>
+      </div>
+    }
+    <div class="counts">
+      @if (p.reactionCount > 0) {
+        <span class="reaction-count">
+          <span class="reaction-icons">
+            @for (reaction of reactions; track reaction.type) {
+              @if (
+                (p.reactionTypes ?? (p.myReaction ? [p.myReaction] : ['LIKE'])).includes(
+                  reaction.type
+                )
+              ) {
+                <span
+                  class="reaction-badge"
+                  [title]="reaction.label"
+                  [attr.aria-label]="reaction.label"
+                  >{{ reaction.icon }}</span
+                >
+              }
+            }
+          </span>
+          {{ p.reactionCount }}<span class="sr-only"> cảm xúc</span>
+        </span>
+      }
+      <button (click)="openComments()">{{ p.commentCount }} bình luận</button>
     </div>
-  }
-  @if (auth.isLoggedIn() && auth.session()?.id !== p.authorId) {
-    <button class="report" (click)="reportOpen.set(!reportOpen())">Báo cáo nội dung</button>
-  }
-  @if (auth.session()?.id === p.authorId && p.status !== 'VISIBLE') {
-    <button class="report" (click)="reportOpen.set(!reportOpen())">Yêu cầu xem xét lại</button>
-  }
-  @if (reportOpen()) {
-    <form (ngSubmit)="report()">
-      <label
-        >Lý do đề nghị xem xét<textarea
-          name="reason"
-          [(ngModel)]="reason"
-          maxlength="1000"
-          required
-        ></textarea></label
-      ><button [disabled]="busy() || !reason.trim()">Gửi yêu cầu</button
-      ><button type="button" (click)="reportOpen.set(false)">Hủy</button>
-    </form>
-  }
-  @if (error()) {
-    <p role="alert" class="error">{{ error() }}</p>
-  }
-</article>
+    <footer>
+      <div class="reaction-control">
+        <button
+          class="action"
+          [class.active]="p.myReaction"
+          [disabled]="busy() || p.status !== 'VISIBLE'"
+          (click)="defaultReaction()"
+        >
+          @if (p.myReaction) {
+            @for (reaction of reactions; track reaction.type) {
+              @if (p.myReaction === reaction.type) {
+                <span>{{ reaction.icon }}</span
+                >{{ reaction.label }}
+              }
+            }
+          } @else {
+            <span class="material-symbols-outlined">thumb_up</span>Thích
+          }
+        </button>
+        @if (auth.isLoggedIn() && p.status === 'VISIBLE') {
+          <div class="reaction-picker" aria-label="Chọn cảm xúc">
+            @for (reaction of reactions; track reaction.type) {
+              <button
+                [attr.aria-label]="reaction.label"
+                [title]="reaction.label"
+                [attr.aria-pressed]="p.myReaction === reaction.type"
+                [disabled]="busy()"
+                (click)="react(reaction.type)"
+              >
+                {{ reaction.icon }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <button class="action" (click)="openComments()">
+        <span class="material-symbols-outlined">chat_bubble_outline</span>Bình luận
+      </button>
+      <button class="action" (click)="share()">
+        <span class="material-symbols-outlined">share</span>Chia sẻ
+      </button>
+    </footer>
+    @if (reportOpen()) {
+      <form (ngSubmit)="report()">
+        <label
+          >Lý do đề nghị xem xét<textarea
+            name="reason"
+            [(ngModel)]="reason"
+            maxlength="1000"
+            required
+          ></textarea></label
+        ><button [disabled]="busy() || !reason.trim()">Gửi yêu cầu</button
+        ><button type="button" (click)="reportOpen.set(false)">Hủy</button>
+      </form>
+    }
+    @if (error()) {
+      <p role="alert" class="error">{{ error() }}</p>
+    }
+  </article>
+</ng-template>
+<ng-container [ngTemplateOutlet]="postBody" [ngTemplateOutletContext]="{ inModal: false }" />
+<ng-template #postModal>
+  <div class="post-modal">
+    <div class="modal-heading">
+      <h2>Bài viết của {{ p.authorName || 'Thành viên' }}</h2>
+      <button class="close-modal" aria-label="Đóng bài viết" (click)="closeModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-scroll">
+      <ng-container [ngTemplateOutlet]="postBody" [ngTemplateOutletContext]="{ inModal: true }" />
+      <app-community-comments
+        [compact]="true"
+        [postId]="p.id"
+        [authorId]="p.authorId"
+        [canComment]="p.status === 'VISIBLE'"
+        (changed)="changed.emit()"
+      />
+    </div>
+  </div>
+</ng-template>

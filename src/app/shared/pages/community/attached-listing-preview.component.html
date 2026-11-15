@@ -1,0 +1,108 @@
+<section class="listing-preview">
+  <header class="preview-heading">
+    <div>
+      <span class="eyebrow">TIN PHÒNG ĐÍNH KÈM</span>
+      <h2>Xem trước tin đăng</h2>
+    </div>
+    <button type="button" class="close" aria-label="Đóng xem trước" (click)="dialogRef.close()">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+  </header>
+  <div class="preview-content" [attr.aria-busy]="loading()">
+    @if (loading()) {
+      <div class="loading" role="status">
+        <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>Đang tải tin
+        đăng…
+      </div>
+    } @else if (error()) {
+      <div class="error-state" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">{{
+          unavailable() ? 'domain_disabled' : 'cloud_off'
+        }}</span>
+        <h3>{{ data.title }}</h3>
+        <p>{{ error() }}</p>
+        @if (!unavailable()) {
+          <button type="button" class="retry" (click)="load()">Thử lại</button>
+        }
+      </div>
+    } @else if (listing(); as item) {
+      @if (item.thumbnail && !imageFailed()) {
+        <img
+          class="cover"
+          [src]="item.thumbnail"
+          [alt]="item.propertyName"
+          (error)="imageFailed.set(true)"
+        />
+      } @else {
+        <div class="cover placeholder">
+          <span class="material-symbols-outlined" aria-hidden="true">apartment</span
+          ><span>Chưa có ảnh tin đăng</span>
+        </div>
+      }
+      <div class="listing-info">
+        <span class="category">{{ item.categoryLabel || item.property.rentalModeLabel }}</span>
+        <h3>{{ item.listingTitle }}</h3>
+        <p class="address">
+          <span class="material-symbols-outlined" aria-hidden="true">location_on</span
+          >{{ item.fullAddress || 'Chưa cập nhật địa chỉ' }}
+        </p>
+        <div class="price">
+          @if (item.price > 0) {
+            <strong
+              >{{ item.rentalMode === 'BY_ROOM' ? 'Từ ' : ''
+              }}{{ text.toVnd(item.price, '₫') }}</strong
+            ><span>/ tháng</span>
+          } @else {
+            <strong>Liên hệ để biết giá</strong>
+          }
+        </div>
+        <dl>
+          <div>
+            <dt>Cơ sở</dt>
+            <dd>{{ item.propertyName }}</dd>
+          </div>
+          <div>
+            <dt>Hình thức thuê</dt>
+            <dd>{{ item.property.rentalModeLabel }}</dd>
+          </div>
+          <div>
+            <dt>Còn trống</dt>
+            <dd>
+              {{ item.property.availableCount }} {{ item.rentalMode === 'WHOLE' ? 'căn' : 'phòng' }}
+            </dd>
+          </div>
+          <div>
+            <dt>Chủ trọ</dt>
+            <dd>{{ item.landlordName }}</dd>
+          </div>
+          <div>
+            <dt>Ngày đăng</dt>
+            <dd>{{ item.publishedAt | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+        </dl>
+        @if (item.amenities.length) {
+          <h4>Tiện ích</h4>
+          <div class="amenities">
+            @for (amenity of item.amenities.slice(0, 8); track amenity.id) {
+              <span>{{ amenity.name }}</span>
+            }
+          </div>
+        }
+        @if (item.listingDescription) {
+          <h4>Mô tả</h4>
+          <p class="description">{{ item.listingDescription }}</p>
+        }
+      </div>
+    }
+  </div>
+  <footer>
+    <button type="button" class="back" (click)="dialogRef.close()">Đóng</button>
+    @if (listing()) {
+      <a class="open-details" [routerLink]="['/tro', data.listingId]" (click)="dialogRef.close()"
+        >Mở chi tiết<span class="material-symbols-outlined" aria-hidden="true"
+          >arrow_forward</span
+        ></a
+      >
+    }
+  </footer>
+</section>

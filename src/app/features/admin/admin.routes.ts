@@ -2,7 +2,20 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
-  { path: 'moderation', title: 'Kiểm duyệt cộng đồng | Trọ Tốt', loadComponent: () => import('./community-moderation/community-moderation.component').then(m => m.CommunityModerationComponent) },
+  {
+    path: 'dashboard',
+    title: 'Tổng quan hệ thống | Trọ Tốt',
+    loadComponent: () =>
+      import('./dashboard/admin-dashboard.component').then((m) => m.AdminDashboardComponent),
+  },
+  {
+    path: 'moderation',
+    title: 'Kiểm duyệt cộng đồng | Trọ Tốt',
+    loadComponent: () =>
+      import('./community-moderation/community-moderation.component').then(
+        (m) => m.CommunityModerationComponent,
+      ),
+  },
   {
     path: 'roles',
     title: 'Phân quyền & vai trò | Trọ Tốt',
@@ -119,5 +132,5 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.AmenityManagementComponent,
       ),
   },
-  { path: '', pathMatch: 'full', redirectTo: 'users' },
+  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
 ];

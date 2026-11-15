@@ -26,6 +26,7 @@ import { ListingReviewsComponent } from '../../components/listing-reviews/listin
 import { ListingRatingComponent } from '../../components/listing-reviews/listing-rating.component';
 import { ReportFormDialogComponent } from '@shared/components/report-form-dialog/report-form-dialog.component';
 import { ReportTargetType } from '@model/report/report.model';
+import { ClipboardFeedbackService } from '@services/common/clipboard-feedback.service';
 
 const AMENITY_SUBTITLES: [RegExp, string][] = [
   [/wifi|wi-fi|internet/, 'Kết nối internet phục vụ học tập, làm việc và giải trí.'],
@@ -109,7 +110,9 @@ export class ListingDetailPageComponent implements OnInit {
   readonly chatWidget = inject(ChatWidgetService);
   private readonly requests = new Subject<string>();
   readonly listing = signal<PublicListing | null>(null);
-  readonly reviewRoomIds = computed(() => this.listing()?.property.rooms.map(room => room.id) ?? []);
+  readonly reviewRoomIds = computed(
+    () => this.listing()?.property.rooms.map((room) => room.id) ?? [],
+  );
   readonly wholeMappingInvalid = computed(
     () => this.listing()?.rentalMode === 'WHOLE' && this.listing()?.property.rooms.length !== 1,
   );
@@ -117,7 +120,7 @@ export class ListingDetailPageComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly activeImage = signal(0);
-  readonly shareMessage = signal('');
+  private readonly clipboard = inject(ClipboardFeedbackService);
   readonly landlordRating = signal<ReviewSummary | null>(null);
   readonly roomRating = signal<ReviewSummary | null>(null);
   readonly phone = signal<string | null>(null);
@@ -219,12 +222,11 @@ export class ListingDetailPageComponent implements OnInit {
   }
 
   async share(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      this.shareMessage.set('Đã sao chép liên kết');
-    } catch {
-      this.shareMessage.set('Chưa thể sao chép. Bạn có thể sao chép địa chỉ trên trình duyệt.');
-    }
+    await this.clipboard.copy(
+      window.location.href,
+      'Đã sao chép liên kết tin phòng.',
+      'Không thể sao chép liên kết. Vui lòng thử lại.',
+    );
   }
 
   scrollToRooms(): void {

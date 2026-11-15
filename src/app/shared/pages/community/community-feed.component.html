@@ -14,6 +14,9 @@
         <span class="material-symbols-outlined">dynamic_feed</span>Bảng tin cộng đồng
       </button>
       @if (auth.isLoggedIn()) {
+        <button [class.active]="tab() === 'FOLLOWING'" (click)="select('FOLLOWING')">
+          <span class="material-symbols-outlined">group</span>Đang theo dõi
+        </button>
         <button [class.active]="tab() === 'SAVED'" (click)="select('SAVED')">
           <span class="material-symbols-outlined">bookmark</span>Bài đã lưu</button
         ><button [class.active]="tab() === 'MINE'" (click)="select('MINE')">
@@ -33,51 +36,40 @@
   <main>
     <section class="panel composer-teaser">
       <div class="compose-row">
-        <img [src]="auth.session()?.avatarUrl || 'avatar-default.jpg'" alt="" /><a
-          [routerLink]="auth.isLoggedIn() ? '/community/create' : '/dang-nhap'"
-          >Bạn muốn chia sẻ điều gì?</a
+        <img [src]="auth.session()?.avatarUrl || 'avatar-default.jpg'" alt="" /><button
+          class="compose-trigger"
+          (click)="openComposer()"
+          aria-haspopup="dialog"
         >
-      </div>
-      <div class="compose-actions">
-        <span>📷 Ảnh kỷ niệm</span><span>⌂ Chia sẻ tin phòng</span
-        ><a routerLink="/community/create">Viết bài</a>
+          Bạn muốn chia sẻ điều gì?
+        </button>
       </div>
     </section>
-    <div class="tabs">
-      <button [class.active]="tab() === 'LATEST'" (click)="select('LATEST')">Mới nhất</button>
-      @if (auth.isLoggedIn()) {
-        <button [class.active]="tab() === 'FOLLOWING'" (click)="select('FOLLOWING')">
-          Đang theo dõi
-        </button>
-      }
-      <button [class.active]="tab() === 'NEARBY'" (click)="select('NEARBY')">Quanh tôi</button>
-    </div>
+    @if (postNotice()) {
+      <p class="post-notice" role="status">{{ postNotice() }}</p>
+    }
     <form class="search" (ngSubmit)="load(true)">
       <input
         name="q"
         [(ngModel)]="q"
-        placeholder="Tìm bài viết, hashtag…"
-        aria-label="Tìm bài viết"
+        placeholder="Tìm theo từ khóa, #hashtag…"
+        aria-label="Tìm bài viết theo từ khóa hoặc hashtag"
         maxlength="100"
       />
-      @if (tab() === 'NEARBY') {
-        <input
-          name="area"
-          [(ngModel)]="area"
-          placeholder="Khu vực, ví dụ Bình Thạnh"
-          aria-label="Khu vực"
-          maxlength="150"
-        />
-      }
       <button>Tìm kiếm</button>
     </form>
     @if (error()) {
       <div class="panel error" role="alert">
-        {{ error() }}<button (click)="load(true)">Thử lại</button>
+        {{ error() }}<button (click)="load(!posts().length)">Thử lại</button>
       </div>
     }
     @for (post of posts(); track post.id) {
-      <app-community-post-card [post]="post" (changed)="load(true)" />
+      <app-community-post-card
+        appFeedImpression="COMMUNITY"
+        [impressionId]="post.id"
+        [post]="post"
+        (changed)="refreshPost(post.id)"
+      />
     }
     @if (loading()) {
       <div class="panel state" role="status">Đang tải câu chuyện mới…</div>
@@ -89,9 +81,7 @@
         <a routerLink="/community/create">Viết bài đầu tiên</a>
       </div>
     }
-    @if (hasMore() && !loading()) {
-      <button class="load-more" (click)="load()">Xem thêm bài viết</button>
-    }
+    <div #feedEnd class="feed-end" aria-hidden="true"></div>
   </main>
   <aside class="right">
     <section class="panel">
@@ -107,3 +97,29 @@
     </section>
   </aside>
 </div>
+<ng-template #composerModal>
+  <section class="composer-modal">
+    <header class="composer-heading">
+      <h2>Tạo bài viết</h2>
+      <button class="close-composer" aria-label="Đóng tạo bài viết" (click)="closeComposer()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+    <div class="composer-body">
+      @if (auth.isLoggedIn()) {
+        <app-post-composer
+          class="quick-composer"
+          [compact]="true"
+          (posted)="onPosted($event)"
+          (advanced)="closeComposer()"
+        />
+      } @else {
+        <div class="composer-login">
+          <p>Đăng nhập để chia sẻ câu chuyện của bạn với cộng đồng.</p>
+          <a routerLink="/dang-nhap" (click)="closeComposer()">Đăng nhập</a>
+          <a routerLink="/community/create" (click)="closeComposer()">Nâng cao</a>
+        </div>
+      }
+    </div>
+  </section>
+</ng-template>

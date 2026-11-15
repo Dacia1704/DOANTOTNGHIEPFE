@@ -20,6 +20,7 @@ export interface PublicListing {
   amenities: RoomAmenity[];
 }
 export interface PublicListingList {
+  rankingSession?: string;
   items: PublicListing[];
   page: number;
   totalPages: number;

@@ -11,6 +11,7 @@ import { DashboardLayoutComponent } from '../dashboard-layout/dashboard-layout';
 })
 export class LandlordLayout {
   readonly menu: NavItem[] = [
+    { icon: 'dashboard', label: 'Tổng quan', route: '/landlord/dashboard' },
     { icon: 'real_estate_agent', label: 'Quản lý cơ sở & phòng', route: '/phong-cua-toi' },
     { icon: 'article', label: 'Quản lý tin đăng', route: '/tin-cua-toi' },
     { icon: 'event_available', label: 'Đặt phòng & hợp đồng', route: '/quan-ly-dat-phong' },

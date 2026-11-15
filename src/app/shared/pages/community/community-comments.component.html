@@ -1,4 +1,4 @@
-<section>
+<section [class.compact]="compact()">
   <h2>Bình luận cộng đồng</h2>
   <p class="hint">Tôn trọng người khác và chia sẻ thông tin có ích.</p>
   @if (error()) {
@@ -7,62 +7,88 @@
   @if (notice()) {
     <p role="status">{{ notice() }}</p>
   }
-  <ng-template #commentView let-c
-    ><article class="comment">
-      <img [src]="c.avatarUrl || 'avatar-default.jpg'" alt="" />
-      <div class="body">
-        <div class="bubble">
-          <strong>{{ c.authorName || 'Thành viên' }}</strong
-          ><small>{{ c.createdAt | date: 'dd/MM HH:mm' }}</small>
-          @if (c.deleted) {
-            <p class="hint">Bình luận đã được xóa</p>
-          } @else if (c.content) {
-            <p>{{ c.content }}</p>
-          } @else {
-            <p class="hint">{{ labels[c.status] }}</p>
-            @if (c.status === 'RESTRICTED') {
-              <button (click)="reveal(c)">Xem nội dung bị hạn chế</button>
+  <ng-template #commentView let-c let-depth="depth">
+    <div class="comment-node" [class.deep-thread]="depth >= 3">
+      <article class="comment" [class.is-reply-target]="replyTarget()?.id === c.id">
+        <img [src]="c.avatarUrl || 'avatar-default.jpg'" alt="" />
+        <div class="body">
+          <div class="bubble">
+            <strong>{{ c.authorName || 'Thành viên' }}</strong
+            ><small>{{ c.createdAt | date: 'dd/MM HH:mm' }}</small>
+            @if (c.deleted) {
+              <p class="hint">Bình luận đã được xóa</p>
+            } @else if (c.content) {
+              <p>{{ c.content }}</p>
+            } @else {
+              <p class="hint">{{ labels[c.status] }}</p>
+              @if (c.status === 'RESTRICTED') {
+                <button (click)="reveal(c)">Xem nội dung bị hạn chế</button>
+              }
+            }
+          </div>
+          <div class="actions">
+            @if (!c.deleted && auth.isLoggedIn()) {
+              @if (c.status === 'VISIBLE' && canComment()) {
+                <button [disabled]="reacting().has(c.id)" (click)="react(c)">
+                  {{ c.myReaction ? '♥ Đã thích' : '♡ Thích' }} · {{ c.reactionCount }}</button
+                ><button (click)="selectReply(c)">Trả lời</button>
+              }
+              @if (auth.session()?.id === c.authorId) {
+                <button (click)="edit(c)">Sửa</button>
+              } @else {
+                <button (click)="report(c)">Báo cáo</button>
+              }
+              @if (auth.session()?.id === c.authorId || auth.session()?.id === authorId()) {
+                <button (click)="remove(c)">Xóa</button>
+              }
+            }
+            @if (c.status === 'VISIBLE' && (replyCount(c) > 0 || expandedReplies().has(c.id))) {
+              <button
+                class="reply-toggle"
+                type="button"
+                (click)="toggleReplies(c.id)"
+                [attr.aria-expanded]="expandedReplies().has(c.id)"
+                [attr.aria-controls]="'comment-replies-' + c.id"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">{{
+                  expandedReplies().has(c.id) ? 'expand_less' : 'forum'
+                }}</span>
+                {{ expandedReplies().has(c.id) ? 'Thu gọn · ' : '' }}{{ replyCount(c) }} phản hồi
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+      @if (expandedReplies().has(c.id)) {
+        <div class="replies" [id]="'comment-replies-' + c.id">
+          @if (loadingReplies().has(c.id)) {
+            <p class="hint" role="status">Đang tải phản hồi…</p>
+          }
+          @if (replies()[c.id]; as group) {
+            @for (reply of group.items; track reply.id) {
+              <ng-container
+                [ngTemplateOutlet]="commentView"
+                [ngTemplateOutletContext]="{ $implicit: reply, depth: depth + 1 }"
+              />
+            }
+            @if (group.hasMore) {
+              <button [disabled]="loadingReplies().has(c.id)" (click)="loadReplies(c.id, true)">
+                Xem thêm phản hồi
+              </button>
+            }
+            @if (!group.items.length && !loadingReplies().has(c.id)) {
+              <p class="hint">Chưa có phản hồi.</p>
             }
           }
         </div>
-        @if (!c.deleted && auth.isLoggedIn()) {
-          <div class="actions">
-            @if (c.status === 'VISIBLE' && canComment()) {
-              <button (click)="react(c)">
-                {{ c.myReaction ? '♥ Đã thích' : '♡ Thích' }} · {{ c.reactionCount }}</button
-              ><button (click)="selectReply(c)">Trả lời</button>
-            }
-            @if (auth.session()?.id === c.authorId) {
-              <button (click)="edit(c)">Sửa</button>
-            } @else {
-              <button (click)="report(c)">Báo cáo</button>
-            }
-            @if (auth.session()?.id === c.authorId || auth.session()?.id === authorId()) {
-              <button (click)="remove(c)">Xóa</button>
-            }
-          </div>
-        }
-      </div>
-    </article></ng-template
-  >
+      }
+    </div>
+  </ng-template>
   @for (c of items(); track c.id) {
-    <ng-container [ngTemplateOutlet]="commentView" [ngTemplateOutletContext]="{ $implicit: c }" />
-    @if (c.status === 'VISIBLE') {
-      <button class="reply-toggle" (click)="loadReplies(c.id)">Xem trả lời</button>
-    }
-    @if (replies()[c.id]; as group) {
-      <div class="replies">
-        @for (reply of group.items; track reply.id) {
-          <ng-container
-            [ngTemplateOutlet]="commentView"
-            [ngTemplateOutletContext]="{ $implicit: reply }"
-          />
-        }
-        @if (group.hasMore) {
-          <button (click)="loadReplies(c.id, true)">Xem thêm trả lời</button>
-        }
-      </div>
-    }
+    <ng-container
+      [ngTemplateOutlet]="commentView"
+      [ngTemplateOutletContext]="{ $implicit: c, depth: 0 }"
+    />
   }
   @if (loading()) {
     <p role="status">Đang tải bình luận…</p>
@@ -75,23 +101,47 @@
   @if (auth.isLoggedIn() && canComment()) {
     <form (ngSubmit)="submit()">
       @if (replyTo() || editing()) {
-        <div class="replying">
-          {{ editing() ? 'Chỉnh sửa bình luận' : 'Đang trả lời bình luận'
-          }}<button type="button" (click)="cancel()">Hủy</button>
+        <div class="replying" role="status">
+          <div class="reply-context">
+            @if (editing(); as comment) {
+              <span>Chỉnh sửa bình luận của bạn</span>
+              <p>{{ comment.content || 'Bình luận của bạn' }}</p>
+            } @else if (replyTarget(); as target) {
+              <span
+                >Đang trả lời <strong>{{ target.authorName || 'Thành viên' }}</strong></span
+              >
+              <p>{{ target.content || 'Bình luận này không có nội dung hiển thị.' }}</p>
+            }
+          </div>
+          <button type="button" (click)="cancel()">Hủy</button>
         </div>
       }
-      <label for="comment-content">{{ editing() ? 'Nội dung chỉnh sửa' : 'Viết bình luận' }}</label
-      ><textarea
-        id="comment-content"
-        name="content"
-        [(ngModel)]="content"
-        maxlength="2000"
-        required
-        placeholder="Chia sẻ ý kiến của bạn…"
-      ></textarea
-      ><button class="primary" [disabled]="busy() || !content.trim()">
-        {{ busy() ? 'Đang gửi…' : 'Gửi bình luận' }}
-      </button>
+      <label for="comment-content">{{ editing() ? 'Nội dung chỉnh sửa' : 'Viết bình luận' }}</label>
+      <div class="comment-input">
+        <textarea
+          id="comment-content"
+          name="content"
+          [(ngModel)]="content"
+          maxlength="2000"
+          rows="1"
+          (keydown.enter)="onCommentEnter($event)"
+          required
+          placeholder="Chia sẻ ý kiến của bạn…"
+        ></textarea>
+        <button
+          type="submit"
+          class="send-button"
+          [disabled]="busy() || !content.trim()"
+          [attr.aria-label]="
+            busy() ? 'Đang gửi bình luận' : editing() ? 'Lưu chỉnh sửa' : 'Gửi bình luận'
+          "
+          [title]="editing() ? 'Lưu chỉnh sửa' : 'Gửi bình luận'"
+        >
+          <span class="material-symbols-outlined" [class.sending]="busy()" aria-hidden="true">{{
+            busy() ? 'progress_activity' : 'send'
+          }}</span>
+        </button>
+      </div>
     </form>
   } @else {
     <p class="hint">

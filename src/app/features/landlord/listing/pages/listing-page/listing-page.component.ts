@@ -5,10 +5,11 @@ import {
   computed,
   inject,
   signal,
+  TemplateRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ListingService } from '@services/listing/listing.service';
 import { Listing } from '@model/billing/billing.model';
@@ -33,6 +34,7 @@ import { PropertyLocationComponent } from '@shared/components/property-location/
     ManagementTableComponent,
     ManagementTableCellDirective,
     PropertyLocationComponent,
+    MatDialogModule,
   ],
   templateUrl: './listing-page.component.html',
   styleUrl: './listing-page.component.scss',
@@ -61,13 +63,33 @@ export class ListingPageComponent {
     totalPages: this.totalPages(),
   }));
   readonly listingKey = (listing: Listing) => listing.id;
-  readonly columns: readonly ManagementTableColumn<Listing>[] = [
-    { key: 'listing', label: 'Tin đăng', width: '32%' },
-    { key: 'status', label: 'Trạng thái' },
-    { key: 'dates', label: 'Thời hạn' },
-    { key: 'priority', label: 'Mức ưu tiên' },
-    { key: 'actions', label: 'Thao tác' },
-  ];
+  readonly columns: readonly ManagementTableColumn<Listing>[] = this.admin
+    ? [
+        { key: 'listing', label: 'Tin đăng', width: '240px' },
+        { key: 'property', label: 'Cơ sở' },
+        { key: 'landlord', label: 'Chủ trọ' },
+        { key: 'status', label: 'Trạng thái' },
+        { key: 'dates', label: 'Thời hạn' },
+        { key: 'priority', label: 'Mức ưu tiên' },
+        { key: 'actions', label: 'Thao tác', align: 'right' },
+      ]
+    : [
+        { key: 'listing', label: 'Tin đăng', width: '32%' },
+        { key: 'status', label: 'Trạng thái' },
+        { key: 'dates', label: 'Thời hạn' },
+        { key: 'priority', label: 'Mức ưu tiên' },
+        { key: 'actions', label: 'Thao tác' },
+      ];
+  details(listing: Listing, template: TemplateRef<unknown>): void {
+    this.dialog.open(template, {
+      data: listing,
+      width: '820px',
+      maxWidth: 'calc(100vw - 24px)',
+      maxHeight: 'calc(100dvh - 32px)',
+      ariaLabel: 'Chi tiết tin đăng',
+      autoFocus: 'dialog',
+    });
+  }
   constructor() {
     this.load(0);
   }

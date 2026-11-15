@@ -101,7 +101,7 @@ button {
   border-radius: 50%;
   object-fit: cover;
 }
-.compose-row a {
+.compose-row .compose-trigger {
   background: var(--background);
   padding: 14px;
   border-radius: var(--radius-full);
@@ -109,20 +109,65 @@ button {
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 14px;
+  text-align: left;
 }
-.compose-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 16px;
-  font-size: 12px;
-  color: var(--text-secondary);
+.compose-trigger:hover {
+  background: var(--surface-container-low);
 }
-.tabs {
+.composer-modal {
+  background: var(--surface);
+  border-radius: 14px;
+  overflow: hidden;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  max-height: calc(100dvh - 32px);
+  box-shadow: 0 12px 48px #0003;
+}
+.composer-heading {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  border-bottom: 1px solid var(--outline-variant);
+  padding: 0 56px;
+}
+.composer-heading h2 {
+  font-size: 20px;
   margin: 16px 0;
-  flex-wrap: wrap;
+}
+.close-composer {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-primary);
+  background: #e4e6eb;
+}
+.composer-body {
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.quick-composer {
+  padding: 0;
+}
+.composer-login {
+  padding: 24px;
+}
+.composer-login a {
+  display: inline-block;
+  margin-right: 20px;
+}
+.post-notice {
+  color: var(--primary);
+  font-size: 14px;
 }
 .search {
   display: flex;
@@ -147,9 +192,9 @@ input {
   font-size: 48px;
   color: var(--primary);
 }
-.load-more {
-  display: block;
-  width: 100%;
+.feed-end {
+  height: 1px;
+  pointer-events: none;
 }
 .error {
   color: var(--error);
@@ -174,6 +219,9 @@ input {
     display: block;
   }
   .left {
+    display: block;
+  }
+  .left .safety {
     display: none;
   }
   h1 {

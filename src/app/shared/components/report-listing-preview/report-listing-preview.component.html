@@ -1,10 +1,6 @@
 <article class="listing-preview" [attr.aria-busy]="loading()">
   <h3>{{ listing()?.title || title() || 'Tin đăng liên quan' }}</h3>
   <dl>
-    <div>
-      <dt>Mã tin</dt>
-      <dd>{{ listingId() }}</dd>
-    </div>
     @if (listing()?.status || status(); as listingStatus) {
       <div>
         <dt>Trạng thái</dt>
@@ -19,10 +15,6 @@
       <div>
         <dt>Địa chỉ</dt>
         <dd>{{ post.fullAddress }}</dd>
-      </div>
-      <div>
-        <dt>Mã chủ trọ</dt>
-        <dd>{{ post.landlordId }}</dd>
       </div>
       <div>
         <dt>Ngày đăng</dt>

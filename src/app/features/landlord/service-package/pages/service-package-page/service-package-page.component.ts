@@ -88,7 +88,6 @@ export class ServicePackagePageComponent {
     { key: 'actions', label: 'Thao tác / chi tiết' },
   ];
   readonly subscriptionColumns: readonly ManagementTableColumn<Subscription>[] = [
-    { key: 'id', label: 'Mã gói đăng ký', value: (entry) => entry.id },
     { key: 'start', label: 'Bắt đầu', value: (entry) => this.ui.date(entry.startAt) },
     { key: 'end', label: 'Kết thúc', value: (entry) => this.ui.date(entry.endAt) },
     { key: 'status', label: 'Trạng thái' },

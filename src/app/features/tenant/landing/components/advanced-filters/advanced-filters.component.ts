@@ -57,6 +57,7 @@ export class AdvancedFiltersComponent implements OnChanges {
       provinceId: this.fb.nonNullable.control(''),
       wardId: this.fb.nonNullable.control(''),
       roomTypeName: this.fb.nonNullable.control(''),
+      sort: this.fb.nonNullable.control<NonNullable<RoomQueryParams['sort']>>('recommended'),
       minPrice: this.fb.control<number | null>(null, [
         Validators.min(0),
         Validators.max(9999999999.99),
@@ -110,6 +111,7 @@ export class AdvancedFiltersComponent implements OnChanges {
         provinceId: this.query.provinceId ?? '',
         wardId: this.query.wardId ?? '',
         roomTypeName: this.query.roomTypeName ?? '',
+        sort: this.query.sort ?? 'recommended',
         minPrice: this.query.minPrice ?? null,
         maxPrice: this.query.maxPrice ?? null,
         onlyAvailable: this.query.rentalStatus === RoomRentalStatus.AVAILABLE,
@@ -159,6 +161,7 @@ export class AdvancedFiltersComponent implements OnChanges {
         provinceId: value.provinceId || undefined,
         wardId: value.wardId || undefined,
         roomTypeName: value.roomTypeName || undefined,
+        sort: value.sort,
         minPrice: value.minPrice ?? undefined,
         maxPrice: value.maxPrice ?? undefined,
         rentalStatus: value.onlyAvailable ? RoomRentalStatus.AVAILABLE : '',

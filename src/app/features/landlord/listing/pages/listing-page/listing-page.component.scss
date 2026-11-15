@@ -4,6 +4,69 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.admin-title,
+.admin-value {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-title {
+  min-width: 180px;
+  max-width: 240px;
+}
+.admin-value {
+  max-width: 140px;
+}
+.admin-nowrap {
+  white-space: nowrap;
+}
+.table-actions.admin-actions {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.admin-actions button {
+  white-space: nowrap;
+  padding: 8px 12px;
+  min-height: 38px;
+}
+.listing-detail h3 {
+  overflow-wrap: anywhere;
+}
+.listing-facts {
+  display: block;
+  margin: 20px 0 24px;
+}
+.listing-facts > div {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.listing-facts dt {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  text-align: left;
+  line-height: 1.5;
+}
+.listing-facts dd {
+  margin: 0;
+  text-align: left;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+}
+@media (max-width: 600px) {
+  .listing-facts > div {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 12px;
+  }
+}
 .package-priority {
   margin-top: var(--space-lg);
   border-top: 1px solid var(--border);

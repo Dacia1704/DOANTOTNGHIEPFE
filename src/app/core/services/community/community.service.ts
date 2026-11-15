@@ -14,8 +14,8 @@ import {
 } from '@model/community/request/community-request';
 import {
   CommunitySlice,
-  CommunityMedia,
   CommunityListing,
+  CommunityAuthor,
   Reaction,
 } from '@model/community/community.model';
 
@@ -23,12 +23,8 @@ import {
 export class CommunityService {
   private readonly http = inject(HttpClient);
   private readonly api = `${environment.apiUrl}/community`;
-  feed(tab = 'LATEST', cursor = '', q = '', area = '') {
-    const params = new HttpParams()
-      .set('tab', tab)
-      .set('cursor', cursor)
-      .set('q', q)
-      .set('area', area);
+  feed(tab = 'LATEST', cursor = '', q = '') {
+    const params = new HttpParams().set('tab', tab).set('cursor', cursor).set('q', q);
     return this.http
       .get<ApiResponse<CommunitySlice<CommunityPostResponse>>>(`${this.api}/feed`, { params })
       .pipe(map(({ data }) => ({ ...data, items: data.items.map(CommunityMapper.post) })));
@@ -43,21 +39,29 @@ export class CommunityService {
       .get<ApiResponse<CommunityPostResponse>>(`${this.api}/posts/${id}`)
       .pipe(map(({ data }) => CommunityMapper.post(data)));
   }
-  savePost(body: CommunityPostRequest, id?: string) {
+  author(id: string) {
+    return this.http
+      .get<ApiResponse<CommunityAuthor>>(`${this.api}/authors/${id}`)
+      .pipe(map((r) => r.data));
+  }
+  authorPosts(id: string, cursor = '') {
+    return this.http
+      .get<ApiResponse<CommunitySlice<CommunityPostResponse>>>(`${this.api}/authors/${id}/posts`, {
+        params: { cursor },
+      })
+      .pipe(map(({ data }) => ({ ...data, items: data.items.map(CommunityMapper.post) })));
+  }
+  savePost(body: CommunityPostRequest, id?: string, files: File[] = []) {
+    const form = new FormData();
+    form.append('post', new Blob([JSON.stringify(body)], { type: 'application/json' }));
+    for (const file of files) form.append('files', file, file.name);
     const result = id
-      ? this.http.put<ApiResponse<CommunityPostResponse>>(`${this.api}/posts/${id}`, body)
-      : this.http.post<ApiResponse<CommunityPostResponse>>(`${this.api}/posts`, body);
+      ? this.http.put<ApiResponse<CommunityPostResponse>>(`${this.api}/posts/${id}`, form)
+      : this.http.post<ApiResponse<CommunityPostResponse>>(`${this.api}/posts`, form);
     return result.pipe(map(({ data }) => CommunityMapper.post(data)));
   }
   deletePost(id: string) {
     return this.http.delete(`${this.api}/posts/${id}`);
-  }
-  upload(file: File) {
-    const body = new FormData();
-    body.append('file', file);
-    return this.http
-      .post<ApiResponse<CommunityMedia>>(`${this.api}/media`, body)
-      .pipe(map((r) => r.data));
   }
   comments(post: string, parent = '', cursor = '') {
     let params = new HttpParams();

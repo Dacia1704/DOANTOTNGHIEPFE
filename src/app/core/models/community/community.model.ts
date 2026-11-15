@@ -9,6 +9,16 @@ export interface CommunityListing {
   title: string;
   available: boolean;
 }
+export interface CommunityAuthor {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+  role: string;
+  joinedAt: string;
+  postCount: number;
+  followerCount: number;
+  following: boolean;
+}
 export interface CommunityPost {
   id: string;
   authorId: string;
@@ -29,8 +39,12 @@ export interface CommunityPost {
   myReaction: Reaction | null;
   saved: boolean;
   following: boolean;
+  reactionTypes?: Reaction[];
 }
 export interface CommunityComment {
+  replyCount?: number;
+  replyToId?: string | null;
+  replyToAuthorName?: string | null;
   id: string;
   postId: string;
   parentId: string | null;

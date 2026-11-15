@@ -1,0 +1,81 @@
+<div class="chart-wrap" appChartReveal>
+  <svg viewBox="0 0 660 250" role="img" [attr.aria-label]="label()">
+    <title>{{ label() }}</title>
+    @for (tick of ticks(); track tick.y) {
+      <line x1="65" x2="640" [attr.y1]="tick.y" [attr.y2]="tick.y" class="grid-line" />
+      <text x="55" [attr.y]="tick.y + 4" text-anchor="end" class="axis-label">
+        {{ compact(tick.value) }}
+      </text>
+    }
+    @if (kind() === 'bar') {
+      @for (group of bars(); track $index; let column = $index) {
+        <g class="bar-stack" [style.--column-delay]="column * 45 + 'ms'">
+          @for (bar of group; track bar.key) {
+            <rect
+              [attr.x]="bar.x"
+              [attr.y]="bar.y"
+              [attr.width]="barWidth()"
+              [attr.height]="bar.height"
+              [attr.fill]="bar.color"
+              rx="2"
+              tabindex="0"
+              [attr.aria-label]="bar.description"
+            >
+              <title>{{ bar.description }}</title>
+            </rect>
+          }
+        </g>
+      }
+    } @else {
+      @for (series of lines(); track series.key) {
+        <path
+          class="chart-line"
+          pathLength="1000"
+          [attr.d]="series.path"
+          [attr.stroke]="series.color"
+          fill="none"
+          stroke-width="2.5"
+          stroke-linejoin="round"
+        />
+        @for (point of groups(); track $index; let i = $index) {
+          <circle
+            class="chart-point"
+            [style.--point-delay]="
+              (i * 900) / (groups().length > 1 ? groups().length - 1 : 1) + 'ms'
+            "
+            [attr.cx]="x(i)"
+            [attr.cy]="y(point.values[series.key] || 0)"
+            r="4"
+            [attr.fill]="series.color"
+            stroke="white"
+            stroke-width="1.5"
+            tabindex="0"
+            [attr.aria-label]="
+              point.range + ' · ' + series.label + ': ' + format(point.values[series.key] || 0)
+            "
+          >
+            <title>
+              {{ point.range }} · {{ series.label }}: {{ format(point.values[series.key] || 0) }}
+            </title>
+          </circle>
+        }
+      }
+    }
+    @for (point of groups(); track $index; let i = $index) {
+      <text [attr.x]="x(i)" y="235" text-anchor="middle" class="axis-label">{{ point.label }}</text>
+    }
+  </svg>
+  @if (!hasData()) {
+    <p class="no-data">Chưa có phát sinh trong kỳ này</p>
+  }
+</div>
+<div class="chart-legend">
+  @for (series of series(); track series.key) {
+    <span><i [style.background]="series.color"></i>{{ series.label }}</span>
+  }
+</div>
+@if (points().length > 10) {
+  <p class="bucket-note">
+    Mỗi điểm gộp tối đa {{ groupSize() }} ngày. Di chuột vào biểu đồ để xem số liệu.
+  </p>
+}

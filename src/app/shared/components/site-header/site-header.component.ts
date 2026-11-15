@@ -23,7 +23,13 @@ interface NavLink {
  */
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule, NotificationCenterComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    MatMenuModule,
+    MatDividerModule,
+    NotificationCenterComponent,
+  ],
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,6 +57,7 @@ export class SiteHeaderComponent {
   get navLinks(): readonly NavLink[] {
     return [
       { label: 'Thuê phòng', route: '/', exact: true },
+      { label: 'Tìm phòng', route: '/tim-phong' },
       { label: 'Cộng đồng', route: '/community' },
       ...(this.isLandlord ? [{ label: 'Cho thuê / Đăng tin', route: '/dang-tin' }] : []),
       {

@@ -235,7 +235,6 @@
           </div>
           @if (expanded() === order.id) {
             <div class="notice">
-              <p class="mono">Mã đơn: {{ order.id }}</p>
               <p>Hạn thanh toán: {{ ui.date(order.expiresAt) }}</p>
               <p>Hiệu lực: {{ ui.date(order.effectiveAt) }} – {{ ui.date(order.endAt) }}</p>
               <p>

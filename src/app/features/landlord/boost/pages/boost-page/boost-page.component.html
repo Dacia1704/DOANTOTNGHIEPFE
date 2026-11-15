@@ -58,7 +58,6 @@
                   {{ ui.date(group.subscription.startAt) }} –
                   {{ ui.date(group.subscription.endAt) }}
                 </p>
-                <p class="mono">{{ group.subscription.id }}</p>
               </div>
               <button (click)="allocate(group.subscription.id)">Gán / chuyển suất</button>
             </div>
@@ -84,7 +83,6 @@
                       >Boost được gán:
                       {{ allocation.level === 2 ? 'ưu tiên cao' : 'ưu tiên thấp' }}</strong
                     >
-                    <p class="mono">Mã tin: {{ allocation.listingId }}</p>
                     @if (listings()[allocation.listingId]; as listing) {
                       <p class="muted">
                         Mức hiển thị thực tế:
@@ -112,7 +110,10 @@
         } @empty {
           <div class="empty">
             <h2>Chưa có gói Boost đang dùng</h2>
-            <p>Mua gói ngay cả khi chưa có tin đăng; chọn Boost khi tạo tin hoặc phân bổ cho tin đang chờ duyệt, đang hiển thị.</p>
+            <p>
+              Mua gói ngay cả khi chưa có tin đăng; chọn Boost khi tạo tin hoặc phân bổ cho tin đang
+              chờ duyệt, đang hiển thị.
+            </p>
             <button class="primary" (click)="switchTab('catalog')">Xem gói Boost</button>
           </div>
         }

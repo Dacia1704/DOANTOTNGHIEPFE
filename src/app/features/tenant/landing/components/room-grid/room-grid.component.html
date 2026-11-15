@@ -1,31 +1,9 @@
 <section class="room-grid" aria-label="Danh sách tin đăng cho thuê">
-  <header class="room-grid__head">
-    <!-- <div>
-      <div class="room-grid__verified-hint">
-        <span class="material-symbols-outlined">home_work</span>
-        <span>{{ result?.total ?? 0 }} tin đăng phù hợp</span>
-      </div>
-      <h2 id="room-grid-title" class="room-grid__title">Tin đăng cho thuê</h2>
-    </div> -->
-    <div class="room-grid__sort">
-      <label class="room-grid__sort-label" for="room-sort">S&#x1EAF;p x&#x1EBF;p:</label>
-      <select
-        id="room-sort"
-        class="room-grid__sort-select"
-        [ngModel]="sortBy()"
-        (ngModelChange)="sortBy.set($event)"
-        name="sort"
-      >
-        @for (opt of sortOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
-    </div>
-  </header>
-
   <div class="room-grid__grid">
     @for (room of rooms; track room.listingId) {
       <app-room-card
+        appFeedImpression="LISTING"
+        [impressionId]="room.listingId"
         [room]="room"
         (wishlistToggle)="onWishlist($event)"
         (cardClick)="onCardClick($event)"
@@ -45,7 +23,7 @@
     </div>
   }
 
-  @if (result && rooms.length > 0) {
+  @if (result) {
     <div class="room-grid__load-more">
       @if (canLoadMore) {
         <button
@@ -55,11 +33,13 @@
           (click)="loadMore.emit()"
         >
           <span class="material-symbols-outlined">expand_more</span>
-          <span>{{ loading ? '&#x110;ang t&#x1EA3;i...' : 'Xem thêm tin đăng' }}</span>
+          <span>{{ loading ? '&#x110;ang t&#x1EA3;i...' : 'Mở rộng tin đăng' }}</span>
         </button>
       }
-      <span class="room-grid__counter"
-        >&#x110;ang hi&#x1EC3;n th&#x1ECB; {{ visible }} / {{ total }} tin đăng</span
+      <a class="room-grid__search-link" routerLink="/tim-phong" [queryParams]="searchParams"
+        >Tìm phòng với bộ lọc chi tiết<span class="material-symbols-outlined" aria-hidden="true"
+          >arrow_forward</span
+        ></a
       >
     </div>
   }

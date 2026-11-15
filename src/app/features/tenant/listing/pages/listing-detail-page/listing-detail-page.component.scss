@@ -49,11 +49,6 @@
 .toolbar-actions {
   justify-content: flex-end;
 }
-.share-feedback {
-  color: var(--primary);
-  font-size: 14px;
-  max-width: 250px;
-}
 .share-button,
 .gallery-all {
   border: 1px solid var(--border);
@@ -989,9 +984,6 @@ a:focus-visible {
   }
   .toolbar-actions {
     flex-wrap: wrap;
-  }
-  .share-feedback {
-    font-size: 12px;
   }
   .share-button {
     padding: 8px 10px;

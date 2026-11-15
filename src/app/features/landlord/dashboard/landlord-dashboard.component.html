@@ -1,0 +1,369 @@
+<section class="dashboard" [attr.aria-busy]="loading()">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">KHÔNG GIAN QUẢN LÝ CỦA BẠN</p>
+      <h1>Tổng quan cho thuê</h1>
+      <p class="subtitle">Theo dõi phòng trống, hiệu quả tin đăng và hoạt động cho thuê của bạn.</p>
+    </div>
+    <div class="header-controls">
+      <div class="period-tabs" aria-label="Khoảng thời gian thống kê">
+        @for (p of presets; track p.days) {
+          <button
+            type="button"
+            [class.active]="preset() === p.days"
+            [attr.aria-pressed]="preset() === p.days"
+            (click)="selectPreset(p.days)"
+          >
+            {{ p.label }}
+          </button>
+        }
+      </div>
+      <div class="updated">
+        @if (data(); as d) {
+          <span>Cập nhật {{ d.generatedAt | date: 'HH:mm · dd/MM/yyyy' }}</span>
+        }
+        <button
+          type="button"
+          class="icon-button"
+          aria-label="Làm mới số liệu"
+          title="Làm mới số liệu"
+          [disabled]="loading()"
+          (click)="reload()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  @if (preset() === 0) {
+    <form class="custom-range" (ngSubmit)="reload()">
+      <label
+        >Từ ngày<input type="date" name="from" [(ngModel)]="from" [max]="to || today" required
+      /></label>
+      <label
+        >Đến ngày<input type="date" name="to" [(ngModel)]="to" [min]="from" [max]="today" required
+      /></label>
+      <button type="submit" class="primary-button">Áp dụng</button>
+    </form>
+  }
+  @if (validation()) {
+    <p class="validation" role="alert">{{ validation() }}</p>
+  }
+  @if (loading()) {
+    <div class="skeleton-grid" role="status" aria-label="Đang tải số liệu">
+      @for (n of [1, 2, 3, 4, 5, 6]; track n) {
+        <div class="skeleton" [class.tall]="n > 4"><span></span><span></span><span></span></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="state" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">sync_problem</span>
+      <h2>Không thể tải dữ liệu</h2>
+      <p>{{ error() }}</p>
+      <button type="button" class="primary-button" (click)="reload()">Thử lại</button>
+    </div>
+  } @else if (data(); as d) {
+    @if (current('properties') === 0) {
+      <aside class="welcome">
+        <span class="material-symbols-outlined" aria-hidden="true">add_business</span>
+        <div>
+          <h2>Bắt đầu quản lý cho thuê cùng Trọ Tốt</h2>
+          <p>Tạo cơ sở, thêm phòng và đăng tin để tiếp cận người thuê.</p>
+        </div>
+        <a routerLink="/phong-cua-toi" class="primary-button">Tạo cơ sở đầu tiên</a>
+      </aside>
+    }
+    <div class="metrics">
+      @for (card of primaryCards(); track card.label) {
+        <article class="metric">
+          <div class="metric-heading">
+            <h2>{{ card.label }}</h2>
+            <span class="scope">{{ card.scope }}</span>
+          </div>
+          <div class="metric-value">
+            <strong>{{ format(card.value) }}</strong
+            ><span class="material-symbols-outlined" aria-hidden="true">{{ card.icon }}</span>
+          </div>
+          <p>{{ card.note }}</p>
+          @if (card.change) {
+            <small class="change">{{ card.change }} so với kỳ trước</small>
+          }
+        </article>
+      }
+    </div>
+    <div class="two-columns">
+      <article class="panel occupancy">
+        <div class="panel-heading">
+          <div>
+            <h2>Tình trạng phòng / căn</h2>
+            <p>Phân bố {{ format(current('rooms')) }} đơn vị cho thuê hiện tại</p>
+          </div>
+          <span class="material-symbols-outlined" aria-hidden="true">donut_large</span>
+        </div>
+        <div class="occupancy-body">
+          <div
+            class="donut"
+            appChartReveal
+            [style.--donut-background]="donut()"
+            role="img"
+            [attr.aria-label]="'Tỷ lệ phòng đã cho thuê: ' + percent(occupancy())"
+          >
+            <div>
+              <strong>{{ format(current('rooms')) }}</strong
+              ><span>Phòng / căn</span>
+            </div>
+          </div>
+          <div class="room-legend">
+            @for (s of rooms(); track s.key) {
+              <div>
+                <span class="dot" [style.background]="s.color"></span><span>{{ s.label }}</span
+                ><strong>{{ format(s.value) }}</strong
+                ><small>{{ percent(share(s.value, current('rooms'))) }}</small>
+              </div>
+            }
+          </div>
+        </div>
+        <footer class="panel-footer">
+          <span
+            >{{ format(current('rooms') - current('wholeUnits')) }} phòng lẻ ·
+            {{ format(current('wholeUnits')) }} căn nguyên</span
+          ><strong>Lấp đầy {{ percent(occupancy()) }}</strong>
+        </footer>
+      </article>
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Yêu cầu thuê theo thời gian</h2>
+            <p>Yêu cầu mới được gửi trong khoảng ngày đã chọn</p>
+          </div>
+          <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span>
+        </div>
+        <app-dashboard-chart
+          [points]="d.series"
+          [series]="requestSeries"
+          kind="bar"
+          label="Yêu cầu thuê theo ngày"
+        />
+        <footer class="panel-footer">
+          <span
+            >Tổng <strong>{{ format(period('requests')) }}</strong> · Chấp nhận
+            <strong>{{ format(period('acceptedRequests')) }}</strong></span
+          ><strong>Tỷ lệ {{ percent(acceptance()) }}</strong>
+        </footer>
+      </article>
+    </div>
+    <section class="section-block">
+      <div class="section-heading">
+        <div>
+          <h2>Hiệu quả tin đăng & mức độ quan tâm</h2>
+          <p>Số liệu của các tin thuộc cơ sở bạn quản lý</p>
+        </div>
+        <span class="pill">{{ format(listingTotal()) }} tin đăng</span>
+      </div>
+      <div class="metrics compact-metrics">
+        <article class="metric">
+          <h3>Tin đang hiển thị</h3>
+          <strong>{{ format(listing('PUBLISHED')) }}</strong>
+          <p>Hiện tại · Còn thời hạn hiển thị</p>
+        </article>
+        <article class="metric">
+          <h3>Tin chờ duyệt</h3>
+          <strong>{{ format(listing('PENDING')) }}</strong>
+          <p>Hiện tại · Chưa hết hạn chờ duyệt</p>
+        </article>
+        <article class="metric">
+          <h3>Lượt xem tin</h3>
+          <strong>{{ format(period('views')) }}</strong>
+          <p>Trong kỳ · {{ change('views') }} so với kỳ trước</p>
+        </article>
+        <article class="metric">
+          <h3>Bấm xem số điện thoại</h3>
+          <strong>{{ format(period('contacts')) }}</strong>
+          <p>Trong kỳ · {{ change('contacts') }} so với kỳ trước</p>
+        </article>
+      </div>
+      <p class="info-note">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>Lượt xem được ghi nhận
+        theo dữ liệu thống kê tin. Lượt xem số điện thoại không đại diện cho cuộc gọi thành công.
+      </p>
+      <div class="two-columns listing-charts">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Trạng thái tin đăng</h2>
+              <p>Phân bố hiện tại, gồm cả tin đã hết hạn</p>
+            </div>
+          </div>
+          <div class="status-list" appChartReveal>
+            @for (s of statuses(); track s.key) {
+              <div class="status-row">
+                <div>
+                  <span>{{ s.label }}</span
+                  ><strong
+                    >{{ format(s.value) }} tin
+                    <small>({{ percent(share(s.value, listingTotal())) }})</small></strong
+                  >
+                </div>
+                <div class="track">
+                  <span
+                    [style.width.%]="share(s.value, listingTotal())"
+                    [style.background]="s.color"
+                  ></span>
+                </div>
+              </div>
+            }
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Mức độ quan tâm theo thời gian</h2>
+              <p>Lượt xem và lượt bấm xem số điện thoại trong kỳ</p>
+            </div>
+          </div>
+          <app-dashboard-chart
+            [points]="d.series"
+            [series]="interestSeries"
+            label="Xu hướng lượt xem và xem số điện thoại"
+          />
+          <footer class="panel-footer">
+            <span>Tỷ lệ xem số điện thoại / lượt xem</span
+            ><strong>{{ percent(conversion()) }}</strong>
+          </footer>
+        </article>
+      </div>
+    </section>
+    <section class="section-block">
+      <div class="section-heading">
+        <div>
+          <h2>Tình trạng hợp đồng thuê</h2>
+          <p>Theo dõi hợp đồng được tạo và xác nhận trên Trọ Tốt</p>
+        </div>
+        <span class="material-symbols-outlined" aria-hidden="true">contract</span>
+      </div>
+      <div class="metrics compact-metrics">
+        @for (c of contractCards(); track c.label) {
+          <article class="metric">
+            <div class="metric-heading">
+              <h3>{{ c.label }}</h3>
+              <span class="scope">{{ c.scope }}</span>
+            </div>
+            <div class="metric-value">
+              <strong>{{ format(c.value) }}</strong
+              ><span class="material-symbols-outlined" aria-hidden="true">{{ c.icon }}</span>
+            </div>
+            <p>{{ c.note }}</p>
+          </article>
+        }
+      </div>
+    </section>
+    <div class="two-columns plans">
+      <article class="panel service-panel">
+        <p class="eyebrow">GÓI DỊCH VỤ CỦA BẠN</p>
+        <div class="plan-title">
+          <h2>{{ d.servicePackage.name }}</h2>
+          <span class="pill">{{ d.servicePackage.active ? 'Hiệu lực' : 'Chưa kích hoạt' }}</span>
+        </div>
+        <p class="subtitle">
+          @if (d.servicePackage.endsAt) {
+            Hết hạn {{ d.servicePackage.endsAt | date: 'dd/MM/yyyy' }}
+          } @else {
+            {{
+              d.servicePackage.active
+                ? 'Gói miễn phí không có ngày hết hạn'
+                : 'Chọn gói phù hợp để tiếp tục đăng tin'
+            }}
+          }
+        </p>
+        <div class="quota">
+          <div>
+            <span>Lượt đăng tin đã dùng trong kỳ</span
+            ><strong
+              >{{ format(d.servicePackage.usedListings) }} /
+              {{
+                d.servicePackage.maxListings === null
+                  ? 'Không giới hạn'
+                  : format(d.servicePackage.maxListings)
+              }}</strong
+            >
+          </div>
+          <div class="track" appChartReveal><span [style.width.%]="packageUsage()"></span></div>
+        </div>
+        <div class="plan-row">
+          <span>Ưu tiên cao còn lại</span
+          ><strong>{{ format(d.servicePackage.remainingHigh) }} lượt</strong>
+        </div>
+        <div class="plan-row">
+          <span>Ưu tiên thường còn lại</span
+          ><strong>{{
+            d.servicePackage.remainingLow === null
+              ? 'Không giới hạn'
+              : format(d.servicePackage.remainingLow) + ' lượt'
+          }}</strong>
+        </div>
+        <a routerLink="/goi-dich-vu" class="text-link"
+          >Quản lý gói dịch vụ <span aria-hidden="true">→</span></a
+        >
+      </article>
+      <article class="panel boost-panel">
+        <p class="eyebrow">TĂNG TỐC TIẾP CẬN KHÁCH</p>
+        <div class="plan-title">
+          <h2>Gói Boost của bạn</h2>
+          <span class="pill">{{ format(d.boost.activePackages) }} gói hiệu lực</span>
+        </div>
+        <p class="subtitle">Đang áp dụng cho {{ format(d.boost.assignedListings) }} tin hiển thị</p>
+        <div class="boost-quota">
+          <div>
+            <span class="material-symbols-outlined" aria-hidden="true">stars</span
+            ><strong>{{ format(d.boost.remainingHigh) }}</strong
+            ><span>Lượt ưu tiên cao còn lại</span>
+          </div>
+          <div>
+            <span class="material-symbols-outlined" aria-hidden="true">bolt</span
+            ><strong>{{ format(d.boost.remainingLow) }}</strong
+            ><span>Lượt ưu tiên thường còn lại</span>
+          </div>
+        </div>
+        <p class="fine-print">Lượt đã sử dụng không được hoàn lại khi gỡ Boost hoặc ẩn tin.</p>
+        <a routerLink="/goi-dich-vu" [queryParams]="{ tab: 'boost' }" class="text-link"
+          >Quản lý Boost <span aria-hidden="true">→</span></a
+        >
+      </article>
+    </div>
+    <article class="panel spending">
+      <div class="panel-heading">
+        <div>
+          <h2>Chi phí dịch vụ nền tảng</h2>
+          <p>Thanh toán gói dịch vụ và Boost trong khoảng ngày đã chọn</p>
+        </div>
+        <div class="spend-total">
+          <span>Tổng chi trong kỳ</span><strong>{{ format(period('spend'), true) }}</strong
+          ><small>{{ change('spend') }} so với kỳ trước</small>
+        </div>
+      </div>
+      <app-dashboard-chart
+        [points]="d.series"
+        [series]="spendSeries"
+        kind="bar"
+        [money]="true"
+        label="Chi phí dịch vụ theo ngày"
+      />
+      <footer class="panel-footer">
+        <span
+          >Gói dịch vụ <strong>{{ format(period('serviceSpend'), true) }}</strong></span
+        ><span
+          >Boost <strong>{{ format(period('boostSpend'), true) }}</strong></span
+        >
+      </footer>
+      <p class="info-note">
+        <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>Chỉ tính giao
+        dịch thành công đã xác nhận; không gồm giao dịch hoàn tiền, cần đối soát hoặc tiền thuê
+        phòng.
+      </p>
+    </article>
+    <p class="range-note">
+      Số liệu trong kỳ: {{ d.from | date: 'dd/MM/yyyy' }} – {{ d.to | date: 'dd/MM/yyyy' }}. So sánh
+      với khoảng liền trước có cùng số ngày.
+    </p>
+  }
+</section>

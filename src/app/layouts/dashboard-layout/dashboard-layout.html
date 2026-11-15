@@ -46,6 +46,7 @@
           }
         </div>
         <app-nav-sidebar
+          (expand)="collapsed.set(false)"
           [label]="heading"
           id="dashboard-sidebar-menu"
           [menu]="menu"

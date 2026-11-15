@@ -15,6 +15,14 @@ Các mục kiểm chứng có ngày/số lượng bên dưới ghi nhận lịch
 | [Review và Report](#review-report) | Đánh giá, minh chứng và xử lý báo cáo |
 | [Phân quyền và Chat](#phan-quyen-chat) | Ma trận quyền, authority và thứ tự hội thoại |
 
+## Landing và trang tìm phòng
+
+Landing hiển thị 12 tin ở lượt đầu; nút **Mở rộng tin đăng** bổ sung tin nhưng giới hạn tổng số hiển thị ở 20. Giữ cùng kích thước trang/session khi lấy lượt tiếp theo để không thay đổi thứ tự xếp hạng. Nút **Tìm phòng với bộ lọc chi tiết** chuyển đến `/tim-phong` và mang theo bộ lọc đang áp dụng; không mang số trang/session của landing. Header có tab **Tìm phòng** riêng cho cả TENANT/LANDLORD/ADMIN; **Thuê phòng** và logo về landing. Không hiện dòng đếm số tin đang hiển thị ở cuối danh sách landing.
+
+Trang `/tim-phong` dựa trên `docs/template/trang_tim_phong.html`, dùng danh mục và dữ liệu thật. Desktop có sidebar bộ lọc, thẻ tin và phân trang 12 tin/trang; mobile mở/đóng bộ lọc dạng khối. Có danh sách/bản đồ, chip bỏ từng điều kiện, đặt lại, skeleton, rỗng/lỗi/thử lại. Bộ lọc và trang được lưu trong URL, hỗ trợ tải lại và quay lại bằng trình duyệt. Đổi bộ lọc/sắp xếp về trang đầu và bỏ session cũ; chuyển trang dùng `rankingSession`. Request cũ được hủy bằng switchMap. Bản đồ giữ component/camera trong lúc tải kết quả mới, không tự lặp request cho cùng vùng.
+
+Các điều kiện gồm từ khóa, tỉnh/thành, phường/xã, địa điểm/bán kính, giá, diện tích, hình thức thuê, loại cơ sở/phòng, sức chứa, tầng, cọc/điện/nước/dịch vụ và đủ các tiện ích được chọn. Nút áp dụng kiểm tra khoảng tối thiểu/tối đa và các giá trị số. Tin đang tìm phải có phòng còn trống, có thể đặt. API và quy tắc phối hợp điều kiện nằm tại [tìm tin](../../RentalManagement/docs/api.md#1221-tìm-tin-theo-vị-trí-bản-đồ). Giá/số phòng và tiện ích trên thẻ phản ánh các phòng đáp ứng bộ lọc; không hiển thị số sao/xác thực/bảo vệ cọc/SLA mẫu.
+
 
 
 <a id="co-so"></a>
@@ -263,3 +271,23 @@ Không tự triển khai tìm kiếm/lọc sao/lọc ngày, phân công lại re
 ## Thông báo
 
 Chuông header dùng chung cho ba vai trò, tải inbox và số chưa đọc qua [API thông báo](../../RentalManagement/docs/api.md#notifications). STOMP `/user/queue/notifications` chỉ báo CHANGED để FE tải lại; đồng bộ khi reconnect/focus và mỗi 60 giây. Logout/đổi tài khoản hủy request, xóa badge cũ. Giờ nghiệp vụ thông báo hiển thị theo Việt Nam. Xem [hạ tầng và kiểm thử](../../RentalManagement/docs/OPERATIONS.md#thong-bao).
+
+## Dashboard quản trị
+
+`/admin/dashboard` là màn mặc định của `/admin`, có mục **Tổng quan** trên sidebar. Giao diện dựa trên `docs/template/dashboard_admin.html`, tái sử dụng header/sidebar hiện có; chỉ hiển thị thẻ thống kê và biểu đồ, không có bảng/danh sách bản ghi hoặc ID nội bộ.
+
+Dữ liệu thật lấy qua [API dashboard](../../RentalManagement/docs/api.md#24-dashboard-quản-trị). Bộ lọc Hôm nay/7 ngày/30 ngày/Tùy chỉnh áp dụng cho số phát sinh, doanh thu và biểu đồ; thẻ “Hiện tại” vẫn phản ánh hiện trạng hệ thống. So sánh phần trăm dựa trên số phát sinh của kỳ liền trước cùng độ dài; kỳ trước bằng 0 hiển thị “Mới phát sinh”, không chia cho 0. Request cũ được hủy khi đổi bộ lọc. Có skeleton, thông báo không có phát sinh, lỗi/thử lại và nút làm mới.
+
+Biểu đồ SVG không thêm thư viện/CDN: doanh thu cột chồng gói/Boost, đường người dùng, đường bài viết/bình luận, thanh phân bố tin và donut cơ cấu doanh thu. Điểm/cột có nhãn cho trình đọc màn hình, nhận focus và tooltip số liệu; khoảng dài được gộp tối đa 10 nhóm, không bỏ bớt ngày. Không hiển thị SLA, trạng thái cổng thanh toán hoặc tỷ lệ đối soát giả từ mẫu.
+
+Biểu đồ chạy animation fill một lần khi cuộn vào vùng nhìn thấy: cột tăng từ trục 0, đường vẽ dần, thanh trạng thái chạy từ trái sang phải và donut quét đủ vòng. Tải lại dữ liệu tạo lượt animation mới; `prefers-reduced-motion` hiển thị ngay trạng thái cuối. Observer được ngắt khi đã hiện hoặc khi component bị hủy.
+
+## Dashboard chủ trọ
+
+`/landlord/dashboard` là trang mặc định của `/landlord`, có mục **Tổng quan** trong menu chủ trọ. Dựa trên `docs/template/dashboard_landlord.html`, dùng header/sidebar hiện có; chỉ có số liệu và biểu đồ, không có bảng bản ghi, ID nội bộ hoặc số liệu minh họa.
+
+- Dữ liệu từ `GET /api/landlord/dashboard`, giới hạn theo tài khoản đăng nhập. Bộ lọc Hôm nay/7 ngày/30 ngày/Tùy chỉnh áp dụng cho số phát sinh và biểu đồ; trạng thái phòng, tin đăng, hợp đồng và gói luôn là hiện tại. Có làm mới thủ công, hủy request cũ, skeleton, hướng dẫn tạo cơ sở đầu tiên và lỗi/thử lại; không polling.
+- Các khối: phòng/căn và tỷ lệ lấp đầy; yêu cầu thuê theo thời gian; trạng thái tin và lượt quan tâm; hợp đồng; gói dịch vụ/Boost; chi phí dịch vụ. Phòng nguyên căn tính bằng một Room đại diện. Phòng giữ chỗ không tính là phòng trống.
+- Hạn mức hiển thị **lượt đăng tin đã dùng trong kỳ**, theo posting quota thực tế; không gọi là số tin đồng thời. Lượt ưu tiên tính cả lần đã dùng, không hoàn lại khi gỡ/ẩn; null ở hạn mức/ưu tiên thường nghĩa là không giới hạn.
+- Chi phí chỉ gồm thanh toán gói/Boost thành công đã xác nhận, không phải doanh thu cho thuê. Lượt xem số điện thoại không đồng nghĩa với cuộc gọi thành công. Không hiển thị huy hiệu uy tín, cam kết pháp lý, hoàn cọc hoặc mức tăng hiệu quả giả từ mẫu.
+- Dùng chung biểu đồ SVG và directive animation trong `shared/components/dashboard-chart` với admin; responsive và hỗ trợ `prefers-reduced-motion`.

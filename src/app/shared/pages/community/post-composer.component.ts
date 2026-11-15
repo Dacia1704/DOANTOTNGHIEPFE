@@ -5,16 +5,20 @@ import {
   OnInit,
   inject,
   signal,
+  input,
+  output,
+  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize, from, concatMap, toArray } from 'rxjs';
+import { finalize } from 'rxjs';
 import { AuthService } from '@services/auth/auth.service';
 import { CommunityService } from '@services/community/community.service';
 import {
   CommunityMedia,
   CommunityListing,
+  CommunityPost,
   moderationLabels,
 } from '@model/community/community.model';
 
@@ -26,16 +30,20 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostComposerComponent implements OnInit {
+  readonly compact = input(false);
+  readonly posted = output<CommunityPost>();
+  readonly advanced = output<void>();
   readonly auth = inject(AuthService);
   private readonly api = inject(CommunityService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
   readonly media = signal<CommunityMedia[]>([]);
+  readonly pendingMedia = signal<{ id: string; url: string; file: File }[]>([]);
+  readonly allMedia = computed(() => [...this.media(), ...this.pendingMedia()]);
   readonly links = signal<{ id: string; title: string }[]>([]);
   readonly choices = signal<CommunityListing[]>([]);
   readonly busy = signal(false);
-  readonly uploading = signal(false);
   readonly error = signal('');
   readonly success = signal('');
   readonly labels = moderationLabels;
@@ -44,10 +52,25 @@ export class PostComposerComponent implements OnInit {
   listingQuery = '';
   private id?: string;
   private version?: number;
+  constructor() {
+    this.destroy.onDestroy(() => this.clearPendingMedia());
+  }
   get length() {
     return Array.from(this.content).length;
   }
   ngOnInit() {
+    if (!this.compact()) {
+      const draft =
+        this.router.currentNavigation()?.extras.state?.['communityDraft'] ??
+        history.state?.communityDraft;
+      if (draft) {
+        this.content = draft.content || '';
+        this.area = draft.area || '';
+        this.media.set(draft.media || []);
+        this.links.set(draft.links || []);
+        this.addFiles(draft.files || []);
+      }
+    }
     const id = this.route.snapshot.queryParamMap.get('edit');
     if (id)
       this.api
@@ -69,29 +92,58 @@ export class PostComposerComponent implements OnInit {
           error: () => this.error.set('Không tải được bài viết.'),
         });
   }
+  openAdvanced() {
+    if (this.busy()) return;
+    const communityDraft = {
+      content: this.content,
+      area: this.area,
+      media: this.media(),
+      links: this.links(),
+      files: this.pendingMedia().map((image) => image.file),
+    };
+    this.advanced.emit();
+    void this.router.navigate(['/community/create'], {
+      state: { communityDraft },
+    });
+  }
   upload(event: Event) {
+    if (this.busy()) return;
     const files = Array.from((event.target as HTMLInputElement).files || []);
     (event.target as HTMLInputElement).value = '';
     if (!files.length) return;
-    if (files.length + this.media().length > 10 || files.some((f) => f.size > 5 * 1024 * 1024)) {
-      this.error.set('Tối đa 10 ảnh, mỗi ảnh không quá 5MB.');
+    this.addFiles(files);
+  }
+  private addFiles(files: File[]) {
+    if (
+      files.length + this.allMedia().length > 10 ||
+      files.some((f) => f.size > 10 * 1024 * 1024)
+    ) {
+      this.error.set('Tối đa 10 ảnh, mỗi ảnh không quá 10MB.');
       return;
     }
-    this.uploading.set(true);
+    if (files.some((file) => !['image/jpeg', 'image/png'].includes(file.type))) {
+      this.error.set('Vui lòng chọn ảnh JPEG hoặc PNG.');
+      return;
+    }
     this.error.set('');
-    from(files)
-      .pipe(
-        concatMap((file) => this.api.upload(file)),
-        toArray(),
-        takeUntilDestroyed(this.destroy),
-        finalize(() => this.uploading.set(false)),
-      )
-      .subscribe({
-        next: (items) => this.media.update((old) => [...old, ...items]),
-        error: (e) => this.error.set(e.error?.message || 'Tải ảnh thất bại, vui lòng thử lại.'),
-      });
+    this.pendingMedia.update((items) => [
+      ...items,
+      ...files.map((file) => ({
+        id: crypto.randomUUID(),
+        url: URL.createObjectURL(file),
+        file,
+      })),
+    ]);
+  }
+  private clearPendingMedia() {
+    for (const image of this.pendingMedia()) URL.revokeObjectURL(image.url);
+    this.pendingMedia.set([]);
   }
   removeMedia(id: string) {
+    if (this.busy()) return;
+    const pending = this.pendingMedia().find((image) => image.id === id);
+    if (pending) URL.revokeObjectURL(pending.url);
+    this.pendingMedia.update((items) => items.filter((image) => image.id !== id));
     this.media.update((items) => items.filter((x) => x.id !== id));
   }
   searchListings() {
@@ -111,7 +163,12 @@ export class PostComposerComponent implements OnInit {
     this.links.update((old) => old.filter((x) => x.id !== id));
   }
   submit() {
-    if (this.busy() || this.uploading() || this.length > 5000) return;
+    if (
+      this.busy() ||
+      this.length > 5000 ||
+      (!this.content.trim() && !this.allMedia().length && !this.links().length)
+    )
+      return;
     this.busy.set(true);
     this.error.set('');
     this.api
@@ -124,6 +181,7 @@ export class PostComposerComponent implements OnInit {
           expectedVersion: this.version,
         },
         this.id,
+        this.pendingMedia().map((image) => image.file),
       )
       .pipe(
         takeUntilDestroyed(this.destroy),
@@ -131,6 +189,12 @@ export class PostComposerComponent implements OnInit {
       )
       .subscribe({
         next: (p) => {
+          this.clearPendingMedia();
+          this.media.set(p.media);
+          if (this.compact()) {
+            this.posted.emit(p);
+            return;
+          }
           if (p.status === 'VISIBLE') void this.router.navigate(['/community/posts', p.id]);
           else {
             this.id = p.id;

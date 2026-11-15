@@ -1,0 +1,469 @@
+<div class="search-page">
+  <nav class="breadcrumb" aria-label="Đường dẫn">
+    <a routerLink="/"
+      ><span class="material-symbols-outlined" aria-hidden="true">home</span>Trang chủ</a
+    ><span>/</span><span>Tìm phòng</span>
+  </nav>
+  <header class="page-heading">
+    <div>
+      <span class="eyebrow">TÌM KHÔNG GIAN SỐNG PHÙ HỢP</span>
+      <h1>Tìm phòng theo cách của bạn</h1>
+      <p>Chọn khu vực, ngân sách và những tiện ích bạn cần.</p>
+    </div>
+    <span class="page-badge"
+      ><span class="material-symbols-outlined" aria-hidden="true">home_work</span>Tin đang hiển thị
+      · Phòng còn trống</span
+    >
+  </header>
+  <div class="search-layout">
+    <aside
+      id="search-filters"
+      class="filters"
+      [class.mobile-open]="filtersOpen()"
+      aria-label="Bộ lọc tìm phòng"
+    >
+      <form [formGroup]="form" (ngSubmit)="apply()">
+        <div class="filter-heading">
+          <h2>
+            <span class="material-symbols-outlined" aria-hidden="true">tune</span>Bộ lọc tìm kiếm
+          </h2>
+          <button type="button" class="text-button" (click)="clear()">Đặt lại</button>
+          <button
+            type="button"
+            class="mobile-close"
+            aria-label="Đóng bộ lọc"
+            (click)="filtersOpen.set(false)"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+        @if (optionError()) {
+          <div class="option-error" role="alert">
+            {{ optionError()
+            }}<button type="button" class="text-button" (click)="loadOptions()">Thử lại</button>
+          </div>
+        }
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>Từ khóa
+          </legend>
+          <label class="sr-only" for="search-keyword">Từ khóa tìm phòng</label
+          ><input
+            id="search-keyword"
+            type="search"
+            formControlName="keyword"
+            maxlength="100"
+            placeholder="Tên tin, địa chỉ, khu vực…"
+          />
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">location_on</span>Khu vực
+          </legend>
+          <label
+            >Tỉnh / thành phố<select formControlName="provinceId">
+              <option value="">Tất cả tỉnh / thành phố</option>
+              @for (province of provinces(); track province.id) {
+                <option [value]="province.id">{{ province.name }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Phường / xã<select formControlName="wardId">
+              <option value="">
+                {{
+                  wardsLoading()
+                    ? 'Đang tải phường / xã…'
+                    : form.controls.provinceId.value
+                      ? 'Tất cả phường / xã'
+                      : 'Chọn tỉnh / thành trước'
+                }}
+              </option>
+              @for (ward of wards(); track ward.id) {
+                <option [value]="ward.id">{{ ward.name }}</option>
+              }
+            </select></label
+          >
+          @if (wardError()) {
+            <p class="field-error" role="alert">
+              {{ wardError()
+              }}<button class="text-button" type="button" (click)="retryWards()">Thử lại</button>
+            </p>
+          }
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">near_me</span>Gần địa điểm
+            bạn chọn
+          </legend>
+          <app-map-place-search (placeSelected)="selectPlace($event)" />
+          <div class="location-actions">
+            <button type="button" class="text-button" [disabled]="locating()" (click)="locate()">
+              <span class="material-symbols-outlined" aria-hidden="true">my_location</span
+              >{{ locating() ? 'Đang định vị…' : 'Vị trí của tôi' }}
+            </button>
+            @if (form.controls.latitude.value != null) {
+              <button type="button" class="text-button" (click)="clearPlace()">Bỏ địa điểm</button>
+            }
+          </div>
+          @if (form.controls.latitude.value != null) {
+            <p class="selected-place">{{ placeName() || 'Địa điểm đã chọn' }}</p>
+            <label
+              >Bán kính tìm kiếm<select formControlName="radiusKm">
+                @for (radius of [1, 3, 5, 10, 20, 50]; track radius) {
+                  <option [ngValue]="radius">{{ radius }} km</option>
+                }
+              </select></label
+            >
+            <p class="field-note">Khoảng cách theo đường chim bay.</p>
+          }
+          @if (locationError()) {
+            <p class="field-error" role="alert">{{ locationError() }}</p>
+          }
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>Giá thuê mỗi
+            tháng
+          </legend>
+          <div class="quick-options">
+            @for (range of pricePresets; track range.label) {
+              <button
+                type="button"
+                [class.selected]="
+                  form.controls.minPrice.value === range.min &&
+                  form.controls.maxPrice.value === range.max
+                "
+                (click)="setPrice(range.min, range.max)"
+              >
+                {{ range.label }}
+              </button>
+            }
+          </div>
+          <div class="two-fields">
+            <label
+              >Từ (đ)<input
+                type="number"
+                formControlName="minPrice"
+                min="0"
+                step="100000"
+                placeholder="Không giới hạn" /></label
+            ><label
+              >Đến (đ)<input
+                type="number"
+                formControlName="maxPrice"
+                min="0"
+                step="100000"
+                placeholder="Không giới hạn"
+            /></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">aspect_ratio</span>Diện tích
+            phòng / căn
+          </legend>
+          <div class="quick-options">
+            @for (range of areaPresets; track range.label) {
+              <button
+                type="button"
+                [class.selected]="
+                  form.controls.minArea.value === range.min &&
+                  form.controls.maxArea.value === range.max
+                "
+                (click)="setArea(range.min, range.max)"
+              >
+                {{ range.label }}
+              </button>
+            }
+          </div>
+          <div class="two-fields">
+            <label
+              >Từ (m²)<input
+                type="number"
+                formControlName="minArea"
+                min="0"
+                step="1"
+                placeholder="Bất kỳ" /></label
+            ><label
+              >Đến (m²)<input
+                type="number"
+                formControlName="maxArea"
+                min="0"
+                step="1"
+                placeholder="Bất kỳ"
+            /></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">apartment</span>Hình thức &
+            loại phòng
+          </legend>
+          <label
+            >Hình thức thuê<select formControlName="rentalMode">
+              <option value="">Tất cả hình thức</option>
+              <option value="BY_ROOM">Thuê từng phòng</option>
+              <option value="WHOLE">Thuê nguyên căn / nhà</option>
+            </select></label
+          >
+          <label
+            >Loại cơ sở<select formControlName="propertyTypeId">
+              <option value="">Tất cả loại cơ sở</option>
+              @for (type of propertyTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
+              }
+            </select></label
+          >
+          <label
+            >Loại phòng<select formControlName="roomTypeName">
+              <option value="">Tất cả loại phòng</option>
+              @for (type of typeOptions(); track type.id) {
+                <option [value]="type.name">{{ type.label }}</option>
+              }
+            </select></label
+          >
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>Số người & tầng
+          </legend>
+          <label
+            >Sức chứa tối thiểu (người)<input
+              type="number"
+              formControlName="minOccupants"
+              min="1"
+              max="100"
+              step="1"
+              placeholder="Ví dụ: 2"
+          /></label>
+          <div class="two-fields">
+            <label
+              >Từ tầng<input
+                type="number"
+                formControlName="minFloor"
+                min="0"
+                max="200"
+                step="1"
+                placeholder="Bất kỳ" /></label
+            ><label
+              >Đến tầng<input
+                type="number"
+                formControlName="maxFloor"
+                min="0"
+                max="200"
+                step="1"
+                placeholder="Bất kỳ"
+            /></label>
+          </div>
+          <p class="field-note">Tầng 0 là tầng trệt.</p>
+        </fieldset>
+        <fieldset>
+          <legend>
+            <span class="material-symbols-outlined" aria-hidden="true">room_service</span>Tiện ích
+            cần có
+          </legend>
+          <div class="amenity-list">
+            @for (amenity of amenities(); track amenity.id) {
+              <label class="check-option"
+                ><input
+                  type="checkbox"
+                  [checked]="form.controls.amenityNames.value.includes(amenity.name)"
+                  (change)="toggleAmenity(amenity.name, $any($event.target).checked)"
+                /><span>{{ amenity.name }}</span></label
+              >
+            } @empty {
+              <p class="field-note">Chưa có tiện ích để lựa chọn.</p>
+            }
+          </div>
+          <p class="field-note">
+            Phòng phải có đủ các tiện ích đã chọn; tính cả tiện ích dùng chung của cơ sở.
+          </p>
+        </fieldset>
+        <details class="fee-section">
+          <summary>
+            <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>Tiền cọc &
+            chi phí
+          </summary>
+          <div class="fee-fields">
+            @for (field of feeFields; track field.key) {
+              <label
+                >{{ field.label
+                }}<input
+                  type="number"
+                  [formControlName]="field.key"
+                  min="0"
+                  [step]="field.step"
+                  placeholder="Không giới hạn"
+              /></label>
+            }
+          </div>
+          <p class="field-note">
+            Lọc theo khoản phí đã được chủ trọ cập nhật. Không xem phí chưa khai báo là miễn phí.
+          </p>
+        </details>
+        @if (formError()) {
+          <p class="field-error form-error" role="alert">{{ formError() }}</p>
+        }
+        <div class="apply-bar">
+          <button class="apply-button" type="submit">
+            <span class="material-symbols-outlined" aria-hidden="true">check</span>Áp dụng bộ lọc
+          </button>
+        </div>
+      </form>
+    </aside>
+    <main class="search-results">
+      @if (formError()) {
+        <div class="validation-notice" role="alert">
+          {{ formError()
+          }}<button type="button" class="text-button" (click)="clear()">Đặt lại bộ lọc</button>
+        </div>
+      }
+      <div class="results-toolbar">
+        <div>
+          <h2>Kết quả tìm phòng</h2>
+          <p aria-live="polite">
+            {{
+              loading()
+                ? 'Đang tìm tin đăng phù hợp…'
+                : result()
+                  ? (result()!.total | number) + ' tin đăng phù hợp'
+                  : 'Tìm không gian sống theo nhu cầu của bạn'
+            }}
+          </p>
+        </div>
+        <button
+          class="mobile-filter-toggle"
+          type="button"
+          (click)="toggleFilters()"
+          [attr.aria-expanded]="filtersOpen()"
+          aria-controls="search-filters"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">tune</span>Bộ lọc{{
+            chips().length ? ' (' + chips().length + ')' : ''
+          }}
+        </button>
+      </div>
+      <div class="result-controls">
+        <label
+          >Sắp xếp<select
+            aria-label="Sắp xếp kết quả"
+            [value]="query().sort || 'recommended'"
+            (change)="setSort($any($event.target).value)"
+          >
+            @for (sort of sorts; track sort.value) {
+              <option [value]="sort.value">{{ sort.label }}</option>
+            }
+          </select></label
+        >
+        <div class="view-switch" role="group" aria-label="Cách xem kết quả">
+          <button
+            type="button"
+            [class.active]="view() === 'list'"
+            [attr.aria-pressed]="view() === 'list'"
+            (click)="setView('list')"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>Danh sách</button
+          ><button
+            type="button"
+            [class.active]="view() === 'map'"
+            [attr.aria-pressed]="view() === 'map'"
+            (click)="setView('map')"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>Bản đồ
+          </button>
+        </div>
+      </div>
+      @if (chips().length) {
+        <div class="active-filters">
+          <span class="filter-label">Đang lọc theo:</span>
+          @for (chip of chips(); track chip.key) {
+            <button
+              type="button"
+              (click)="removeChip(chip.key)"
+              [attr.aria-label]="'Bỏ bộ lọc ' + chip.label"
+            >
+              {{ chip.label
+              }}<span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+          }
+          <button class="clear-chips" type="button" (click)="clear()">Xóa tất cả</button>
+        </div>
+      }
+      @if (loading() && view() === 'list') {
+        <div class="loading-grid" role="status">
+          <span class="sr-only">Đang tải kết quả tìm phòng…</span>
+          @for (n of [1, 2, 3, 4, 5, 6]; track n) {
+            <div class="skeleton-card"></div>
+          }
+        </div>
+      }
+      @if (error()) {
+        <div class="state error-state" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+          <h3>Chưa tải được kết quả</h3>
+          <p>{{ error() }}</p>
+          <button type="button" class="outline-button" (click)="retry()">Thử lại</button>
+        </div>
+      }
+      @if (!loading() && result(); as data) {
+        @if (!data.items.length) {
+          <div class="state">
+            <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+            <h3>Chưa tìm thấy phòng phù hợp</h3>
+            <p>Thử mở rộng khu vực, khoảng giá hoặc bỏ bớt tiện ích.</p>
+            <button type="button" class="outline-button" (click)="clear()">Đặt lại bộ lọc</button>
+          </div>
+        }
+        @if (view() === 'list') {
+          <div class="listing-grid">
+            @for (item of data.items; track item.listingId) {
+              <app-room-card
+                appFeedImpression="LISTING"
+                [impressionId]="item.listingId"
+                [room]="item"
+                (apiRoomSelected)="openRoom($event)"
+              />
+            }
+          </div>
+        }
+        @if (data.total > 0 && view() === 'list') {
+          <div class="pagination">
+            <p>
+              Hiển thị
+              <strong>{{ data.page * 12 + 1 }} – {{ data.page * 12 + data.items.length }}</strong>
+              trong <strong>{{ data.total | number }}</strong> tin đăng
+            </p>
+            <app-billing-pager
+              [page]="data.page"
+              [totalPages]="data.totalPages"
+              [disabled]="loading()"
+              (changePage)="pageChange($event)"
+            />
+          </div>
+        }
+      }
+      @if (view() === 'map') {
+        <app-listing-map
+          [result]="result()"
+          [mapItems]="mapListings()"
+          [initialCenter]="mapCenter()"
+          [mapLoading]="loading()"
+          [query]="query()"
+          [mapError]="mapError()"
+          [loading]="loading()"
+          (locationFilter)="setLocation($event)"
+          (listingSelected)="openRoom($event)"
+          (pageChange)="pageChange($event)"
+        />
+      }
+      <div class="search-note">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        <p>
+          Giá và số phòng trống hiển thị theo các phòng đáp ứng bộ lọc. Xem chi tiết để kiểm tra chi
+          phí và điều kiện thuê trước khi gửi yêu cầu.
+        </p>
+      </div>
+    </main>
+  </div>
+</div>

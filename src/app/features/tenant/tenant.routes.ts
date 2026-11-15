@@ -11,9 +11,35 @@ const profileRedirect: RedirectFunction = ({ queryParams, fragment }) =>
   });
 
 export const TENANT_ROUTES: Routes = [
-  { path: 'community', title: 'Cộng đồng | Trọ Tốt', loadComponent: () => import('@shared/pages/community/community-feed.component').then(m => m.CommunityFeedComponent) },
-  { path: 'community/create', title: 'Viết bài | Trọ Tốt', canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])], loadComponent: () => import('@shared/pages/community/post-composer.component').then(m => m.PostComposerComponent) },
-  { path: 'community/posts/:id', title: 'Bài viết cộng đồng | Trọ Tốt', loadComponent: () => import('@shared/pages/community/post-detail.component').then(m => m.PostDetailComponent) },
+  {
+    path: 'tim-phong',
+    title: 'Tìm phòng với bộ lọc chi tiết | Trọ Tốt',
+    loadComponent: () =>
+      import('./room-search/room-search.component').then((m) => m.RoomSearchComponent),
+  },
+  {
+    path: 'community',
+    title: 'Cộng đồng | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/community/community-feed.component').then(
+        (m) => m.CommunityFeedComponent,
+      ),
+  },
+  {
+    path: 'community/create',
+    title: 'Viết bài | Trọ Tốt',
+    canActivate: [roleGuard([RoleCode.TENANT, RoleCode.LANDLORD, RoleCode.ADMIN])],
+    loadComponent: () =>
+      import('@shared/pages/community/post-composer.component').then(
+        (m) => m.PostComposerComponent,
+      ),
+  },
+  {
+    path: 'community/posts/:id',
+    title: 'Bài viết cộng đồng | Trọ Tốt',
+    loadComponent: () =>
+      import('@shared/pages/community/post-detail.component').then((m) => m.PostDetailComponent),
+  },
   {
     path: 'danh-gia-cua-toi',
     title: 'Đánh giá của tôi | Trọ Tốt',
@@ -64,7 +90,9 @@ export const TENANT_ROUTES: Routes = [
     title: 'Gửi yêu cầu thuê phòng | Trọ Tốt',
     canActivate: [roleGuard([RoleCode.TENANT])],
     loadComponent: () =>
-      import('./listing/pages/booking-page/booking-page.component').then(m => m.BookingPageComponent),
+      import('./listing/pages/booking-page/booking-page.component').then(
+        (m) => m.BookingPageComponent,
+      ),
   },
   {
     path: 'tro/:id',

@@ -59,7 +59,7 @@
           <dl>
             <div>
               <dt>Đối tượng</dt>
-              <dd>{{ targets[r.targetType] }} · {{ r.targetName || r.targetId }}</dd>
+              <dd>{{ targets[r.targetType] }}{{ r.targetName ? ' · ' + r.targetName : '' }}</dd>
             </div>
             <div>
               <dt>Lý do</dt>
@@ -92,11 +92,6 @@
               tả và minh chứng để xác định tin liên quan trước khi chọn tin xử lý.
             </p>
           }
-          <details>
-            <summary>Mã tham chiếu</summary>
-            <p class="mono">Báo cáo: {{ r.id }}</p>
-            <p class="mono">Đối tượng: {{ r.targetId }}</p>
-          </details>
         </section>
         <section class="panel">
           <app-report-evidence-gallery

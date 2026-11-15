@@ -84,7 +84,6 @@
       ></ng-template>
       <ng-template [appTableCell]="items()" column="context" let-r
         ><strong>{{ r.targetName || labels[r.type] }}</strong>
-        <p class="mono">{{ r.targetId }}</p>
         <a [routerLink]="['/hop-dong', r.agreementId]">Xem hợp đồng</a></ng-template
       >
       <ng-template [appTableCell]="items()" column="status" let-r

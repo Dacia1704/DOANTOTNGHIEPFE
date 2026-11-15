@@ -1,0 +1,93 @@
+<section class="author-modal">
+  <header class="modal-heading">
+    <h2>Hồ sơ cộng đồng</h2>
+    <button class="close" aria-label="Đóng hồ sơ" (click)="dialogRef.close()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </header>
+  <div class="profile-scroll">
+    @if (profile(); as person) {
+      <div class="profile-cover"></div>
+      <div class="profile-heading">
+        <img
+          class="profile-avatar"
+          [src]="person.avatarUrl || 'avatar-default.jpg'"
+          alt="Ảnh đại diện"
+        />
+        <div class="identity">
+          <h3>{{ person.fullName || 'Thành viên' }}</h3>
+          <span class="role">{{
+            person.role === 'ADMIN'
+              ? 'Quản trị viên'
+              : person.role === 'LANDLORD'
+                ? 'Chủ trọ'
+                : 'Người thuê'
+          }}</span>
+        </div>
+        @if (auth.session()?.id !== person.id) {
+          <button class="follow" [disabled]="busy() || profileLoading()" (click)="follow()">
+            <span class="material-symbols-outlined">{{
+              person.following ? 'person_check' : 'person_add'
+            }}</span
+            >{{ person.following ? 'Đang theo dõi' : 'Theo dõi' }}
+          </button>
+        }
+      </div>
+      <div class="profile-layout">
+        <aside class="intro">
+          <h3>Giới thiệu</h3>
+          <p>
+            <span class="material-symbols-outlined">calendar_month</span
+            ><span>Tham gia {{ person.joinedAt | date: 'MM/yyyy' }}</span>
+          </p>
+          <p>
+            <span class="material-symbols-outlined">article</span
+            ><span
+              ><strong>{{ person.postCount }}</strong> bài viết</span
+            >
+          </p>
+          <p>
+            <span class="material-symbols-outlined">group</span
+            ><span
+              ><strong>{{ person.followerCount }}</strong> người theo dõi</span
+            >
+          </p>
+        </aside>
+        <main class="author-posts">
+          <h3>Bài viết đã đăng</h3>
+          @for (post of posts(); track post.id) {
+            <app-community-post-card
+              [post]="post"
+              [authorClickable]="false"
+              (changed)="refreshPost(post.id)"
+            />
+          }
+          @if (!loading() && !posts().length && !postError()) {
+            <div class="state">
+              <span class="material-symbols-outlined">feed</span>
+              <p>Chưa có bài viết để hiển thị.</p>
+            </div>
+          }
+          @if (loading()) {
+            <p class="state" role="status">Đang tải bài viết…</p>
+          }
+          @if (postError()) {
+            <div class="state error" role="alert">
+              {{ postError() }} <button (click)="loadPosts()">Thử lại</button>
+            </div>
+          }
+          @if (hasMore() && !loading() && !postError()) {
+            <button class="load-more" (click)="loadPosts()">Xem thêm bài viết</button>
+          }
+        </main>
+      </div>
+    } @else if (profileLoading()) {
+      <p class="state" role="status">Đang tải hồ sơ…</p>
+    }
+    @if (error()) {
+      <div class="state error" role="alert">
+        {{ error() }} <button (click)="loadProfile()">Thử lại</button>
+      </div>
+    }
+  </div>
+</section>

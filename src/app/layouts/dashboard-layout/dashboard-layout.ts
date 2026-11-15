@@ -13,7 +13,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
-import { NavItem, NavSidebarComponent } from '@shared/components/nav-sidebar/nav-sidebar.component';
+import {
+  NavItem,
+  NavSidebarComponent,
+  findNavItem,
+} from '@shared/components/nav-sidebar/nav-sidebar.component';
 import { SiteHeaderComponent } from '@shared/components/site-header/site-header.component';
 
 @Component({
@@ -77,9 +81,6 @@ export class DashboardLayoutComponent implements OnChanges {
   private updateBreadcrumb(): void {
     const path = this.router.url.split(/[?#]/)[0];
     this.chatPage.set(path === '/landlord/messages' || path === '/admin/messages');
-    this.pageLabel.set(
-      this.menu.find((item) => path === item.route || path.startsWith(item.route + '/'))?.label ??
-        this.title,
-    );
+    this.pageLabel.set(findNavItem(this.menu, path)?.label ?? this.title);
   }
 }

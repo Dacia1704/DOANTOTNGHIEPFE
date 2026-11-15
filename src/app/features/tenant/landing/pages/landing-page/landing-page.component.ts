@@ -149,6 +149,7 @@ export class LandingPageComponent implements OnInit {
   }
   private setupSectionScroll(window: Window): () => void {
     let previousY = window.scrollY;
+    let userScrollUntil = 0;
     let direction = 0;
     let settleTimer = 0;
     let frame = 0;
@@ -202,24 +203,36 @@ export class LandingPageComponent implements OnInit {
     const onScroll = () => {
       const delta = window.scrollY - previousY;
       previousY = window.scrollY;
+      // Navigation restoration and programmatic anchor scrolling must retain their exact position.
+      if (window.performance.now() > userScrollUntil) return;
       if (frame || Math.abs(delta) < 1) return;
       direction = Math.sign(delta);
       window.clearTimeout(settleTimer);
       settleTimer = window.setTimeout(snap, 70);
     };
     const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) userScrollUntil = window.performance.now() + 1500;
       if (frame && !event.ctrlKey) event.preventDefault();
+    };
+    const onTouchStart = () => {
+      userScrollUntil = window.performance.now() + 1500;
+      cancel();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key))
+        userScrollUntil = window.performance.now() + 1500;
+      cancel();
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('touchstart', cancel, { passive: true });
-    window.addEventListener('keydown', cancel);
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('keydown', onKeyDown);
     return () => {
       cancel();
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('touchstart', cancel);
-      window.removeEventListener('keydown', cancel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('keydown', onKeyDown);
     };
   }
   readonly rooms = signal<PublicListingList | null>(null);
@@ -456,10 +469,17 @@ export class LandingPageComponent implements OnInit {
         switchMap(({ page, append }) => {
           this.searching.set(true);
           this.searchError.set('');
+          const rankingSession = page > 0 ? this.rooms()?.rankingSession : undefined;
           if (!append) this.rooms.set(null);
-          return this.listingService.search({ ...this.activeQuery(), page }).pipe(
+          return this.listingService.search({ ...this.activeQuery(), page, rankingSession }).pipe(
             map((result) => ({ result, append })),
             catchError((err) => {
+              if (err?.error?.errorCode === 'FEED_SESSION_EXPIRED') {
+                queueMicrotask(() => {
+                  if (!this.destroy.destroyed) this.loadRooms();
+                });
+                return EMPTY;
+              }
               this.searchError.set(
                 err?.error?.message || 'Không tải được tin đăng. Vui lòng thử lại.',
               );
@@ -472,7 +492,9 @@ export class LandingPageComponent implements OnInit {
       )
       .subscribe(({ result, append }) => {
         this.rooms.set(
-          append ? { ...result, items: [...(this.rooms()?.items ?? []), ...result.items] } : result,
+          append
+            ? { ...result, items: [...(this.rooms()?.items ?? []), ...result.items].slice(0, 20) }
+            : result,
         );
       });
     this.loadRooms();
@@ -580,7 +602,13 @@ export class LandingPageComponent implements OnInit {
   }
   loadMore(): void {
     const current = this.rooms();
-    if (!current || current.page + 1 >= current.totalPages || this.searching()) return;
+    if (
+      !current ||
+      current.items.length >= 20 ||
+      current.page + 1 >= current.totalPages ||
+      this.searching()
+    )
+      return;
     this.requests.next({ page: current.page + 1, append: true });
   }
   private loadRooms(): void {

@@ -54,7 +54,7 @@
       (reset)="resetFilters()"
     >
       <label class="filter-search"
-        >Tìm tin đăng<input type="search" name="keyword" placeholder="Tiêu đề, mã tin đăng…"
+        >Tìm tin đăng<input type="search" name="keyword" placeholder="Tìm theo tiêu đề tin đăng…"
       /></label>
       <label
         >Trạng thái bài đăng<select
@@ -82,30 +82,43 @@
       <button type="reset" [disabled]="loading() || busy()">Xóa bộ lọc</button>
     </form>
     <ng-template [appTableCell]="items()" column="listing" let-listing>
-      <div class="cell-content">
-        <strong class="cell-title">{{ listing.title }}</strong>
-        <span class="cell-subtext">Mã tin: {{ listing.id }}</span>
-        @if (listing.propertyName) {
-          <span class="cell-subtext">{{ listing.propertyName }}</span>
-        }
-        @if (admin) {
-          <span class="cell-subtext"
-            >Chủ trọ: {{ listing.landlordName || listing.landlordId }}</span
-          >
-        }
-        <details>
-          <summary>Xem nội dung</summary>
-          <p class="listing-description">{{ listing.description }}</p>
-          @if (admin && listing.property) {
-            <app-property-location
-              [latitude]="listing.property.latitude"
-              [longitude]="listing.property.longitude"
-              [address]="locationAddress(listing)"
-              [collapsible]="true"
-            />
+      @if (admin) {
+        <strong class="admin-title" [title]="listing.title">{{ listing.title }}</strong>
+      } @else {
+        <div class="cell-content">
+          <strong class="cell-title">{{ listing.title }}</strong>
+          @if (listing.propertyName) {
+            <span class="cell-subtext">{{ listing.propertyName }}</span>
           }
-        </details>
-      </div>
+          @if (admin) {
+            <span class="cell-subtext"
+              >Chủ trọ: {{ listing.landlordName || 'Chưa có tên chủ trọ' }}</span
+            >
+          }
+          <details>
+            <summary>Xem nội dung</summary>
+            <p class="listing-description">{{ listing.description }}</p>
+            @if (admin && listing.property) {
+              <app-property-location
+                [latitude]="listing.property.latitude"
+                [longitude]="listing.property.longitude"
+                [address]="locationAddress(listing)"
+                [collapsible]="true"
+              />
+            }
+          </details>
+        </div>
+      }
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="property" let-listing>
+      <span class="admin-value" [title]="listing.propertyName || 'Chưa có tên cơ sở'">{{
+        listing.propertyName || '—'
+      }}</span>
+    </ng-template>
+    <ng-template [appTableCell]="items()" column="landlord" let-listing>
+      <span class="admin-value" [title]="listing.landlordName || 'Chưa có tên chủ trọ'">{{
+        listing.landlordName || 'Chưa có tên chủ trọ'
+      }}</span>
     </ng-template>
     <ng-template [appTableCell]="items()" column="status" let-listing>
       <app-billing-status
@@ -116,10 +129,10 @@
             : listing.status
         "
       />
-      @if (listing.rejectionReason) {
+      @if (!admin && listing.rejectionReason) {
         <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
       }
-      @if (listing.boostAllocation; as boost) {
+      @if (!admin && listing.boostAllocation; as boost) {
         <p class="notice">
           Boost đã chọn:
           <strong>{{ boost.level === 2 ? 'Ưu tiên cao' : 'Ưu tiên thấp' }}</strong>
@@ -132,36 +145,46 @@
       }
     </ng-template>
     <ng-template [appTableCell]="items()" column="dates" let-listing>
-      {{ ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt) }}
-      <span class="cell-subtext">{{
-        listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn hiển thị'
-      }}</span>
+      <span
+        [class.admin-nowrap]="admin"
+        [title]="listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn hiển thị'"
+        >{{
+          ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt)
+        }}</span
+      >
+      @if (!admin) {
+        <span class="cell-subtext">{{
+          listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn hiển thị'
+        }}</span>
+      }
     </ng-template>
     <ng-template [appTableCell]="items()" column="priority" let-listing>
       @if (ui.published(listing)) {
-        <strong>{{
+        <strong [class.admin-nowrap]="admin">{{
           listing.priorityLevel === 2
             ? 'Ưu tiên cao'
             : listing.priorityLevel === 1
               ? 'Ưu tiên thấp'
               : 'Thường'
         }}</strong>
-        <span class="cell-subtext"
-          >Theo gói:
-          {{
-            listing.packagePriorityLevel === 2
-              ? 'Cao'
-              : listing.packagePriorityLevel === 1
-                ? 'Thấp'
-                : 'Không chọn suất riêng'
-          }}</span
-        >
+        @if (!admin) {
+          <span class="cell-subtext"
+            >Theo gói:
+            {{
+              listing.packagePriorityLevel === 2
+                ? 'Cao'
+                : listing.packagePriorityLevel === 1
+                  ? 'Thấp'
+                  : 'Không chọn suất riêng'
+            }}</span
+          >
+        }
       } @else {
         <span>—</span>
       }
     </ng-template>
     <ng-template [appTableCell]="items()" column="actions" let-listing>
-      <div class="table-actions">
+      <div class="table-actions" [class.admin-actions]="admin">
         @if (admin && listing.status === 'PENDING' && ui.future(listing.pendingExpiresAt)) {
           <button class="primary" [disabled]="busy()" (click)="action(listing, 'approve')">
             Duyệt tin</button
@@ -181,14 +204,16 @@
             </button>
           }
         }
+        @if (admin) {
+          <button type="button" (click)="details(listing, listingDetails)">Chi tiết</button>
+        }
       </div>
       @if (!admin && ui.published(listing)) {
         <details class="package-priority">
           <summary>Ưu tiên theo gói dịch vụ</summary>
           <p class="muted">
-            Chọn mức ưu tiên sẽ dùng lượt của kỳ hiện tại. Bỏ ưu tiên không hoàn lượt đã dùng;
-            mức mặc định của gói vẫn áp dụng. Chọn lại cùng mức cho cùng tin trong kỳ không trừ
-            thêm.
+            Chọn mức ưu tiên sẽ dùng lượt của kỳ hiện tại. Bỏ ưu tiên không hoàn lượt đã dùng; mức
+            mặc định của gói vẫn áp dụng. Chọn lại cùng mức cho cùng tin trong kỳ không trừ thêm.
           </p>
           <div class="actions">
             <button [disabled]="busy()" (click)="priority(listing, 2)">Chọn suất cao</button
@@ -200,11 +225,105 @@
     </ng-template>
     <div tableEmpty>
       @if (!admin) {
-        <p>
-          Tạo tin từ cơ sở có phòng/căn còn trống, chọn gói Boost ngay khi đăng và gửi duyệt.
-        </p>
+        <p>Tạo tin từ cơ sở có phòng/căn còn trống, chọn gói Boost ngay khi đăng và gửi duyệt.</p>
         <button class="primary" (click)="edit()">Tạo tin đầu tiên</button>
       }
     </div>
   </app-management-table>
 </section>
+
+<ng-template #listingDetails let-listing>
+  <h2 mat-dialog-title>Chi tiết tin đăng</h2>
+  <mat-dialog-content class="listing-detail">
+    <h3>{{ listing.title }}</h3>
+    <dl class="listing-facts">
+      <div>
+        <dt>Cơ sở</dt>
+        <dd>{{ listing.propertyName || '—' }}</dd>
+      </div>
+      <div>
+        <dt>Chủ trọ</dt>
+        <dd>{{ listing.landlordName || 'Chưa có tên chủ trọ' }}</dd>
+      </div>
+      <div>
+        <dt>Trạng thái</dt>
+        <dd>
+          <app-billing-status
+            [status]="
+              (listing.status === 'PUBLISHED' && !ui.published(listing)) ||
+              (listing.status === 'PENDING' && !ui.future(listing.pendingExpiresAt))
+                ? 'EXPIRED'
+                : listing.status
+            "
+          />
+        </dd>
+      </div>
+      <div>
+        <dt>Ngày tạo</dt>
+        <dd>{{ ui.date(listing.createdAt) }}</dd>
+      </div>
+      <div>
+        <dt>Ngày gửi duyệt</dt>
+        <dd>{{ ui.date(listing.submittedAt) }}</dd>
+      </div>
+      <div>
+        <dt>Ngày xuất bản</dt>
+        <dd>{{ ui.date(listing.publishedAt) }}</dd>
+      </div>
+      <div>
+        <dt>{{ listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn hiển thị' }}</dt>
+        <dd>
+          {{ ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt) }}
+        </dd>
+      </div>
+      <div>
+        <dt>Ưu tiên hiện tại</dt>
+        <dd>
+          {{
+            ui.published(listing)
+              ? listing.priorityLevel === 2
+                ? 'Ưu tiên cao'
+                : listing.priorityLevel === 1
+                  ? 'Ưu tiên thấp'
+                  : 'Thường'
+              : 'Không áp dụng'
+          }}
+        </dd>
+      </div>
+      <div>
+        <dt>Suất riêng theo gói</dt>
+        <dd>
+          {{
+            listing.packagePriorityLevel === 2
+              ? 'Cao'
+              : listing.packagePriorityLevel === 1
+                ? 'Thấp'
+                : 'Không chọn'
+          }}
+        </dd>
+      </div>
+    </dl>
+    @if (listing.rejectionReason) {
+      <p class="notice warning">Lý do từ chối: {{ listing.rejectionReason }}</p>
+    }
+    @if (listing.boostAllocation; as boost) {
+      <p class="notice">
+        Boost đã chọn: <strong>{{ boost.level === 2 ? 'Ưu tiên cao' : 'Ưu tiên thấp' }}</strong
+        >{{ listing.status === 'PENDING' ? ' · Áp dụng hiển thị sau khi được duyệt.' : '' }}
+      </p>
+    }
+    <h3>Nội dung bài đăng</h3>
+    <p class="listing-description">{{ listing.description || 'Chưa có nội dung mô tả.' }}</p>
+    @if (listing.property) {
+      <app-property-location
+        [latitude]="listing.property.latitude"
+        [longitude]="listing.property.longitude"
+        [address]="locationAddress(listing)"
+        [collapsible]="true"
+      />
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end"
+    ><button type="button" mat-dialog-close>Đóng</button></mat-dialog-actions
+  >
+</ng-template>

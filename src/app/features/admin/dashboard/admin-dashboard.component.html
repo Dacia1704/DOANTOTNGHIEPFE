@@ -1,0 +1,316 @@
+<section class="dashboard" [attr.aria-busy]="loading()">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">QUẢN TRỊ HỆ THỐNG</p>
+      <h1>Tổng quan hệ thống</h1>
+      <p class="subtitle">Theo dõi hoạt động và phân tích số liệu trên nền tảng.</p>
+    </div>
+    <div class="header-controls">
+      <div class="period-tabs" role="group" aria-label="Khoảng thời gian thống kê">
+        @for (item of presets; track item.days) {
+          <button
+            type="button"
+            [class.active]="preset() === item.days"
+            [attr.aria-pressed]="preset() === item.days"
+            (click)="selectPreset(item.days)"
+          >
+            {{ item.label }}
+          </button>
+        }
+      </div>
+      <div class="refresh-row">
+        <span aria-live="polite">
+          @if (data(); as d) {
+            Cập nhật: {{ d.generatedAt | date: 'HH:mm · dd/MM/yyyy' }}
+          } @else {
+            {{ loading() ? 'Đang cập nhật số liệu…' : 'Chưa cập nhật số liệu' }}
+          }
+        </span>
+        <button class="refresh" type="button" (click)="reload()" [disabled]="loading()">
+          <span class="material-symbols-outlined" aria-hidden="true">refresh</span>Làm mới
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (preset() === 0) {
+    <form class="custom-range" (ngSubmit)="reload()">
+      <label
+        >Từ ngày<input type="date" name="from" [(ngModel)]="from" [max]="today" required
+      /></label>
+      <label
+        >Đến ngày<input type="date" name="to" [(ngModel)]="to" [min]="from" [max]="today" required
+      /></label>
+      <button class="primary" type="submit">Áp dụng</button>
+      <span>Tối đa 366 ngày</span>
+    </form>
+  }
+  @if (validation()) {
+    <p class="validation" role="alert">{{ validation() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="loading-state" role="status">
+      <span class="sr-only">Đang tải thống kê…</span>
+      <div class="metrics-grid">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="skeleton skeleton-card"></div>
+        }
+      </div>
+      <div class="charts-grid">
+        <div class="skeleton skeleton-chart"></div>
+        <div class="skeleton skeleton-chart"></div>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="state-panel" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+      <h2>Không thể tải số liệu thống kê</h2>
+      <p>{{ error() }}</p>
+      <button class="primary" type="button" (click)="reload()">Thử lại</button>
+    </div>
+  } @else if (data(); as d) {
+    <div class="range-caption">
+      <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span
+      >{{ d.from | date: 'dd/MM/yyyy' }} – {{ d.to | date: 'dd/MM/yyyy'
+      }}<span class="caption-divider">·</span>So sánh số phát sinh với {{ days() }} ngày liền trước.
+      Các số “Hiện tại” không phụ thuộc bộ lọc.
+    </div>
+    @if (noActivity()) {
+      <p class="empty-notice" role="status">
+        <span class="material-symbols-outlined" aria-hidden="true">inbox</span>Chưa có phát sinh
+        trong kỳ này. Các số liệu hiện tại vẫn được hiển thị.
+      </p>
+    }
+    <section class="metrics-grid" aria-label="Chỉ số tổng quan">
+      @for (metric of primaryCards(); track metric.label) {
+        <ng-container
+          [ngTemplateOutlet]="metricCard"
+          [ngTemplateOutletContext]="{ $implicit: metric }"
+        />
+      }
+    </section>
+
+    <section class="charts-grid" aria-label="Doanh thu và tăng trưởng">
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Doanh thu dịch vụ theo thời gian</h2>
+            <p>
+              Tổng cộng: <strong>{{ format(period('revenue'), true) }}</strong>
+            </p>
+          </div>
+          <span class="scope">{{ days() }} ngày</span>
+        </div>
+        <app-dashboard-chart
+          [points]="d.series"
+          [series]="revenueSeries"
+          kind="bar"
+          [money]="true"
+          label="Doanh thu gói dịch vụ và Boost theo thời gian"
+        />
+        <footer class="panel-footer">
+          Trung bình <strong>{{ format(period('revenue') / days(), true) }} / ngày</strong>
+        </footer>
+      </article>
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Tăng trưởng người dùng</h2>
+            <p>Người thuê và chủ trọ mới gia nhập hệ thống</p>
+          </div>
+          <span class="scope">Trong kỳ</span>
+        </div>
+        <app-dashboard-chart
+          [points]="d.series"
+          [series]="userSeries"
+          label="Số người thuê và chủ trọ mới theo thời gian"
+        />
+        <footer class="panel-footer">
+          <span
+            >Người thuê: <strong>{{ format(period('newTenants')) }}</strong></span
+          ><span
+            >Chủ trọ: <strong>{{ format(period('newLandlords')) }}</strong></span
+          >
+        </footer>
+      </article>
+    </section>
+
+    <section class="section-block" aria-labelledby="rental-heading">
+      <div class="section-heading">
+        <span class="material-symbols-outlined" aria-hidden="true">home_work</span>
+        <h2 id="rental-heading">Hoạt động cho thuê & tin đăng</h2>
+      </div>
+      <div class="metrics-grid">
+        @for (metric of rentalCards(); track metric.label) {
+          <ng-container
+            [ngTemplateOutlet]="metricCard"
+            [ngTemplateOutletContext]="{ $implicit: metric }"
+          />
+        }
+      </div>
+      <article class="panel status-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Phân bố trạng thái tin đăng</h3>
+            <p>
+              Tổng số hiện tại: <strong>{{ format(listingTotal()) }} tin đăng</strong>
+            </p>
+          </div>
+          <span class="scope">Hiện tại</span>
+        </div>
+        <div class="status-bars" appChartReveal>
+          @for (status of statuses(); track status.key) {
+            <div class="status-row">
+              <span class="status-label"
+                ><i [style.background]="status.color"></i>{{ status.label }}</span
+              >
+              <div
+                class="bar-track"
+                role="meter"
+                [attr.aria-label]="status.label"
+                aria-valuemin="0"
+                [attr.aria-valuemax]="listingTotal() || 1"
+                [attr.aria-valuenow]="status.value"
+              >
+                <div
+                  [style.width.%]="listingTotal() ? (status.value / listingTotal()) * 100 : 0"
+                  [style.background]="status.color"
+                ></div>
+              </div>
+              <span class="status-value"
+                ><strong>{{ format(status.value) }}</strong
+                ><small>{{
+                  percent(listingTotal() ? (status.value / listingTotal()) * 100 : 0)
+                }}</small></span
+              >
+            </div>
+          }
+        </div>
+        @if (!listingTotal()) {
+          <p class="empty-caption">Chưa có tin đăng trong hệ thống.</p>
+        }
+      </article>
+    </section>
+
+    <section class="section-block" aria-labelledby="community-heading">
+      <div class="section-heading">
+        <span class="material-symbols-outlined" aria-hidden="true">forum</span>
+        <h2 id="community-heading">Hoạt động cộng đồng</h2>
+      </div>
+      <div class="metrics-grid">
+        @for (metric of communityCards(); track metric.label) {
+          <ng-container
+            [ngTemplateOutlet]="metricCard"
+            [ngTemplateOutletContext]="{ $implicit: metric }"
+          />
+        }
+      </div>
+      <article class="panel chart-panel community-chart">
+        <div class="panel-heading">
+          <div>
+            <h3>Bài viết & bình luận theo thời gian</h3>
+            <p>Mức độ đóng góp của cộng đồng trong kỳ</p>
+          </div>
+          <span class="scope">{{ days() }} ngày</span>
+        </div>
+        <app-dashboard-chart
+          [points]="d.series"
+          [series]="communitySeries"
+          label="Bài viết và bình luận mới theo thời gian"
+        />
+      </article>
+    </section>
+
+    <section class="section-block" aria-labelledby="services-heading">
+      <div class="section-heading">
+        <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+        <h2 id="services-heading">Dịch vụ, thanh toán & an toàn</h2>
+      </div>
+      <div class="operations-grid">
+        <div class="operation-metrics">
+          @for (metric of operationCards(); track metric.label) {
+            <ng-container
+              [ngTemplateOutlet]="metricCard"
+              [ngTemplateOutletContext]="{ $implicit: metric }"
+            />
+          }
+        </div>
+        <article class="panel revenue-breakdown">
+          <div class="panel-heading">
+            <div>
+              <h3>Cơ cấu doanh thu dịch vụ</h3>
+              <p>Tỷ trọng gói dịch vụ và Boost trong kỳ</p>
+            </div>
+          </div>
+          <div
+            class="donut"
+            appChartReveal
+            [style.--donut-background]="donut()"
+            role="img"
+            [attr.aria-label]="
+              'Gói dịch vụ ' +
+              percent(serviceShare()) +
+              ', Boost ' +
+              percent(period('revenue') ? 100 - serviceShare() : 0)
+            "
+          >
+            <div class="donut-center">
+              <span>Tổng thu</span
+              ><strong [title]="format(period('revenue'), true)"
+                >{{ compact(period('revenue')) }} ₫</strong
+              ><small>Trong kỳ</small>
+            </div>
+          </div>
+          <div class="revenue-legend">
+            @for (series of revenueSeries; track series.key) {
+              <div>
+                <span><i [style.background]="series.color"></i>{{ series.label }}</span
+                ><strong>{{ format(period(series.key), true) }}</strong
+                ><small>{{
+                  percent(period('revenue') ? (period(series.key) / period('revenue')) * 100 : 0)
+                }}</small>
+              </div>
+            }
+          </div>
+          <p class="revenue-note">
+            Chỉ tính thanh toán thành công đã xác nhận, chưa hoàn tiền và không cần đối soát. Không
+            bao gồm tiền thuê phòng.
+          </p>
+        </article>
+      </div>
+    </section>
+  }
+</section>
+
+<ng-template #metricCard let-metric>
+  <article class="metric-card" [class.warning-card]="metric.warning">
+    <div class="metric-top">
+      <span class="metric-icon material-symbols-outlined" aria-hidden="true">{{ metric.icon }}</span
+      ><span class="scope">{{ metric.scope }}</span>
+    </div>
+    <h3>{{ metric.label }}</h3>
+    <div class="metric-value-row">
+      <strong class="metric-value" [class.money-value]="metric.money">{{
+        format(metric.value, metric.money)
+      }}</strong>
+      @if (metric.change) {
+        <span
+          class="change"
+          [class.up]="metric.direction === 'up'"
+          [class.down]="metric.direction === 'down'"
+          title="Số phát sinh so với kỳ trước cùng độ dài"
+          ><span class="material-symbols-outlined" aria-hidden="true">{{
+            metric.direction === 'up'
+              ? 'trending_up'
+              : metric.direction === 'down'
+                ? 'trending_down'
+                : 'trending_flat'
+          }}</span
+          >{{ metric.change }}</span
+        >
+      }
+    </div>
+    <p class="metric-note">{{ metric.note }}</p>
+  </article>
+</ng-template>

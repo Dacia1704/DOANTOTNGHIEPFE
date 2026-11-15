@@ -343,6 +343,7 @@
         />
       } @else {
         <app-room-grid
+          [searchQuery]="activeQuery()"
           [result]="rooms()"
           [loading]="searching()"
           (loadMore)="loadMore()"

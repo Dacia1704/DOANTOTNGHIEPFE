@@ -37,6 +37,7 @@ import {
 } from '@model/billing/billing.model';
 import { BillingUtils } from '@shared/utils/billing-utils';
 import { BillingStatusComponent } from '@shared/components/billing-status/billing-status.component';
+import { ClipboardFeedbackService } from '@services/common/clipboard-feedback.service';
 
 @Component({
   selector: 'app-payment-result-page',
@@ -47,6 +48,7 @@ import { BillingStatusComponent } from '@shared/components/billing-status/billin
 })
 export class PaymentResultPageComponent {
   private readonly api = inject(PaymentService);
+  private readonly clipboard = inject(ClipboardFeedbackService);
   private readonly subscriptions = inject(SubscriptionService);
   private readonly boosts = inject(BoostService);
   private readonly route = inject(ActivatedRoute);
@@ -68,7 +70,6 @@ export class PaymentResultPageComponent {
   readonly invoiceError = signal('');
   readonly rightsError = signal('');
   readonly checkMessage = signal('');
-  readonly copied = signal(false);
   readonly updatedAt = signal<Date | null>(null);
   readonly cooldownUntil = signal(0);
   readonly now = signal(Date.now());
@@ -200,12 +201,11 @@ export class PaymentResultPageComponent {
     }
   }
   async copy(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(this.payment()?.merchantOrderId ?? '');
-      this.copied.set(true);
-    } catch {
-      this.checkMessage.set('Bạn có thể chọn và sao chép mã giao dịch hiển thị bên dưới.');
-    }
+    await this.clipboard.copy(
+      this.payment()?.merchantOrderId ?? '',
+      'Đã sao chép mã giao dịch.',
+      'Không thể sao chép mã giao dịch. Vui lòng thử lại.',
+    );
   }
   private apply(payment: Payment, refresh = true): void {
     const previous = this.payment();

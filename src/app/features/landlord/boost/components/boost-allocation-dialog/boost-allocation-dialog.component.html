@@ -32,9 +32,7 @@
       @if (selectedListing(); as listing) {
         <p class="muted">
           {{ listing.status === 'PENDING' ? 'Hạn chờ duyệt' : 'Hạn tin' }}:
-          {{
-            ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt)
-          }}
+          {{ ui.date(listing.status === 'PENDING' ? listing.pendingExpiresAt : listing.expiresAt) }}
           · Mức hiển thị thực tế:
           {{
             listing.priorityLevel === 2 ? 'Cao' : listing.priorityLevel === 1 ? 'Thấp' : 'Thường'
@@ -54,7 +52,7 @@
           @for (group of groups(); track group.subscription.id) {
             <option [value]="group.subscription.id">
               {{ group.subscription.packageNameSnapshot }} · Hết hạn
-              {{ ui.date(group.subscription.endAt) }} · {{ group.subscription.id.slice(-6) }}
+              {{ ui.date(group.subscription.endAt) }}
             </option>
           }
         </select></label

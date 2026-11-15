@@ -1,6 +1,43 @@
-<div class="nav-sidebar" [class.is-collapsed]="collapsed">
+<div class="nav-sidebar" [class.is-collapsed]="collapsed" [class.has-groups]="grouped">
   <nav class="nav-sidebar__list" [attr.aria-label]="label">
-    @for (item of menu; track item.route) {
+    <ng-container [ngTemplateOutlet]="itemsView" [ngTemplateOutletContext]="{ $implicit: menu }" />
+  </nav>
+</div>
+<ng-template #itemsView let-items>
+  @for (item of items; track key(item)) {
+    @if (item.children?.length) {
+      <div class="nav-sidebar__group">
+        <button
+          type="button"
+          class="nav-sidebar__item nav-sidebar__group-toggle"
+          [class.is-current-group]="active(item)"
+          [attr.aria-expanded]="!collapsed && expanded().has(key(item))"
+          [attr.aria-controls]="groupId(item)"
+          [attr.aria-label]="item.label"
+          [title]="collapsed ? item.label : ''"
+          (click)="toggle(item)"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+          <span class="nav-sidebar__label">{{ item.label }}</span>
+          <span
+            class="material-symbols-outlined nav-sidebar__chevron"
+            [class.is-open]="expanded().has(key(item))"
+            aria-hidden="true"
+            >expand_more</span
+          >
+        </button>
+        <div
+          class="nav-sidebar__children"
+          [id]="groupId(item)"
+          [hidden]="collapsed || !expanded().has(key(item))"
+        >
+          <ng-container
+            [ngTemplateOutlet]="itemsView"
+            [ngTemplateOutletContext]="{ $implicit: item.children }"
+          />
+        </div>
+      </div>
+    } @else {
       <a
         class="nav-sidebar__item"
         [routerLink]="item.route"
@@ -13,5 +50,5 @@
         <span class="nav-sidebar__label">{{ item.label }}</span>
       </a>
     }
-  </nav>
-</div>
+  }
+</ng-template>

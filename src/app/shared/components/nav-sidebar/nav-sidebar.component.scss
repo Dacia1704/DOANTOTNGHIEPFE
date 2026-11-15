@@ -13,8 +13,16 @@
 
 .is-collapsed {
   padding: var(--space-sm);
-  .nav-sidebar__label { display: none; }
-  .nav-sidebar__item { justify-content: center; padding: var(--space-md) var(--space-sm); }
+  .nav-sidebar__label {
+    display: none;
+  }
+  .nav-sidebar__item {
+    justify-content: center;
+    padding: var(--space-md) var(--space-sm);
+  }
+  .nav-sidebar__chevron {
+    display: none;
+  }
 }
 .nav-sidebar__item:focus-visible {
   outline: 2px solid var(--primary);
@@ -37,7 +45,9 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 
   &:hover {
     background: var(--surface-container-low);
@@ -51,5 +61,66 @@
 
   .material-symbols-outlined {
     font-size: 20px;
+    flex-shrink: 0;
+  }
+}
+.nav-sidebar__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.nav-sidebar__group-toggle {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 8px;
+  padding-inline: 8px;
+  min-height: 44px;
+}
+.nav-sidebar.has-groups {
+  padding-inline: 8px;
+}
+.nav-sidebar__group-toggle.is-current-group {
+  color: var(--primary);
+  background: var(--primary-subtle);
+}
+.nav-sidebar__group-toggle .nav-sidebar__label {
+  flex: 1;
+}
+.nav-sidebar__chevron {
+  margin-left: auto;
+  transition: transform var(--transition-fast);
+}
+.nav-sidebar__chevron.is-open {
+  transform: rotate(180deg);
+}
+.nav-sidebar__children {
+  margin: 6px 0 10px 20px;
+  padding-left: 8px;
+  border-left: 1px solid var(--outline-variant);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-sidebar__children[hidden] {
+  display: none;
+}
+.nav-sidebar__children .nav-sidebar__item {
+  font-size: 13px;
+  padding: 9px 8px;
+  gap: 8px;
+}
+.nav-sidebar__children .material-symbols-outlined {
+  font-size: 18px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-sidebar__chevron {
+    transition: none;
   }
 }

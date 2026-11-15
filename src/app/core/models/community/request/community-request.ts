@@ -6,6 +6,7 @@ export interface CommunityPostRequest {
   expectedVersion?: number;
 }
 export interface CommunityCommentRequest {
+  replyToId?: string;
   content: string;
   parentId?: string;
   expectedVersion?: number;

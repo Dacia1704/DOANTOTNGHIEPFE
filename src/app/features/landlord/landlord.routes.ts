@@ -17,6 +17,12 @@ const dashboardRedirect =
 
 export const LANDLORD_ROUTES: Routes = [
   {
+    path: 'landlord/dashboard',
+    title: 'Tổng quan cho thuê | Trọ Tốt',
+    loadComponent: () =>
+      import('./dashboard/landlord-dashboard.component').then((m) => m.LandlordDashboardComponent),
+  },
+  {
     path: 'landlord/reviews',
     title: 'Đánh giá & phản hồi | Trọ Tốt',
     loadComponent: () =>
@@ -108,7 +114,7 @@ export const LANDLORD_ROUTES: Routes = [
   },
   {
     path: 'landlord',
-    redirectTo: 'phong-cua-toi',
+    redirectTo: 'landlord/dashboard',
     pathMatch: 'full',
   },
   {

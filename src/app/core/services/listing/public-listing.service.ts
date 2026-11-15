@@ -23,10 +23,11 @@ export class PublicListingService {
       .get<ApiResponse<PageResponse<PublicListingResponse>>>(this.api, { params })
       .pipe(
         map(({ data }) => ({
-          items: data.data.map((dto) => PublicListingMapper.fromResponse(dto)),
+          items: data.data.map((dto) => PublicListingMapper.fromResponse(dto, query)),
           page: data.currentPage,
           totalPages: data.totalPages,
           total: data.totalElements,
+          rankingSession: data.rankingSession,
         })),
       );
   }
@@ -36,7 +37,7 @@ export class PublicListingService {
       .get<ApiResponse<PublicListingResponse[]>>(`${this.api}/map`, {
         params: this.filterParams(query),
       })
-      .pipe(map(({ data }) => data.map((dto) => PublicListingMapper.fromResponse(dto))));
+      .pipe(map(({ data }) => data.map((dto) => PublicListingMapper.fromResponse(dto, query))));
   }
   priceStatistics(provinceId = '', wardId = ''): Observable<ListingPriceStatistics[]> {
     let params = new HttpParams();
@@ -50,6 +51,20 @@ export class PublicListingService {
   private filterParams(query: RoomQueryParams): HttpParams {
     let params = new HttpParams();
     for (const key of [
+      'keyword',
+      'rentalMode',
+      'propertyTypeId',
+      'minArea',
+      'maxArea',
+      'minOccupants',
+      'minFloor',
+      'maxFloor',
+      'maxDeposit',
+      'maxElectricityPrice',
+      'maxWaterPrice',
+      'maxServiceFee',
+      'sort',
+      'rankingSession',
       'roomTypeName',
       'provinceId',
       'wardId',

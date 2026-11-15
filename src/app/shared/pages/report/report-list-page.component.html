@@ -81,8 +81,7 @@
     <ng-template [appTableCell]="items()" column="target" let-r
       ><div class="cell-content">
         <span class="cell-subtext">{{ targets[r.targetType] }}</span
-        ><strong class="cell-title">{{ r.targetName || r.targetId }}</strong
-        ><span class="mono">Mã báo cáo: {{ r.id }}</span>
+        ><strong class="cell-title">{{ r.targetName || 'Chưa có tên hiển thị' }}</strong>
       </div></ng-template
     >
     <ng-template [appTableCell]="items()" column="reason" let-r>{{
@@ -94,7 +93,7 @@
       }}</span></ng-template
     >
     <ng-template [appTableCell]="items()" column="handler" let-r>{{
-      r.handledByName || r.handledBy || 'Chưa tiếp nhận'
+      r.handledByName || (r.handledBy ? 'Đã tiếp nhận' : 'Chưa tiếp nhận')
     }}</ng-template>
     <ng-template [appTableCell]="items()" column="createdAt" let-r
       ><span>{{ r.createdAt | date: 'dd/MM/yyyy' }}</span

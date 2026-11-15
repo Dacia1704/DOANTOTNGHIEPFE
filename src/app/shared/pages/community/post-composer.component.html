@@ -1,10 +1,12 @@
-<a routerLink="/community">← Quay về cộng đồng</a>
-<div class="heading">
-  <span class="eyebrow">CHIA SẺ CÂU CHUYỆN CỦA BẠN</span>
-  <h1>Tạo bài viết cộng đồng</h1>
-  <p>Một trải nghiệm nhỏ, một thông tin hữu ích cho người đang tìm chỗ ở.</p>
-</div>
-<div class="editor-layout">
+@if (!compact()) {
+  <a routerLink="/community">← Quay về cộng đồng</a>
+  <div class="heading">
+    <span class="eyebrow">CHIA SẺ CÂU CHUYỆN CỦA BẠN</span>
+    <h1>Tạo bài viết cộng đồng</h1>
+    <p>Một trải nghiệm nhỏ, một thông tin hữu ích cho người đang tìm chỗ ở.</p>
+  </div>
+}
+<div class="editor-layout" [class.compact]="compact()">
   <form class="panel" (ngSubmit)="submit()">
     <header>
       <img [src]="auth.session()?.avatarUrl || 'avatar-default.jpg'" alt="" />
@@ -23,10 +25,10 @@
     ></textarea>
     <div class="counter" [class.error]="length > 5000">{{ length }} / 5.000 ký tự</div>
     <h3>
-      Ảnh đính kèm <small>{{ media().length }}/10</small>
+      Ảnh đính kèm <small>{{ allMedia().length }}/10</small>
     </h3>
     <div class="gallery">
-      @for (image of media(); track image.id) {
+      @for (image of allMedia(); track image.id) {
         <div>
           <img [src]="image.url" alt="Ảnh đính kèm" /><button
             type="button"
@@ -39,46 +41,48 @@
         </div>
       }
       <label class="upload"
-        >＋<span>{{ uploading() ? 'Đang tải…' : 'Thêm ảnh' }}</span
+        >＋<span>Thêm ảnh</span
         ><input
           type="file"
           accept="image/jpeg,image/png"
           multiple
           (change)="upload($event)"
-          [disabled]="uploading() || busy() || media().length >= 10"
+          [disabled]="busy() || allMedia().length >= 10"
       /></label>
     </div>
-    <h3>Đính kèm tin phòng <small>Tối đa 3 tin công khai</small></h3>
-    <div class="search">
-      <input
-        name="listingQuery"
-        [(ngModel)]="listingQuery"
-        placeholder="Tìm trong các tin phòng mới nhất"
-      /><button type="button" (click)="searchListings()">Tìm tin phòng</button>
-    </div>
-    @for (link of links(); track link.id) {
-      <div class="attached">
-        <span>⌂ {{ link.title }}</span
-        ><button type="button" (click)="unlink(link.id)" [disabled]="busy()">Bỏ gắn</button>
+    @if (!compact()) {
+      <h3>Đính kèm tin phòng <small>Tối đa 3 tin công khai</small></h3>
+      <div class="search">
+        <input
+          name="listingQuery"
+          [(ngModel)]="listingQuery"
+          placeholder="Tìm trong các tin phòng mới nhất"
+        /><button type="button" (click)="searchListings()">Tìm tin phòng</button>
       </div>
+      @for (link of links(); track link.id) {
+        <div class="attached">
+          <span>⌂ {{ link.title }}</span
+          ><button type="button" (click)="unlink(link.id)" [disabled]="busy()">Bỏ gắn</button>
+        </div>
+      }
+      @if (choices().length) {
+        <div class="choices">
+          @for (listing of choices(); track listing.id) {
+            <button type="button" (click)="attach(listing)" [disabled]="links().length >= 3">
+              <span>{{ listing.title }}</span
+              >＋
+            </button>
+          }
+        </div>
+      }
+      <label class="area"
+        >Khu vực (không bắt buộc)<input
+          name="area"
+          [(ngModel)]="area"
+          maxlength="150"
+          placeholder="Ví dụ: Bình Thạnh"
+      /></label>
     }
-    @if (choices().length) {
-      <div class="choices">
-        @for (listing of choices(); track listing.id) {
-          <button type="button" (click)="attach(listing)" [disabled]="links().length >= 3">
-            <span>{{ listing.title }}</span
-            >＋
-          </button>
-        }
-      </div>
-    }
-    <label class="area"
-      >Khu vực (không bắt buộc)<input
-        name="area"
-        [(ngModel)]="area"
-        maxlength="150"
-        placeholder="Ví dụ: Bình Thạnh"
-    /></label>
     @if (error()) {
       <p role="alert" class="error">{{ error() }}</p>
     }
@@ -88,34 +92,40 @@
       </p>
     }
     <footer>
-      <span>Bài viết sẽ được kiểm tra nội dung trước khi hiển thị.</span
-      ><button
+      @if (compact()) {
+        <button type="button" class="advanced" [disabled]="busy()" (click)="openAdvanced()">
+          <span class="material-symbols-outlined">open_in_new</span>Nâng cao
+        </button>
+      } @else {
+        <span>Bài viết sẽ được kiểm tra nội dung trước khi hiển thị.</span>
+      }
+      <button
         class="primary"
         [disabled]="
-          busy() ||
-          uploading() ||
-          length > 5000 ||
-          (!content.trim() && !media().length && !links().length)
+          busy() || length > 5000 || (!content.trim() && !allMedia().length && !links().length)
         "
       >
         {{ busy() ? 'Đang gửi…' : 'Đăng bài viết' }}
       </button>
     </footer>
   </form>
-  <aside>
-    <section class="panel guide">
-      <span class="material-symbols-outlined">verified_user</span>
-      <h3>Chia sẻ chân thành,<br />kết nối an toàn</h3>
-      <p>✓ Tôn trọng người khác, sử dụng ngôn từ phù hợp.</p>
-      <p>✓ Chia sẻ thông tin có ích và trải nghiệm thực tế.</p>
-      <p>✓ Được phép chèn liên kết hợp lệ.</p>
-      <p>✓ Nội dung vi phạm có thể bị hạn chế, chờ duyệt hoặc ẩn.</p>
-    </section>
-    <section class="panel">
-      <h3>Mẹo viết bài</h3>
-      <p>
-        Nêu rõ khu vực, ngân sách hoặc điều bạn cần hỗ trợ. Thêm hashtag để người khác dễ tìm thấy.
-      </p>
-    </section>
-  </aside>
+  @if (!compact()) {
+    <aside>
+      <section class="panel guide">
+        <span class="material-symbols-outlined">verified_user</span>
+        <h3>Chia sẻ chân thành,<br />kết nối an toàn</h3>
+        <p>✓ Tôn trọng người khác, sử dụng ngôn từ phù hợp.</p>
+        <p>✓ Chia sẻ thông tin có ích và trải nghiệm thực tế.</p>
+        <p>✓ Được phép chèn liên kết hợp lệ.</p>
+        <p>✓ Nội dung vi phạm có thể bị hạn chế, chờ duyệt hoặc ẩn.</p>
+      </section>
+      <section class="panel">
+        <h3>Mẹo viết bài</h3>
+        <p>
+          Nêu rõ khu vực, ngân sách hoặc điều bạn cần hỗ trợ. Thêm hashtag để người khác dễ tìm
+          thấy.
+        </p>
+      </section>
+    </aside>
+  }
 </div>
