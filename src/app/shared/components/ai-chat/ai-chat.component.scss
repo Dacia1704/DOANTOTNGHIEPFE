@@ -71,6 +71,14 @@ button[aria-pressed=true] { background:var(--primary,#00685f); color:white; }
   display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;
   &[hidden] { display:none; }
 }
+.profile-notice {
+  display:flex; align-items:flex-start; gap:9px; flex-shrink:0; padding:10px 14px;
+  border-bottom:1px solid #d8e9e2; background:#edf7f2; color:#315e54;
+  > .material-symbols-outlined { flex-shrink:0; margin-top:1px; font-size:19px; color:var(--primary,#00685f); }
+  p { margin:0; font-size:12px; line-height:1.6; }
+  a { display:inline-block; margin-top:3px; color:var(--primary,#00685f); font-size:12px; font-weight:600; text-underline-offset:3px; }
+  a:focus-visible { outline:2px solid var(--primary,#00685f); outline-offset:3px; border-radius:2px; }
+}
 .messages {
   display:flex; flex-direction:column; gap:12px; padding:14px; overflow:auto;
   min-height:0; flex:1; overscroll-behavior:contain; background:#f5f8f6; font-size:13px;

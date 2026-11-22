@@ -22,6 +22,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { PublicListingService } from '@services/listing/public-listing.service';
+import { AiSearchResults, AiSearchResultsService } from '@services/ai/ai-search-results.service';
 import { AddressService } from '@services/address/address.service';
 import { AmenityService } from '@services/room/amenity.service';
 import { RoomTypeService } from '@services/room/room-type.service';
@@ -61,6 +62,8 @@ import { FeedImpressionDirective } from '@shared/directives/feed-impression.dire
 })
 export class RoomSearchComponent {
   private readonly api = inject(PublicListingService);
+  private readonly aiResults = inject(AiSearchResultsService);
+  readonly aiSearch = signal<AiSearchResults | null>(null);
   private readonly addresses = inject(AddressService);
   private readonly amenitiesApi = inject(AmenityService);
   private readonly roomTypesApi = inject(RoomTypeService);
@@ -254,13 +257,16 @@ export class RoomSearchComponent {
         this.wardRequests.next(id);
       });
     this.loadOptions();
-    combineLatest([this.route.queryParamMap, this.refresh.pipe(startWith(null))])
+    combineLatest([this.route.queryParamMap, this.refresh.pipe(startWith(null)), this.aiResults.results$])
       .pipe(
-        map(([params]) => ({
+        map(([params, , selection]) => ({
           query: this.parse(params),
           view: params.get('view') === 'map' ? ('map' as const) : ('list' as const),
+          aiId: params.get('ai'),
+          selection: params.get('ai') === selection?.id ? selection : null,
         })),
-        switchMap(({ query, view }) => {
+        switchMap(({ query, view, aiId, selection }) => {
+          this.aiSearch.set(selection);
           this.query.set(query);
           this.view.set(view);
           this.form.reset(undefined, { emitEvent: false });
@@ -272,6 +278,12 @@ export class RoomSearchComponent {
           this.mapError.set('');
           this.result.set(null);
           if (view !== 'map') this.mapListings.set(null);
+          if (aiId && !selection) {
+            this.loading.set(false);
+            this.mapListings.set(null);
+            this.error.set('Kết quả AI này không còn được lưu. Hãy hỏi lại trợ lý hoặc đặt lại bộ lọc để tìm phòng.');
+            return of(null);
+          }
           if (
             this.form.invalid ||
             Object.values(query).some(
@@ -284,6 +296,16 @@ export class RoomSearchComponent {
             return of(null);
           }
           this.loading.set(true);
+          if (selection) {
+            return this.aiResults.load(selection, query).pipe(
+              map(result => ({ result, mapItems: view === 'map' ? result.items : null })),
+              catchError(() => {
+                this.error.set('Không thể tải danh sách phòng AI tìm được. Vui lòng thử lại.');
+                return of(null);
+              }),
+              finalize(() => this.loading.set(false)),
+            );
+          }
           return forkJoin({
             result: this.api.search(query),
             mapItems:
@@ -449,7 +471,7 @@ export class RoomSearchComponent {
   }
   setView(view: 'list' | 'map'): void {
     if (view === this.view()) return;
-    void this.navigate(this.query(), false, view);
+    void this.navigate(this.query(), false, view, true);
   }
   toggleFilters(): void {
     this.filtersOpen.update((open) => !open);
@@ -465,13 +487,14 @@ export class RoomSearchComponent {
       sort: sort as RoomQueryParams['sort'],
       page: 0,
       rankingSession: undefined,
-    });
+    }, false, this.view(), true);
   }
   pageChange(page: number): void {
     if (this.loading()) return;
-    void this.navigate({ ...this.query(), page, rankingSession: this.result()?.rankingSession });
+    void this.navigate({ ...this.query(), page, rankingSession: this.result()?.rankingSession }, false, this.view(), true);
   }
   setLocation(filter: LocationFilter | null): void {
+    if (this.aiSearch()) return;
     const q = {
       ...this.query(),
       page: 0,
@@ -515,9 +538,13 @@ export class RoomSearchComponent {
   retry(): void {
     this.refresh.next();
   }
-  private navigate(query: RoomQueryParams, replaceUrl = false, view = this.view()) {
+  private navigate(query: RoomQueryParams, replaceUrl = false, view = this.view(), keepAi = false) {
     const options = {
-      queryParams: { ...query, view: view === 'map' ? 'map' : undefined },
+      queryParams: {
+        ...query,
+        view: view === 'map' ? 'map' : undefined,
+        ai: keepAi ? this.aiSearch()?.id : undefined,
+      },
       replaceUrl,
     };
     if (

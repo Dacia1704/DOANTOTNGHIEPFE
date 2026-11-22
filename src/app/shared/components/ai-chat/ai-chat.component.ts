@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { RoleCode } from '@model/auth/auth.model';
 import { Subscription } from 'rxjs';
 import { AiService, AiChatEvent } from '@services/ai/ai.service';
+import { AiSearchResultsService } from '@services/ai/ai-search-results.service';
 import { AuthService } from '@services/auth/auth.service';
 import { AiListingItem } from '@model/ai/ai.model';
 import { AiListingCardsComponent } from '../ai-listing-cards/ai-listing-cards.component';
@@ -20,7 +23,7 @@ interface ChatEntry {
 
 @Component({
   selector: 'app-ai-chat',
-  imports: [FormsModule, AiListingCardsComponent],
+  imports: [FormsModule, RouterLink, AiListingCardsComponent],
   templateUrl: './ai-chat.component.html',
   styleUrl: './ai-chat.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,7 +31,9 @@ interface ChatEntry {
 })
 export class AiChatComponent {
   readonly auth = inject(AuthService);
+  get canPersonalize(): boolean { return this.auth.hasAnyRole([RoleCode.TENANT]); }
   private readonly ai = inject(AiService);
+  private readonly searchResults = inject(AiSearchResultsService);
   private readonly destroy = inject(DestroyRef);
   readonly opened = signal(false);
   readonly minimized = signal(false);
@@ -123,6 +128,12 @@ export class AiChatComponent {
     return Math.min(Math.max(inset, value), Math.max(inset, viewport - size - inset));
   }
 
+  onComposerKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+    event.preventDefault();
+    this.send();
+  }
+
   send(question = this.draft.trim()): void {
     if (!question || question.length > 2000 || this.busy()) return;
     this.draft = '';
@@ -148,7 +159,12 @@ export class AiChatComponent {
       case 'token':
         this.entries.update(rows => rows.map(row => row.key === key ? { ...row, reply: row.reply + event.data.text } : row));
         break;
-      case 'listings': this.patch(key, { listings: event.data.items }); break;
+      case 'listings': {
+        this.patch(key, { listings: event.data.items });
+        const entry = this.entries().find(row => row.key === key);
+        this.searchResults.show(event.data.items, entry?.question || '');
+        break;
+      }
       case 'retry':
         this.patch(key, { status: 'failed', error: 'Câu trả lời bị gián đoạn. Bạn có thể gửi lại câu hỏi.' });
         break;

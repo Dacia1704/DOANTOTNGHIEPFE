@@ -82,6 +82,9 @@
           }
         </div>
       }
+      @if (aiDifferences.length) {
+        <p class="room-card__alternative">Gợi ý gần phù hợp: {{ aiDifferences.join(' · ') }}</p>
+      }
     </div>
 
     <div class="room-card__footer">

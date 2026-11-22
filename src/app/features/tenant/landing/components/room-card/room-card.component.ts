@@ -40,6 +40,9 @@ export class RoomCardComponent {
   get pricePrefix(): string {
     return 'listingId' in this.room && this.room.rentalMode === 'BY_ROOM' ? 'Từ ' : '';
   }
+  get aiDifferences(): string[] {
+    return 'listingId' in this.room ? this.room.aiDifferences || [] : [];
+  }
   get image(): string {
     return 'thumbnail' in this.room ? this.room.thumbnail : this.room.image;
   }

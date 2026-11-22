@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize } from 'rxjs';
@@ -47,7 +47,14 @@ export class ProfilePageComponent {
     control.get('newPassword')?.value === control.get('confirmPassword')?.value ? null : { mismatch: true },
   });
 
-  constructor() { this.load(); }
+  constructor() {
+    inject(ActivatedRoute).queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const section = params.get('section');
+      if (section === 'preferences' && this.isTenant) this.section.set('preferences');
+      else if (section === 'profile' || section === 'security') this.section.set(section);
+    });
+    this.load();
+  }
 
   load(): void {
     this.loading.set(true);

@@ -321,7 +321,7 @@
       }
       <div class="results-toolbar">
         <div>
-          <h2>Kết quả tìm phòng</h2>
+          <h2>{{ aiSearch() ? 'Kết quả tìm phòng từ AI' : 'Kết quả tìm phòng' }}</h2>
           <p aria-live="polite">
             {{
               loading()
@@ -344,6 +344,12 @@
           }}
         </button>
       </div>
+      @if (aiSearch(); as selection) {
+        <div class="validation-notice" role="status">
+          <span>Kết quả AI cho yêu cầu: “{{ selection.question }}”</span>
+          <button type="button" class="text-button" (click)="clear()">Tìm kiếm thông thường</button>
+        </div>
+      }
       <div class="result-controls">
         <label
           >Sắp xếp<select

@@ -318,3 +318,7 @@
 .room-card__actions .room-card__details { margin-top: 0; text-decoration: none; flex: 1; }
 .room-card__book { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: var(--radius-full); color: var(--on-primary-container); background: var(--primary); text-decoration: none; font-size: 13px; font-weight: 600; &:hover { background: var(--primary-hover); } }
 .room-card__actions a:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
+.room-card__alternative {
+  margin:10px 0 0; padding:8px 10px; border-radius:8px;
+  background:#fff7e6; color:#79551d; font-size:12px; line-height:1.6;
+}

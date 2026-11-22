@@ -21,6 +21,9 @@ export interface AiListingItem {
   room_type_name?: string | null;
   address_line?: string | null;
   amenities: string[];
+  match_type?: string;
+  differences?: string[];
+  distance_km?: number;
 }
 
 export interface AiRecommendationItem {
