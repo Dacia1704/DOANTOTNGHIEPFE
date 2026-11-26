@@ -1,6 +1,7 @@
 import { Property } from '../property/property.model';
 import { RoomAmenity } from '../room/room.model';
 export interface PublicListing {
+  aiDifferences?: string[];
   id: string;
   listingId: string;
   listingTitle: string;

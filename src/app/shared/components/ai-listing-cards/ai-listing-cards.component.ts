@@ -16,6 +16,9 @@ import { AiListingItem } from '@model/ai/ai.model';
           <span>{{ item.ward_name }} · {{ item.area_m2 | number:'1.0-1' }} m²</span>
           <span class="price">{{ item.price | number:'1.0-0' }} đ/tháng</span>
           <span class="amenities">{{ item.amenities.join(' · ') }}</span>
+          @if (item.differences?.length) {
+            <span class="alternative">Gợi ý gần phù hợp: {{ item.differences!.join(' · ') }}</span>
+          }
           <span class="details">Xem tin đăng →</span>
         </a>
       }
@@ -29,6 +32,7 @@ import { AiListingItem } from '@model/ai/ai.model';
     .type,.amenities { font-size:12px; color:var(--on-surface-variant,#56635c); }
     .price,.details { color:var(--primary,#297454); font-weight:600; }
     .details { font-size:13px; margin-top:auto; }
+    .alternative { padding:8px; border-radius:8px; background:#fff7e6; color:#79551d; font-size:12px; line-height:1.6; }
   `],
 })
 export class AiListingCardsComponent {

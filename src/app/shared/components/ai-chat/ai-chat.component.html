@@ -42,9 +42,11 @@
           <span><strong id="ai-chat-title">Trợ lý AI Trọ Tốt</strong><small>Tìm phòng phù hợp với nhu cầu của bạn</small></span>
         </button>
         <div class="widget-actions">
-          <button type="button" (click)="reset()" aria-label="Bắt đầu hội thoại mới" title="Hội thoại mới">
-            <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
-          </button>
+          @if (auth.isLoggedIn()) {
+            <button type="button" (click)="reset()" aria-label="Bắt đầu hội thoại mới" title="Hội thoại mới">
+              <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+            </button>
+          }
           <button type="button" (click)="minimized.set(!minimized())"
             [attr.aria-label]="minimized() ? 'Mở lại cửa sổ AI chat' : 'Thu nhỏ cửa sổ AI chat'">
             <span class="material-symbols-outlined" aria-hidden="true">{{ minimized() ? 'expand_less' : 'remove' }}</span>
@@ -55,6 +57,24 @@
         </div>
       </header>
       <div id="ai-chat-body" class="panel-body" [hidden]="minimized()">
+      @if (!auth.isLoggedIn()) {
+        <div class="auth-required">
+          <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+          <p>Bạn cần đăng nhập để sử dụng tính năng này</p>
+          <button type="button" class="login-button" (click)="goToLogin()">Đăng nhập</button>
+        </div>
+      } @else {
+      <aside class="profile-notice" aria-label="Gợi ý tìm phòng phù hợp hơn">
+        <span class="material-symbols-outlined" aria-hidden="true">tips_and_updates</span>
+        <div>
+          @if (canPersonalize) {
+            <p>Hoàn thiện hồ sơ nhu cầu để mình gợi ý phòng phù hợp hơn với bạn nhé!</p>
+            <a routerLink="/trang-ca-nhan" [queryParams]="{ section: 'preferences' }">Thiết lập hồ sơ<span aria-hidden="true"> →</span></a>
+          } @else {
+            <p>Chia sẻ khu vực, ngân sách và tiện ích mong muốn để mình gợi ý phòng phù hợp hơn nhé!</p>
+          }
+        </div>
+      </aside>
       <div class="messages" aria-live="polite" aria-relevant="additions text">
         @if (!entries().length) {
           <div class="welcome">
@@ -67,7 +87,7 @@
         @for (entry of entries(); track entry.key) {
           <p class="question">{{ entry.question }}</p>
           @if (entry.reply || entry.status === 'pending') {
-            <p class="reply">{{ entry.reply || 'Đang tìm phòng…' }}</p>
+            <p class="reply">{{ entry.reply || 'Đang suy nghĩ…' }}</p>
           }
           <app-ai-listing-cards [items]="entry.listings" (selected)="clicked(entry, $event)" />
           @if (entry.error) { <p class="error" role="status">{{ entry.error }}</p> }
@@ -84,7 +104,7 @@
       </div>
       <form (ngSubmit)="send()" class="composer">
         <div class="composer-row">
-          <textarea id="ai-question" name="question" aria-label="Nhu cầu tìm phòng" [(ngModel)]="draft" maxlength="2000" rows="2" [disabled]="busy()" placeholder="Nhập nhu cầu tìm phòng…"></textarea>
+          <textarea id="ai-question" name="question" aria-label="Nhu cầu tìm phòng" [(ngModel)]="draft" (keydown)="onComposerKeydown($event)" maxlength="2000" rows="2" [disabled]="busy()" placeholder="Nhập nhu cầu tìm phòng…"></textarea>
           @if (busy()) {
             <button type="button" class="send-button" (click)="stop()" aria-label="Dừng câu trả lời" title="Dừng">
               <span class="material-symbols-outlined" aria-hidden="true">stop</span>
@@ -95,8 +115,9 @@
             </button>
           }
         </div>
-        <p class="composer-note">AI hỗ trợ gợi ý phòng theo nhu cầu của bạn.</p>
+        <p class="composer-note">Enter để gửi · Shift + Enter để xuống dòng.</p>
       </form>
+      }
       </div>
     </section>
   }
