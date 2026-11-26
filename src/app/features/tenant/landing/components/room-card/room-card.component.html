@@ -60,7 +60,7 @@
           {{ categoryLabel }}
         </span>
         @if (isApiRoom) {
-          <span class="room-card__status">{{ statusLabel }}</span>
+          <span class="room-card__status" [class.room-card__status--unavailable]="!roomAvailable">{{ statusLabel }}</span>
         }
         @if (!isApiRoom) {
           <span class="room-card__rating">

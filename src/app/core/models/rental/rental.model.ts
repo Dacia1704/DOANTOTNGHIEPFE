@@ -1,6 +1,7 @@
-export type BookingAvailability = 'AVAILABLE' | 'HELD' | 'RENTED' | 'MAINTENANCE';
+export type BookingAvailability = 'AVAILABLE' | 'PENDING_APPROVAL' | 'HELD' | 'RENTED' | 'MAINTENANCE';
 export const BOOKING_LABELS: Record<BookingAvailability, string> = {
   AVAILABLE: 'Còn phòng',
+  PENDING_APPROVAL: 'Đã có người đặt chỗ — chờ chủ trọ duyệt',
   HELD: 'Đang giữ chỗ — chờ khách xác nhận hợp đồng',
   RENTED: 'Đã cho thuê',
   MAINTENANCE: 'Bảo trì',

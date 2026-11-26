@@ -18,6 +18,7 @@
 
   .badge-row {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-xs);
     margin-bottom: 6px;
   }

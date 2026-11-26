@@ -449,6 +449,13 @@
     background: var(--primary-subtle);
     box-shadow: inset 0 0 0 1px var(--primary);
   }
+  &.is-held {
+    border-color: var(--warning);
+  }
+  &.is-held.selected {
+    background: var(--warning-bg);
+    box-shadow: inset 0 0 0 1px var(--warning);
+  }
 }
 .room-option-top,
 .room-option-price {
@@ -466,13 +473,7 @@
   line-height: 1.5;
   padding: 3px 8px;
   border-radius: 999px;
-  background: var(--surface-container-low);
-  color: var(--on-surface-variant);
   max-width: 100%;
-  &.is-available {
-    background: #e1f5eb;
-    color: #176449;
-  }
 }
 .room-option-meta {
   color: var(--on-surface-variant);
@@ -744,11 +745,31 @@
     content: '·';
     margin-right: 8px;
   }
-  .availability {
-    color: var(--primary);
-    &.unavailable {
-      color: var(--secondary);
-    }
+}
+.booking-availability {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  &.booking-held {
+    box-shadow: inset 4px 0 0 var(--warning);
+  }
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 22px;
+    margin-top: 1px;
+  }
+  small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 400;
   }
 }
 .deposit-row {
@@ -833,6 +854,13 @@
   color: var(--primary);
   border-color: #c7dcd8;
   background: var(--surface-container-lowest);
+  &.booking-held:disabled {
+    color: var(--warning-text);
+    background: #fef3c7;
+    border-color: var(--warning);
+    opacity: 1;
+    cursor: not-allowed;
+  }
 }
 .chat-button {
   margin-top: 10px;

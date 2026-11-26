@@ -126,7 +126,7 @@ export class BookingDialogComponent {
       .subscribe({
         next: () => {
           this.dialog?.close('created');
-          this.toast.open('Đã gửi yêu cầu thuê phòng', 'Đóng', { duration: 4000 });
+          this.toast.open('Đã gửi yêu cầu và giữ chỗ, chờ chủ trọ duyệt', 'Đóng', { duration: 4000 });
           void this.router.navigateByUrl('/yeu-cau-thue');
         },
         error: (e) => {

@@ -36,8 +36,12 @@ export class PropertyRoomsComponent {
   readonly status = signal('');
   readonly page = signal(0);
   readonly pageSize = signal(10);
-  readonly statuses = ['AVAILABLE', 'HELD', 'RENTED', 'MAINTENANCE'];
-  readonly labels: Record<string, string> = { ...ROOM_STATUS_LABELS, HELD: 'Đang giữ chỗ' };
+  readonly statuses = ['AVAILABLE', 'PENDING_APPROVAL', 'HELD', 'RENTED', 'MAINTENANCE'];
+  readonly labels: Record<string, string> = {
+    ...ROOM_STATUS_LABELS,
+    PENDING_APPROVAL: 'Đã có người đặt chỗ',
+    HELD: 'Đang giữ chỗ',
+  };
   readonly utils = RoomUtils;
   readonly roomKey = (room: Room) => room.id;
   readonly roomColumns: readonly ManagementTableColumn<Room>[] = [

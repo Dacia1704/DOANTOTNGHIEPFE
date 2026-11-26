@@ -285,6 +285,7 @@
                 type="button"
                 class="room-option"
                 [class.selected]="selectedRoom()?.id === room.id"
+                [class.is-held]="utils.isBookingHeld(room)"
                 [attr.aria-pressed]="selectedRoom()?.id === room.id"
                 (click)="selectRoom(room)"
               >
@@ -293,8 +294,8 @@
                     post.rentalMode === 'WHOLE' ? post.propertyName : room.displayName
                   }}</strong
                   ><span
-                    class="room-status"
-                    [class.is-available]="room.bookingAvailability === 'AVAILABLE'"
+                    class="room-status badge"
+                    [class]="utils.getBookingBadgeClass(room)"
                     >{{ utils.bookingLabel(room) }}</span
                   ></span
                 >
@@ -507,12 +508,18 @@
             </p>
             <div class="booking-room-meta">
               <span>{{ utils.formatArea(room.areaM2) }}</span
-              ><span>{{ room.maxOccupants }} người</span
-              ><span
-                class="availability"
-                [class.unavailable]="room.bookingAvailability !== 'AVAILABLE'"
-                >{{ utils.bookingLabel(room) }}</span
-              >
+              ><span>{{ room.maxOccupants }} người</span>
+            </div>
+            <div class="booking-availability" [class]="utils.getBookingBadgeClass(room)" role="status">
+              <span class="material-symbols-outlined" aria-hidden="true">{{
+                utils.isBookingHeld(room) ? 'hourglass_top' : 'info'
+              }}</span>
+              <div>
+                <strong>{{ utils.bookingLabel(room) }}</strong>
+                @if (utils.isBookingHeld(room)) {
+                  <small>Phòng tạm thời không nhận thêm yêu cầu thuê.</small>
+                }
+              </div>
             </div>
             <div class="deposit-row">
               <span>Tiền cọc</span><strong>{{ utils.formatFee(room.defaultDeposit) }}</strong>
@@ -588,6 +595,7 @@
             <button
               type="button"
               class="btn-secondary booking-button"
+              [class.booking-held]="utils.isBookingHeld(room)"
               [disabled]="
                 room.bookingAvailability !== 'AVAILABLE' ||
                 ownListing() ||
@@ -596,8 +604,10 @@
               "
               (click)="book()"
             >
-              <span class="material-symbols-outlined" aria-hidden="true">event_available</span
-              >{{ room.bookingAvailability === 'AVAILABLE' ? 'Đặt phòng' : 'Phòng chưa sẵn sàng' }}
+              <span class="material-symbols-outlined" aria-hidden="true">{{
+                utils.isBookingHeld(room) ? 'event_busy' : 'event_available'
+              }}</span
+              >{{ utils.isBookingHeld(room) ? 'Phòng đã có người đặt chỗ' : room.bookingAvailability === 'AVAILABLE' ? 'Đặt phòng' : utils.bookingLabel(room) }}
             </button>
           }
           <p class="booking-note">

@@ -3,7 +3,7 @@
     <section class="whole-house" aria-label="Thông tin căn nhà">
       <header class="units-heading">
         <h2>Thông tin căn nhà</h2>
-        <span class="badge" [class]="utils.getStatusBadgeClass(house.rentalStatus)">{{
+        <span class="badge" [class]="utils.getBookingBadgeClass(house)">{{
           utils.bookingLabel(house)
         }}</span>
       </header>
@@ -127,7 +127,7 @@
         <span class="subtext">Tối đa {{ room.maxOccupants }} người</span>
       </ng-template>
       <ng-template [appTableCell]="pagedRooms()" column="status" let-room>
-        <span class="badge" [class]="utils.getStatusBadgeClass(room.rentalStatus)">{{
+        <span class="badge" [class]="utils.getBookingBadgeClass(room)">{{
           utils.bookingLabel(room)
         }}</span>
       </ng-template>
@@ -168,6 +168,7 @@
               [disabled]="
                 property().rooms.length <= 1 ||
                 property().rentalMode === 'WHOLE' ||
+                room.bookingAvailability === 'PENDING_APPROVAL' ||
                 room.bookingAvailability === 'HELD' ||
                 room.bookingAvailability === 'RENTED'
               "

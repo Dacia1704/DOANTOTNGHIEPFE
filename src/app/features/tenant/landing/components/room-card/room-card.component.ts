@@ -4,7 +4,6 @@ import { ImageUtils } from '@shared/utils/image-utils';
 import { TextUtils } from '@shared/utils/text-utils';
 import { RoomCard } from '../../data/room-card.model';
 import { PublicListing } from '@model/public-listing/public-listing.model';
-import { ROOM_STATUS_LABELS } from '@model/room/room.model';
 
 export type RoomCardData = RoomCard | PublicListing;
 
@@ -110,13 +109,19 @@ export class RoomCardComponent {
     return ['/tro', String(this.room.id)];
   }
   get statusLabel(): string {
-    return 'listingId' in this.room
-      ? this.room.rentalMode === 'WHOLE'
-        ? this.room.property.availableCount
-          ? 'Còn trống'
-          : 'Chưa sẵn sàng'
-        : `${this.room.property.rooms.length} phòng cho thuê`
-      : '';
+    if (!('listingId' in this.room)) return '';
+    const property = this.room.property;
+    if (property.availableCount > 0) {
+      return this.room.rentalMode === 'WHOLE' ? 'Còn trống' : `${property.availableCount} phòng trống`;
+    }
+    return property.rooms.some(
+      (room) => room.bookingAvailability === 'PENDING_APPROVAL' || room.bookingAvailability === 'HELD',
+    )
+      ? 'Đã có người đặt chỗ'
+      : 'Chưa sẵn sàng';
+  }
+  get roomAvailable(): boolean {
+    return 'listingId' in this.room && this.room.property.availableCount > 0;
   }
   get subtitle(): string {
     return 'fullAddress' in this.room

@@ -1,13 +1,34 @@
 import {
+  Room,
   RoomRentalStatus,
   ROOM_STATUS_LABELS,
   ROOM_STATUS_BADGE_CLASSES,
 } from '@model/room/room.model';
+import { BOOKING_LABELS } from '@model/rental/rental.model';
 
 export class RoomUtils {
+  static isBookingHeld(room: Room): boolean {
+    return room.bookingAvailability === 'PENDING_APPROVAL' || room.bookingAvailability === 'HELD';
+  }
+
+  static getBookingBadgeClass(room: Room): string {
+    if (this.isBookingHeld(room)) return 'badge-warning booking-held';
+    switch (room.bookingAvailability) {
+      case 'AVAILABLE':
+        return 'badge-success';
+      case 'RENTED':
+        return 'badge-secondary';
+      case 'MAINTENANCE':
+        return 'badge-warning';
+      default:
+        return 'badge-secondary';
+    }
+  }
+
   static bookingLabel(room: import('@model/room/room.model').Room): string {
-    const labels: Record<string,string>={AVAILABLE:'Còn phòng',HELD:'Đang giữ chỗ — chờ khách xác nhận hợp đồng',RENTED:'Đã cho thuê',MAINTENANCE:'Bảo trì'};
-    return labels[room.bookingAvailability??'']??'Đang cập nhật trạng thái đặt phòng';
+    return room.bookingAvailability
+      ? BOOKING_LABELS[room.bookingAvailability] ?? 'Đang cập nhật trạng thái đặt phòng'
+      : 'Đang cập nhật trạng thái đặt phòng';
   }
   /** Distinguish an unspecified fee from an explicitly free service. */
   static formatFee(value: number | null): string {

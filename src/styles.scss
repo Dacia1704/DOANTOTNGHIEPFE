@@ -722,6 +722,21 @@ html.landing-scroll-snap {
   border: 1px solid var(--warning-border);
 }
 
+.booking-held {
+  color: var(--warning-text);
+  background: #fef3c7;
+  border: 1px solid var(--warning);
+  font-weight: 700;
+}
+
+.badge.booking-held {
+  height: auto;
+  min-height: 28px;
+  padding: 4px 10px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
 // Verification Badge
 .badge-verified {
   color: var(--tertiary);

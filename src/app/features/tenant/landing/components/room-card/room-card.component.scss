@@ -290,6 +290,13 @@
   font-size: 11px;
   white-space: nowrap;
 }
+
+.room-card__status--unavailable {
+  background: #fef3c7;
+  color: var(--warning-text);
+  border: 1px solid var(--warning);
+  font-weight: 700;
+}
 .room-card__details {
   display: inline-flex;
   align-items: center;

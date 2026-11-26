@@ -4,8 +4,8 @@
     <div>
       <div class="badge-row">
         <span class="badge badge-primary">{{ data.room.roomTypeName }}</span>
-        <span class="badge" [class]="roomUtils.getStatusBadgeClass(data.room.rentalStatus)">
-          {{ roomUtils.getStatusLabel(data.room.rentalStatus) }}
+        <span class="badge" [class]="roomUtils.getBookingBadgeClass(data.room)">
+          {{ roomUtils.bookingLabel(data.room) }}
         </span>
       </div>
       <h2 mat-dialog-title class="dialog-title">{{ data.listing?.listingTitle || data.room.displayName }}</h2>
